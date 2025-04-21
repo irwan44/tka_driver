@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "920191706369",
+    "project_id": "cartuned-d3042",
+    "storage_bucket": "cartuned-d3042.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:920191706369:android:6340db28fc1ed04487e700",
+        "android_client_info": {
+          "package_name": "id.co.twka.fms.driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCVQ7Epl1pVGRVzY2OeGY2uscHVXgNOG4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
