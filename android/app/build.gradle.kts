@@ -21,6 +21,11 @@ android {
     // → atur flavor dimension dan productFlavors
     flavorDimensions += "app"
     productFlavors {
+        create("dev") {
+            dimension = "app"
+            applicationId = "id.co.twka.fms.driver.dev"
+            resValue("string", "app_name", "Dev Driver")
+        }
         create("rusco") {
             dimension = "app"
             applicationId = "id.co.twka.fms.driver.rusco"

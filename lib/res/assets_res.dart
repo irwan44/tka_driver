@@ -16,6 +16,7 @@ class AssetsRes {
   static const String NO_CONEXION = 'assets/icon/no_conexion.png';
   static const String OTTOGO_ICONS = 'assets/icon/ottogo_icons.png';
   static const String RUSCON_ICONS = 'assets/icon/ruscon_icons.png';
-  static const String LOGO_RMBG = 'assets/logo/logo-rmbg.png';
-  static const String LOGO_RMBG2 = 'assets/logo/logo-rmbg2.png';
+  static const String LOGO_OTTOGO = 'assets/logo/logo-ottogo.png';
+  static const String LOGO_RUSCO = 'assets/logo/logo-rusco.png';
+  static const String LOGO_DEV = 'assets/logo/logo_dev.png';
 }

@@ -13,12 +13,13 @@ class AssetsRes {
     const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'tka');
     debugPrint('>>> Running with FLAVOR=$flavor');
     switch (flavor) {
+      case 'dev':
+        return 'assets/logo/logo_dev.png';
       case 'rusco':
-        return 'assets/logo/logo-rmbg.png';
+        return 'assets/logo/logo-rusco.png';
       case 'tka':
       default:
-        return 'assets/logo/logo-rmbg2.png';
-
+        return 'assets/logo/logo-ottogo.png';
     }
   }
 }
@@ -27,6 +28,8 @@ class AppConfig {
   static const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'tka');
   static String get baseUrl {
     switch (flavor) {
+      case 'dev':
+        return 'https://api-cartune.abeng.id';
       case 'rusco':
         return 'https://api-cartune.abeng.id';
       case 'tka':
@@ -100,6 +103,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// flutter run --flavor dev -t lib/main.dart --dart-define=FLAVOR=dev
+// flutter build apk --flavor dev -t lib/main.dart --dart-define=FLAVOR=dev
+// flutter build appbundle --flavor dev -t lib/main.dart --dart-define=FLAVOR=dev
+//
 // flutter run --flavor tka -t lib/main.dart --dart-define=FLAVOR=tka
 // flutter build apk --flavor tka -t lib/main.dart --dart-define=FLAVOR=tka
 // flutter build appbundle --flavor tka -t lib/main.dart --dart-define=FLAVOR=tka
