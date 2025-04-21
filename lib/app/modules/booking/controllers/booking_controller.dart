@@ -199,30 +199,22 @@ class BookingController extends GetxController {
   Future<void> pickImage() async {
     try {
       final XFile? file = await _picker.pickImage(source: ImageSource.camera);
-      if (file != null) {
-        int currentPhotoCount = mediaList.where((x) => !_isVideo(x)).length;
-        int currentVideoCount = mediaList.where((x) => _isVideo(x)).length;
+      if (file == null) return;
 
-        if (currentVideoCount > 0 && currentPhotoCount >= 1) {
-          Get.snackbar(
-            'Warning',
-            'Jika sudah ada video, hanya boleh mengupload 1 foto.',
-            backgroundColor: Colors.yellow,
-            colorText: Colors.black,
-          );
-          return;
-        }
-        if (currentVideoCount == 0 && currentPhotoCount >= 2) {
-          Get.snackbar(
-            'Warning',
-            'Maksimal 2 foto yang dapat diupload.',
-            backgroundColor: Colors.yellow,
-            colorText: Colors.black,
-          );
-          return;
-        }
-        mediaList.add(file);
+      int currentPhotoCount = mediaList.where((x) => !_isVideo(x)).length;
+
+      // Batasi maksimal 4 foto
+      if (currentPhotoCount >= 4) {
+        Get.snackbar(
+          'Warning',
+          'Maksimal 4 foto yang dapat diupload.',
+          backgroundColor: Colors.yellow,
+          colorText: Colors.black,
+        );
+        return;
       }
+
+      mediaList.add(file);
     } catch (e) {
       Get.snackbar(
         'Warning',
@@ -236,29 +228,22 @@ class BookingController extends GetxController {
   Future<void> pickVideo() async {
     try {
       final XFile? file = await _picker.pickVideo(source: ImageSource.camera);
-      if (file != null) {
-        int currentVideoCount = mediaList.where((x) => _isVideo(x)).length;
-        if (currentVideoCount >= 1) {
-          Get.snackbar(
-            'Warning',
-            'Hanya dapat mengupload 1 video.',
-            backgroundColor: Colors.yellow,
-            colorText: Colors.black,
-          );
-          return;
-        }
-        int currentPhotoCount = mediaList.where((x) => !_isVideo(x)).length;
-        if (currentPhotoCount >= 2) {
-          Get.snackbar(
-            'Warning',
-            'Jika ingin mengupload video, maksimal foto yang diperbolehkan adalah 1.',
-            backgroundColor: Colors.yellow,
-            colorText: Colors.black,
-          );
-          return;
-        }
-        mediaList.add(file);
+      if (file == null) return;
+
+      int currentVideoCount = mediaList.where((x) => _isVideo(x)).length;
+
+      // Batasi hanya 1 video
+      if (currentVideoCount >= 1) {
+        Get.snackbar(
+          'Warning',
+          'Hanya boleh mengupload 1 video.',
+          backgroundColor: Colors.yellow,
+          colorText: Colors.black,
+        );
+        return;
       }
+
+      mediaList.add(file);
     } catch (e) {
       Get.snackbar(
         'Warning',
@@ -400,44 +385,48 @@ class BookingController extends GetxController {
   }
 
   Future<List<File>> _validateAndCompressMediaFiles() async {
-    int photoCount = mediaList.where((x) => !_isVideo(x)).length;
-    int videoCount = mediaList.where((x) => _isVideo(x)).length;
+    final photoCount = mediaList.where((x) => !_isVideo(x)).length;
+    final videoCount = mediaList.where((x) => _isVideo(x)).length;
 
+    // ===== VALIDASI =====
     if (photoCount < 1) {
       throw 'Minimal harus ada 1 foto.';
+    }
+    if (photoCount > 4) {
+      throw 'Maksimal foto yang dapat diupload adalah 4.';
+    }
+    if (videoCount < 1) {
+      throw 'Minimal harus ada 1 video.';
     }
     if (videoCount > 1) {
       throw 'Hanya boleh mengupload 1 video.';
     }
-    if (videoCount == 1 && mediaList.length != 2) {
-      throw 'Jika mengupload video, harus ada 1 foto dan 1 video saja.';
-    }
-    if (videoCount == 0 && mediaList.length > 2) {
-      throw 'Maksimal 2 foto yang dapat diupload.';
-    }
 
+    // ===== PROSES KOMPRIM =====
     List<File> compressedFiles = [];
-    const int maxFileSize = 10 * 1024 * 1024;
+
     for (var file in mediaList) {
       if (_isVideo(file)) {
         final mediaInfo = await VideoCompress.getMediaInfo(file.path);
-        if (mediaInfo.duration != null && mediaInfo.duration! < 60000) {
-          compressedFiles.add(File(file.path));
-          continue;
-        }
 
-        final compressedVideo = await VideoCompress.compressVideo(
-          file.path,
-          quality: VideoQuality.MediumQuality,
-          deleteOrigin: false,
-          includeAudio: true,
-        );
-        if (compressedVideo != null && compressedVideo.file != null) {
-          compressedFiles.add(compressedVideo.file!);
-        } else {
-          compressedFiles.add(File(file.path));
+        // kalau durasi ≥ 1 menit, coba kompres dulu
+        if (mediaInfo.duration != null && mediaInfo.duration! >= 60000) {
+          final compressedVideo = await VideoCompress.compressVideo(
+            file.path,
+            quality: VideoQuality.MediumQuality,
+            deleteOrigin: false,
+            includeAudio: true,
+          );
+          if (compressedVideo?.file != null) {
+            compressedFiles.add(compressedVideo!.file!);
+            continue;
+          }
         }
+        // default pakai file asli
+        compressedFiles.add(File(file.path));
+
       } else {
+        // kompres gambar
         final result = await FlutterImageCompress.compressWithFile(
           file.path,
           quality: 80,
@@ -454,7 +443,6 @@ class BookingController extends GetxController {
         }
       }
     }
-
     return compressedFiles;
   }
 
