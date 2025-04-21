@@ -15,7 +15,7 @@ class HomeController extends GetxController {
       final listEmergency = await API.fetchListEmergency();
       if (listEmergency.data != null) {
         diterimaCount.value = listEmergency.data!
-            .where((e) => e.status?.toLowerCase() == 'diterima')
+            .where((e) => e.status?.toLowerCase() == 'selesai')
             .length;
       } else {
         diterimaCount.value = 0;

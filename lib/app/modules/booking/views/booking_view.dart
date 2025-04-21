@@ -144,24 +144,24 @@ class _BookingViewState extends State<BookingView> {
   );
 
   Widget _buildRequestTab(BookingController c, bool isDark) => Obx(() {
-    final List<RequestService> filtered = c.listRequestService
+    final filtered = c.listRequestService
         .where((r) {
-      final nopol = (r.noPolisi ?? '').toLowerCase(); // ★ berdasarkan noPolisi
+      final nopol = (r.noPolisi ?? '').toLowerCase();
       final q = searchQuery.toLowerCase();
       final matchSearch = q.isEmpty || nopol.contains(q);
 
       bool matchDate = true;
       if (_selectedDate != null) {
-        final created = _toLocalDateTime(r.createdAt);
-        matchDate = created.year == _selectedDate!.year &&
-            created.month == _selectedDate!.month &&
-            created.day == _selectedDate!.day;
+        final created = DateFormat('yyyy-MM-dd')
+            .format(_toLocalDateTime(r.createdAt!));
+        final sel = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+        matchDate = created == sel;
       }
       return matchSearch && matchDate;
     })
         .toList()
-      ..sort((a, b) => _toLocalDateTime(b.createdAt)
-          .compareTo(_toLocalDateTime(a.createdAt)));
+      ..sort((a, b) => _toLocalDateTime(b.createdAt!)
+          .compareTo(_toLocalDateTime(a.createdAt!)));
 
     return RefreshIndicator(
       onRefresh: () => c.refreshAll(),
@@ -171,19 +171,39 @@ class _BookingViewState extends State<BookingView> {
           : c.errorRequest.value == 'Tidak ada koneksi internet'
           ? _noConnection(c.errorRequest.value)
           : c.errorRequest.isNotEmpty
-          ? Center(
-        child: Text(
-          c.errorRequest.value,
-          style: GoogleFonts.nunito(color: Colors.red),
-        ),
+          ? ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height:
+            MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Text(
+                c.errorRequest.value,
+                style: GoogleFonts.nunito(
+                    color: Colors.red),
+              ),
+            ),
+          ),
+        ],
       )
           : filtered.isEmpty
-          ? Center(
-        child: Text(
-          _selectedDate != null
-              ? 'Tanggal yang Anda pilih tidak ada data'
-              : 'Tidak ada data',
-        ),
+          ? ListView(
+        physics:
+        const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height *
+                0.7,
+            child: Center(
+              child: Text(
+                _selectedDate != null
+                    ? 'Tanggal yang Anda pilih tidak ada data'
+                    : 'Tidak ada data',
+              ),
+            ),
+          ),
+        ],
       )
           : ListView.builder(
         padding: const EdgeInsets.only(top: 4),
@@ -200,7 +220,8 @@ class _BookingViewState extends State<BookingView> {
               keluhan: r.keluhan ?? '-',
               kodereques:
               r.kodeRequestService ?? '-',
-              kodekendaraan: r.kodeKendaraan ?? '-',
+              kodekendaraan:
+              r.kodeKendaraan ?? '-',
             ),
           );
         },
@@ -209,7 +230,7 @@ class _BookingViewState extends State<BookingView> {
   });
 
   Widget _buildServiceTab(BookingController c, bool isDark) => Obx(() {
-    final List<ListService> filtered = c.listService
+    final filtered = c.listService
         .where((s) {
       final nopol = (s.noPolisi ?? '').toLowerCase();
       final q = searchQuery.toLowerCase();
@@ -220,15 +241,13 @@ class _BookingViewState extends State<BookingView> {
         matchDate = false;
         for (final t in [s.tglEstimasi, s.tglPkb]) {
           if (t == null) continue;
-          try {
-            final d = DateFormat('yyyy-MM-dd').parse(t);
-            if (d.year == _selectedDate!.year &&
-                d.month == _selectedDate!.month &&
-                d.day == _selectedDate!.day) {
-              matchDate = true;
-              break;
-            }
-          } catch (_) {}
+          final d = DateFormat('yyyy-MM-dd').parse(t);
+          if (DateFormat('yyyy-MM-dd').format(d) ==
+              DateFormat('yyyy-MM-dd')
+                  .format(_selectedDate!)) {
+            matchDate = true;
+            break;
+          }
         }
       }
       return matchSearch && matchDate;
@@ -242,29 +261,73 @@ class _BookingViewState extends State<BookingView> {
       displacement: 40,
       child: c.isLoading.value
           ? _buildLoadingList(isDark)
-          : c.errorMessage.value == 'Tidak ada koneksi internet'
-          ? _noConnection(c.errorMessage.value)
+          : c.errorRequest.value == 'Tidak ada koneksi internet'
+          ? _noConnection(c.errorRequest.value)
+          : c.errorRequest.isNotEmpty
+          ? ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height:
+            MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Text(
+                c.errorMessage.value,
+                style: GoogleFonts.nunito(
+                    color: Colors.red),
+              ),
+            ),
+          ),
+        ],
+      )
           : c.errorMessage.isNotEmpty
-          ? Center(
-        child: Text(c.errorMessage.value,
-            style: GoogleFonts.nunito(color: Colors.red)),
+          ? ListView(
+        physics:
+        const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height:
+            MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Text(
+                c.errorMessage.value,
+                style: GoogleFonts.nunito(
+                    color: Colors.red),
+              ),
+            ),
+          ),
+        ],
       )
           : filtered.isEmpty
-          ? Center(
-        child: Text(
-          _selectedDate != null
-              ? 'Tanggal yang Anda pilih tidak ada data'
-              : 'Tidak ada data',
-        ),
+          ? ListView(
+        physics:
+        const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context)
+                .size
+                .height *
+                0.7,
+            child: Center(
+              child: Text(
+                _selectedDate != null
+                    ? 'Tanggal yang Anda pilih tidak ada data'
+                    : 'Tidak ada data',
+              ),
+            ),
+          ),
+        ],
       )
           : ListView.builder(
         padding: const EdgeInsets.all(10),
         itemCount: filtered.length,
-        itemBuilder: (_, i) => Padding(
-          padding:
-          const EdgeInsets.symmetric(vertical: 8),
-          child: ServiceItemCard(service: filtered[i]),
-        ),
+        itemBuilder: (_, i) =>
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(vertical: 8),
+              child:
+              ServiceItemCard(service: filtered[i]),
+            ),
       ),
     );
   });

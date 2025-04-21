@@ -1,10 +1,10 @@
-// lib/assets_res.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'app/routes/app_pages.dart';
 
 class AssetsRes {
@@ -40,6 +40,14 @@ class AppConfig {
 }
 
 Future<void> initOneSignal() async {
+  final status = await Permission.notification.status;
+  if (!status.isGranted) {
+    final result = await Permission.notification.request();
+    if (!result.isGranted) {
+      debugPrint('Notification permission denied');
+      return; // skip OneSignal init if no permission
+    }
+  }
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
   OneSignal.Debug.setAlertLevel(OSLogLevel.none);
   OneSignal.consentRequired(false);
@@ -51,6 +59,10 @@ Future<void> initOneSignal() async {
   });
 
   OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+    if (Get.currentRoute == Routes.LOGIN) {
+      event.preventDefault();
+      return;
+    }
     event.preventDefault();
     event.notification.display();
   });

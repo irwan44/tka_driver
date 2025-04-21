@@ -400,35 +400,13 @@ class EmergencyController extends GetxController {
       isLoading.value = false;
     }
   }
-
-  bool get disableBuatEmergencyServiceButton {
-    return selectedVehicle.value.isEmpty ||
-        complaintText.value.trim().isEmpty ||
-        isLoading.value;
+  bool get hasEmergencyForSelectedVehicle {
+    if (selectedVehicle.value.isEmpty) return true; // tombol disable kalau belum pilih
+    return allEmergencyList.any((data) =>
+    data.noPolisi == selectedVehicle.value
+    );
   }
-
-  String get currentEmergencyActiveStatus {
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    try {
-      final record = allEmergencyList.firstWhere((data) =>
-      data.tgl == today && (data.status != "Derek" && data.status != "Storing"));
-      return record.status ?? "-";
-    } catch (e) {
-      return "-";
-    }
-  }
-
-  String get currentEmergencyActiveStatusdetail {
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    try {
-      final record = allEmergencyList.firstWhere((data) =>
-      data.tgl == today && data.status?.trim().toLowerCase() == "diterima");
-      return record.status ?? '-';
-    } catch (e) {
-      return "-";
-    }
-  }
-
+  bool get disableBuatEmergencyServiceButton => hasEmergencyForSelectedVehicle;
   // Kompres & Validasi media
   Future<List<File>> _validateAndCompressMediaFiles() async {
     int photoCount = mediaList.where((x) => !_isVideo(x)).length;
@@ -452,13 +430,11 @@ class EmergencyController extends GetxController {
       if (_isVideo(file)) {
         final mediaInfo = await VideoCompress.getMediaInfo(file.path);
 
-        // ---------------- video < 1 menit: upload apa adanya ----------------
         if (mediaInfo.duration != null && mediaInfo.duration! < 60000) {
           compressedFiles.add(File(file.path));
           continue; // lanjut ke file berikut
         }
 
-        // ---------------- video ≥ 1 menit: kompres dulu ---------------------
         final compressedVideo = await VideoCompress.compressVideo(
           file.path,
           quality: VideoQuality.MediumQuality,
@@ -471,7 +447,6 @@ class EmergencyController extends GetxController {
           compressedFiles.add(File(file.path));
         }
       } else {
-        // ---------- gambar (tetap) ----------
         final result = await FlutterImageCompress.compressWithFile(
           file.path,
           quality: 80,

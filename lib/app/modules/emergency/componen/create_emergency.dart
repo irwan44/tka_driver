@@ -31,9 +31,25 @@ class EmergencyRepairPage extends StatelessWidget {
       bottomNavigationBar: Container(
         color: isDark ? Colors.grey[850] : Colors.white,
         padding: const EdgeInsets.all(16),
-        child: Obx(
-              () => ElevatedButton.icon(
-            onPressed: c.disableBuatEmergencyServiceButton ? null : c.submitEmergencyRepair,
+        child: Obx(() {
+          final hasDoneToday = c.hasEmergencyForSelectedVehicle;
+          return ElevatedButton.icon(
+            // 1) Jangan pernah pasang onPressed null,
+            //    tapi tangani sendiri kasus “disabled”
+            onPressed: () {
+              if (hasDoneToday) {
+                // 2) Kalau sudah pernah emergency → tunjukkan snackbar
+                Get.snackbar(
+                  "Peringatan",
+                  "Anda sudah melakukan Emergency Service hari ini dengan NoPolisi: ${c.selectedVehicle.value}",
+                  backgroundColor: Colors.amber,
+                  colorText: Colors.black,
+                );
+              } else {
+                // 3) Kalau belum, lanjut ke proses submit
+                c.submitEmergencyRepair();
+              }
+            },
             icon: c.isLoading.value
                 ? const SizedBox(
               height: 20,
@@ -51,15 +67,16 @@ class EmergencyRepairPage extends StatelessWidget {
               style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              // 4) Beri visual “disabled” kalau sudah pernah emergency
+              backgroundColor: hasDoneToday ? Colors.grey : Colors.red,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

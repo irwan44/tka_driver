@@ -80,69 +80,69 @@ class StepperPage extends StatelessWidget {
                   ),
                 ),
               // Stepper Section
-              Obx(
-                    () => Stepper(
-                  type: StepperType.vertical,
-                  steps: stepController.steps.map((step) {
-                    return Step(
-                      title: step.title,
-                      subtitle: step.subtitle,
-                      state: step.state,
-                      isActive: step.isActive,
-                      content: Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.grey[850] : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? Colors.black54 : Colors.black.withOpacity(0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              (step.title as Row)
-                                  .children
-                                  .whereType<Text>()
-                                  .first
-                                  .data
-                                  .toString(),
-                              style: GoogleFonts.nunito(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black,
-                              ),
-                            ),
-                            if (step.subtitle != null) ...[
-                              const SizedBox(height: 4),
-                              DefaultTextStyle(
-                                style: GoogleFonts.nunito(
-                                  color: isDark ? Colors.grey[300] : Colors.grey,
-                                  fontSize: 14,
-                                ),
-                                child: step.subtitle!,
-                              ),
-                            ],
-                            const SizedBox(height: 12),
-                            step.content,
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  currentStep: stepController.currentStep.value,
-                  controlsBuilder: (context, details) {
-                    return const SizedBox.shrink();
-                  },
-                  onStepTapped: (index) => stepController.jumpTo(index),
-                ),
-              ),
+              // Obx(
+              //       () => Stepper(
+              //     type: StepperType.vertical,
+              //     steps: stepController.steps.map((step) {
+              //       return Step(
+              //         title: step.title,
+              //         subtitle: step.subtitle,
+              //         state: step.state,
+              //         isActive: step.isActive,
+              //         content: Container(
+              //           margin: const EdgeInsets.only(bottom: 16),
+              //           padding: const EdgeInsets.all(16),
+              //           decoration: BoxDecoration(
+              //             color: isDark ? Colors.grey[850] : Colors.white,
+              //             borderRadius: BorderRadius.circular(8),
+              //             boxShadow: [
+              //               BoxShadow(
+              //                 color: isDark ? Colors.black54 : Colors.black.withOpacity(0.08),
+              //                 blurRadius: 8,
+              //                 offset: const Offset(0, 2),
+              //               ),
+              //             ],
+              //           ),
+              //           child: Column(
+              //             crossAxisAlignment: CrossAxisAlignment.start,
+              //             children: [
+              //               Text(
+              //                 (step.title as Row)
+              //                     .children
+              //                     .whereType<Text>()
+              //                     .first
+              //                     .data
+              //                     .toString(),
+              //                 style: GoogleFonts.nunito(
+              //                   fontSize: 16,
+              //                   fontWeight: FontWeight.bold,
+              //                   color: isDark ? Colors.white : Colors.black,
+              //                 ),
+              //               ),
+              //               if (step.subtitle != null) ...[
+              //                 const SizedBox(height: 4),
+              //                 DefaultTextStyle(
+              //                   style: GoogleFonts.nunito(
+              //                     color: isDark ? Colors.grey[300] : Colors.grey,
+              //                     fontSize: 14,
+              //                   ),
+              //                   child: step.subtitle!,
+              //                 ),
+              //               ],
+              //               const SizedBox(height: 12),
+              //               step.content,
+              //             ],
+              //           ),
+              //         ),
+              //       );
+              //     }).toList(),
+              //     currentStep: stepController.currentStep.value,
+              //     controlsBuilder: (context, details) {
+              //       return const SizedBox.shrink();
+              //     },
+              //     onStepTapped: (index) => stepController.jumpTo(index),
+              //   ),
+              // ),
               const SizedBox(height: 30),
             ],
           ),

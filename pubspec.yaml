@@ -38,7 +38,6 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: false
-  # default (tidak terpakai, tapi must‑have)
   image_path: "assets/icons/app.png"
 
   flavors:

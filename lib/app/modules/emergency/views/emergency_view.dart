@@ -22,18 +22,9 @@ class EmergencyView extends GetView<EmergencyController> {
       floatingActionButton: Obx(() {
         final bool disabled = controller.disableBuatEmergencyServiceButton;
         return FloatingActionButton.extended(
-          backgroundColor: disabled ? Colors.grey : Colors.red,
+          backgroundColor: Colors.red,
           foregroundColor: Colors.white,
-          onPressed: disabled
-              ? () {
-            Get.snackbar(
-              "Peringatan",
-              "Anda sudah melakukan Emergency Service hari ini dengan status : ${controller.currentEmergencyActiveStatus} ",
-              backgroundColor: Colors.amber,
-              colorText: Colors.black,
-            );
-          }
-              : () {
+          onPressed: () {
             Get.toNamed(Routes.FORMEMERGENCY);
           },
           icon: const Icon(Icons.warning_rounded),

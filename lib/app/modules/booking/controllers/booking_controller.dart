@@ -42,7 +42,10 @@ class BookingController extends GetxController {
     try {
       await API.confirmPlanning(kodeSvc);
       confirmedPlanningSvcs.add(kodeSvc);
-      Get.snackbar('Sukses', 'Planning service berhasil dikonfirmasi');
+      Get.delete<BookingController>(force: true);
+      Get.toNamed(Routes.HOME);
+      Get.snackbar('Sukses', 'Planning service berhasil dikonfirmasi',backgroundColor: Colors.blue,
+        colorText: Colors.white,);
     } on SilentException catch (_) {
       Get.snackbar('Error', 'Tidak ada koneksi internet');
     } catch (e) {
@@ -488,102 +491,5 @@ class BookingController extends GetxController {
     }
   }
 
-  List<Step> get steps => [
-    Step(
-      title: Row(
-        children: const [
-          Icon(Icons.hourglass_empty),
-          SizedBox(width: 8),
-          Text('Waiting'),
-        ],
-      ),
-      subtitle: const Text('Menunggu konfirmasi awal'),
-      content: const Text(
-        'Data sudah diinput namun masih menunggu tindakan atau persetujuan.',
-      ),
-      isActive: currentStep.value >= 0,
-      state: currentStep.value > 0 ? StepState.complete : StepState.indexed,
-    ),
-    Step(
-      title: Row(
-        children: const [
-          Icon(Icons.check_circle_outline),
-          SizedBox(width: 8),
-          Text('Approved'),
-        ],
-      ),
-      subtitle: const Text('Sudah disetujui'),
-      content: const Text(
-        'Permohonan atau data telah disetujui, lanjut ke proses berikutnya.',
-      ),
-      isActive: currentStep.value >= 1,
-      state: currentStep.value > 1 ? StepState.complete : StepState.indexed,
-    ),
-    Step(
-      title: Row(
-        children: const [
-          Icon(Icons.calculate_outlined),
-          SizedBox(width: 8),
-          Text('Estimasi'),
-        ],
-      ),
-      subtitle: const Text('Perhitungan biaya / waktu'),
-      content: const Text(
-        'Menghitung perkiraan biaya, waktu pengerjaan, atau kebutuhan lainnya.',
-      ),
-      isActive: currentStep.value >= 2,
-      state: currentStep.value > 2 ? StepState.complete : StepState.indexed,
-    ),
-    Step(
-      title: Row(
-        children: const [
-          Icon(Icons.build_outlined),
-          SizedBox(width: 8),
-          Text('PKB'),
-        ],
-      ),
-      subtitle: const Text('Perintah Kerja Bengkel'),
-      content: const Text(
-        'Proses pengerjaan berdasarkan Perintah Kerja Bengkel sudah berjalan.',
-      ),
-      isActive: currentStep.value >= 3,
-      state: currentStep.value > 3 ? StepState.complete : StepState.indexed,
-    ),
-    Step(
-      title: Row(
-        children: const [
-          Icon(Icons.assignment_turned_in_outlined),
-          SizedBox(width: 8),
-          Text('PKB TUTUP'),
-        ],
-      ),
-      subtitle: const Text('Pekerjaan selesai'),
-      content: const Text(
-        'Pekerjaan berdasarkan PKB sudah dituntaskan, administrasi hampir rampung.',
-      ),
-      isActive: currentStep.value >= 4,
-      state: currentStep.value > 4 ? StepState.complete : StepState.indexed,
-    ),
-    Step(
-      title: Row(
-        children: const [
-          Icon(Icons.receipt_long),
-          SizedBox(width: 8),
-          Text('Invoice'),
-        ],
-      ),
-      subtitle: const Text('Tagihan diterbitkan'),
-      content: const Text(
-        'Tahap akhir: penerbitan invoice dan penagihan.',
-      ),
-      isActive: currentStep.value >= 5,
-      state: currentStep.value > 5 ? StepState.complete : StepState.indexed,
-    ),
-  ];
 
-  void jumpTo(int index) {
-    if (index >= 0 && index < steps.length) {
-      currentStep.value = index;
-    }
-  }
 }

@@ -13,14 +13,11 @@ import '../../emergency/views/emergency_view.dart';
 import '../controllers/home_controller.dart';
 import 'package:tka_customer/app/data/localstorage.dart';
 
-/// Controller untuk mengatur tema (dark/light) secara reaktif.
 class ThemeController extends GetxController {
-  /// true jika dark mode aktif, false jika light mode.
   RxBool isDark = false.obs;
 
   @override
   void onInit() {
-    // Ambil mode tema saat ini berdasarkan brightness sistem.
     isDark.value =
         WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
     super.onInit();
@@ -67,43 +64,48 @@ class HomeView extends GetView<HomeController> {
                 label: 'Service',
               ),
               BottomNavigationBarItem(
-                icon: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    const Icon(Icons.warning_amber_outlined),
-                    Obx(() {
-                      return controller.diterimaCount.value > 0
-                          ? Positioned(
-                        right: -6,
-                        top: -6,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 18,
-                            minHeight: 18,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${controller.diterimaCount.value}',
-                              style: GoogleFonts.nunito(
-                                color: Colors.white,
-                                fontSize: 10,
+                icon: Obx(() {
+                  final count = controller.diterimaCount.value;
+                  // Jika count > 0, tampilkan badge + icon
+                  if (count > 0) {
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(Icons.warning_amber_outlined),
+                        Positioned(
+                          right: -6,
+                          top: -6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$count',
+                                style: GoogleFonts.nunito(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
-                      )
-                          : Container();
-                    }),
-                  ],
-                ),
+                      ],
+                    );
+                  }
+                  // Kalau count null atau 0, kembalikan ikon standar
+                  return const Icon(Icons.warning_amber_outlined);
+                }),
                 label: 'Darurat',
               ),
+
             ],
           ),
         );
@@ -233,7 +235,6 @@ class _DriverProfileCard extends StatelessWidget {
       future: API.getProfile(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Menggunakan shimmer sebagai loading placeholder
           return Shimmer.fromColors(
             baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
             highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
@@ -255,7 +256,6 @@ class _DriverProfileCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Placeholder CircleAvatar
                   Container(
                     width: 60,
                     height: 60,
@@ -299,7 +299,6 @@ class _DriverProfileCard extends StatelessWidget {
             ),
           );
         } else if (snapshot.hasError) {
-          // Tampilkan container khusus jika ada error (misalnya tidak ada koneksi dan cache kosong)
           return Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 16),
