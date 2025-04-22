@@ -388,32 +388,29 @@ class BookingController extends GetxController {
     final photoCount = mediaList.where((x) => !_isVideo(x)).length;
     final videoCount = mediaList.where((x) => _isVideo(x)).length;
 
-    // ===== VALIDASI =====
+    // Validasi jumlah foto: minimal 1, maksimal 4
     if (photoCount < 1) {
       throw 'Minimal harus ada 1 foto.';
     }
     if (photoCount > 4) {
       throw 'Maksimal foto yang dapat diupload adalah 4.';
     }
-    if (videoCount < 1) {
-      throw 'Minimal harus ada 1 video.';
-    }
+
+    // Validasi jumlah video: opsional, tapi maks 1
     if (videoCount > 1) {
       throw 'Hanya boleh mengupload 1 video.';
     }
 
-    // ===== PROSES KOMPRIM =====
     List<File> compressedFiles = [];
 
     for (var file in mediaList) {
       if (_isVideo(file)) {
+        // Kompres video jika durasi ≥ 1 menit
         final mediaInfo = await VideoCompress.getMediaInfo(file.path);
-
-        // kalau durasi ≥ 1 menit, coba kompres dulu
-        if (mediaInfo.duration != null && mediaInfo.duration! >= 60000) {
+        if (mediaInfo.duration != null && mediaInfo.duration! >= 120000) {
           final compressedVideo = await VideoCompress.compressVideo(
             file.path,
-            quality: VideoQuality.MediumQuality,
+            quality: VideoQuality.DefaultQuality,
             deleteOrigin: false,
             includeAudio: true,
           );
@@ -422,11 +419,10 @@ class BookingController extends GetxController {
             continue;
           }
         }
-        // default pakai file asli
+        // fallback: pakai file asli
         compressedFiles.add(File(file.path));
-
       } else {
-        // kompres gambar
+        // Kompres gambar
         final result = await FlutterImageCompress.compressWithFile(
           file.path,
           quality: 80,
@@ -439,10 +435,12 @@ class BookingController extends GetxController {
           await File(targetPath).writeAsBytes(result);
           compressedFiles.add(compressedImage);
         } else {
+          // fallback: pakai file asli
           compressedFiles.add(File(file.path));
         }
       }
     }
+
     return compressedFiles;
   }
 

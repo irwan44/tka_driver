@@ -30,10 +30,8 @@ class _FullscreenVideoViewState extends State<FullscreenVideoView> {
     super.initState();
     _videoController = VideoPlayerController.network(widget.url)
       ..initialize().then((_) {
-        setState(() {
-          _initialized = true;
-          _videoController.play();
-        });
+        setState(() => _initialized = true);
+        _videoController.play();
       });
   }
 
@@ -45,54 +43,53 @@ class _FullscreenVideoViewState extends State<FullscreenVideoView> {
 
   void _togglePlayPause() {
     setState(() {
-      if (_videoController.value.isPlaying) {
-        _videoController.pause();
-      } else {
-        _videoController.play();
-      }
+      _videoController.value.isPlaying
+          ? _videoController.pause()
+          : _videoController.play();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final overlayStyle = isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: overlayStyle,
-      child: Scaffold(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mq = MediaQuery.of(context).size;
+
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.white,
+      appBar: AppBar(
+        title: Text(
+          'Preview Video',
+          style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
+        ),
         backgroundColor: isDark ? Colors.black : Colors.white,
-        appBar: AppBar(
-          title: Text(
-            'Preview Video',
-            style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
-          ),
-          backgroundColor: isDark ? Colors.black : Colors.white,
-          iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-          ),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
+        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
-        body: GestureDetector(
-          onTap: _togglePlayPause,
-          child: Center(
-            child: _initialized
-                ? AspectRatio(
-              aspectRatio: _videoController.value.aspectRatio,
+        leading: BackButton(color: isDark ? Colors.white : Colors.black),
+      ),
+      body: GestureDetector(
+        onTap: _togglePlayPause,
+        child: _initialized
+            ? SizedBox(
+          width: mq.width,
+          height: mq.height,
+          child: FittedBox(
+            fit: BoxFit.contain,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: _videoController.value.size.width,
+              height: _videoController.value.size.height,
               child: VideoPlayer(_videoController),
-            )
-                : const CircularProgressIndicator(),
+            ),
           ),
-        ),
+        )
+            : const Center(child: CircularProgressIndicator()),
       ),
     );
   }
 }
+
 
 // Fullscreen Image
 class FullscreenImageView extends StatelessWidget {

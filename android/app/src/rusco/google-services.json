@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "920191706369",
-    "project_id": "cartuned-d3042",
-    "storage_bucket": "cartuned-d3042.firebasestorage.app"
+    "project_number": "738814107317",
+    "project_id": "rusco-b8c30",
+    "storage_bucket": "rusco-b8c30.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:920191706369:android:6340db28fc1ed04487e700",
+        "mobilesdk_app_id": "1:738814107317:android:3316799f0cf9a5de0828fc",
         "android_client_info": {
           "package_name": "id.co.twka.fms.driver.rusco"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDCVQ7Epl1pVGRVzY2OeGY2uscHVXgNOG4"
+          "current_key": "AIzaSyAAkvkmEmvxXFkvL85JE5INICv7VAsQIx4"
         }
       ],
       "services": {

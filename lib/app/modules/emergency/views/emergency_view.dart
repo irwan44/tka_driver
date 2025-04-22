@@ -130,11 +130,12 @@ class EmergencyView extends GetView<EmergencyController> {
                     ),
                     child: Center(
                       child: Text(
-                        'Belum ada data Emergency.',
+                        'Belum ada data Emergency Service.\nSilakan buat permintaan Emergency Service jika kendaraan Anda mengalami kendala.',
                         style: GoogleFonts.nunito(
                           fontSize: 14,
                           color: isDark ? Colors.grey[400] : Colors.grey,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   )

@@ -85,8 +85,10 @@ class _DetailServiceViewState extends State<DetailServiceView> {
               return _buildShimmer(isDarkMode);
             }
             if (controller.errorMessage.value.isNotEmpty) {
+              print("Error: ${controller.errorMessage.value}");
               return Center(child: Text("Terjadi kesalahan. Coba lagi.",
                   style: GoogleFonts.nunito()));
+
             }
             if (controller.detailService.value == null) {
               return Center(

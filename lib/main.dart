@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -24,6 +26,7 @@ class AssetsRes {
   }
 }
 
+
 class AppConfig {
   static const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'tka');
   static String get baseUrl {
@@ -39,6 +42,23 @@ class AppConfig {
   }
 }
 
+class OneSignalConfig {
+  OneSignalConfig._();
+  static const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'tka');
+  static String get appId {
+    switch (flavor) {
+      case 'dev':
+        return 'DEV-ONESIGNAL-APPID-XXXX';
+      case 'rusco':
+        return '85861354-0c05-4c3f-a485-f774be84f451';
+      case 'tka':
+      default:
+        return '632556d8-c839-43be-8b93-9973bb7de550';
+    }
+  }
+}
+
+
 Future<void> initOneSignal() async {
   final status = await Permission.notification.status;
   if (!status.isGranted) {
@@ -51,7 +71,7 @@ Future<void> initOneSignal() async {
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
   OneSignal.Debug.setAlertLevel(OSLogLevel.none);
   OneSignal.consentRequired(false);
-  OneSignal.initialize("632556d8-c839-43be-8b93-9973bb7de550");
+  OneSignal.initialize(OneSignalConfig.appId);
   OneSignal.LiveActivities.setupDefault();
   OneSignal.Notifications.clearAll();
   OneSignal.Notifications.addClickListener((event) {
@@ -73,13 +93,21 @@ Future<void> initOneSignal() async {
     OneSignal.User.addEmail(storedEmail);
   }
 }
-
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init('token-mekanik');
   await GetStorage.init('preferences-mekanik');
   await initOneSignal();
-
+  WidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
 

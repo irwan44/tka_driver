@@ -29,6 +29,12 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    final args = Get.arguments;
+    if (args is Map<String, dynamic> && args['initialTab'] != null) {
+      tabIndex = args['initialTab'] as int;
+      // pastikan UI ter‐rebuild
+      update();
+    }
     fetchDiterimaCount();
   }
 }

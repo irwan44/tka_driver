@@ -1,7 +1,11 @@
-// detail_service.dart
-// ===============================================================
-//  Model DetailService & turunannya • sesuai JSON contoh
-// ===============================================================
+/// Helper to safely parse ints from dynamic JSON (handles int, double, String)
+int? _toInt(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is double) return v.toInt();
+  if (v is String) return int.tryParse(v);
+  return null;
+}
 
 class DetailService {
   DataSvc? dataSvc;
@@ -9,7 +13,7 @@ class DetailService {
   List<DataSvcDtlPart>? dataSvcDtlPart;
   List<DataSvcDtlJasa>? dataSvcDtlJasa;
   List<Paket>? paket;
-  String? deskripsiMembership;   // ← semula Null?
+  String? deskripsiMembership;
   String? title;
   String? kdTitle;
 
@@ -25,8 +29,9 @@ class DetailService {
   });
 
   factory DetailService.fromJson(Map<String, dynamic> json) => DetailService(
-    dataSvc:
-    json['data_svc'] == null ? null : DataSvc.fromJson(json['data_svc']),
+    dataSvc: json['data_svc'] == null
+        ? null
+        : DataSvc.fromJson(json['data_svc']),
     dataSvcPaket: (json['data_svc_paket'] as List?)
         ?.map((e) => DataSvcPaket.fromJson(e))
         .toList(),
@@ -36,7 +41,8 @@ class DetailService {
     dataSvcDtlJasa: (json['data_svc_dtl_jasa'] as List?)
         ?.map((e) => DataSvcDtlJasa.fromJson(e))
         .toList(),
-    paket: (json['paket'] as List?)?.map((e) => Paket.fromJson(e)).toList(),
+    paket:
+    (json['paket'] as List?)?.map((e) => Paket.fromJson(e)).toList(),
     deskripsiMembership: json['deskripsi_membership'],
     title: json['title'],
     kdTitle: json['kd_title'],
@@ -54,9 +60,6 @@ class DetailService {
   };
 }
 
-// ===============================================================
-// data_svc (paling besar) – semua kolom mengikuti JSON
-// ===============================================================
 class DataSvc {
   int? id;
   String? kodeSvc;
@@ -67,23 +70,23 @@ class DataSvc {
   String? odometer;
   String? pic;
   String? hpPic;
-  String? kodeMembership;     // ← Null? ➜ String?
-  String? kodePaketmember;    // ← Null? ➜ String?
+  String? kodeMembership;
+  String? kodePaketmember;
   String? tipeSvc;
   String? tipePelanggan;
   String? referensi;
-  String? referensiTeman;     // ← Null? ➜ String?
-  String? poNumber;           // ← Null? ➜ String?
-  String? paketSvc;           // ← Null? ➜ String?
+  String? referensiTeman;
+  String? poNumber;
+  String? paketSvc;
   String? tglKeluar;
   String? tglKembali;
-  String? kmKeluar;           // ← Null? ➜ String?
-  String? kmKembali;          // ← Null? ➜ String?
-  String? keluhan;            // ← Null? ➜ String?
+  String? kmKeluar;
+  String? kmKembali;
+  String? keluhan;
   String? perintahKerja;
-  String? pergantianPart;     // ← Null? ➜ String?
-  String? saran;              // ← Null? ➜ String?
-  String? ppn;                // ← Null? ➜ String?
+  String? pergantianPart;
+  String? saran;
+  int? ppn;
   String? tglEstimasi;
   String? tglPkb;
   String? tglTutup;
@@ -95,8 +98,8 @@ class DataSvc {
   String? planning;
   String? createdBy;
   String? createdAt;
-  String? updatedAt;          // ← Null? ➜ String?
-  String? kodeOttogo;         // ← Null? ➜ String?
+  String? updatedAt;
+  String? kodeOttogo;
   String? kode;
   String? noPolisi;
   int? idMerk;
@@ -106,28 +109,28 @@ class DataSvc {
   String? transmisi;
   String? noRangka;
   String? noMesin;
-  String? modelKaroseri;      // ← Null? ➜ String?
-  String? drivingMode;        // ← Null? ➜ String?
-  String? power;              // ← Null? ➜ String?
+  String? modelKaroseri;
+  String? drivingMode;
+  String? power;
   String? kategoriKendaraan;
   String? jenisKontrak;
   String? masaBerlakuStnk;
   String? masaBerlakuPajak;
-  String? masaBerlakuKir;     // ← Null? ➜ String?
-  String? noPintu;            // ← Null? ➜ String?
+  String? masaBerlakuKir;
+  String? noPintu;
   String? nama;
-  String? alamat;             // ← Null? ➜ String?
-  String? telp;               // ← Null? ➜ String?
+  String? alamat;
+  String? telp;
   String? hp;
   String? email;
-  String? kontak;             // ← Null? ➜ String?
+  String? kontak;
   int? due;
-  String? jenisKontrakX;      // ← Null? ➜ String?
+  String? jenisKontrakX;
   String? namaTagihan;
-  String? alamatTagihan;      // ← Null? ➜ String?
-  String? telpTagihan;        // ← Null? ➜ String?
-  String? npwpTagihan;        // ← Null? ➜ String?
-  String? picTagihan;         // ← Null? ➜ String?
+  String? alamatTagihan;
+  String? telpTagihan;
+  String? npwpTagihan;
+  String? picTagihan;
   int? limitTrx;
   int? piutang;
   String? peran;
@@ -213,7 +216,7 @@ class DataSvc {
   });
 
   factory DataSvc.fromJson(Map<String, dynamic> j) => DataSvc(
-    id: j['id'],
+    id: _toInt(j['id']),
     kodeSvc: j['kode_svc'],
     kodeEstimasi: j['kode_estimasi'],
     kodePkb: j['kode_pkb'],
@@ -238,15 +241,15 @@ class DataSvc {
     perintahKerja: j['perintah_kerja'],
     pergantianPart: j['pergantian_part'],
     saran: j['saran'],
-    ppn: j['ppn'],
+    ppn: _toInt(j['ppn']),
     tglEstimasi: j['tgl_estimasi'],
     tglPkb: j['tgl_pkb'],
     tglTutup: j['tgl_tutup'],
-    pkb: j['pkb'],
-    tutup: j['tutup'],
-    faktur: j['faktur'],
-    deleted: j['deleted'],
-    notab: j['notab'],
+    pkb: _toInt(j['pkb']),
+    tutup: _toInt(j['tutup']),
+    faktur: _toInt(j['faktur']),
+    deleted: _toInt(j['deleted']),
+    notab: _toInt(j['notab']),
     planning: j['planning'],
     createdBy: j['created_by'],
     createdAt: j['created_at'],
@@ -254,8 +257,8 @@ class DataSvc {
     kodeOttogo: j['kode_ottogo'],
     kode: j['kode'],
     noPolisi: j['no_polisi'],
-    idMerk: j['id_merk'],
-    idTipe: j['id_tipe'],
+    idMerk: _toInt(j['id_merk']),
+    idTipe: _toInt(j['id_tipe']),
     tahun: j['tahun'],
     warna: j['warna'],
     transmisi: j['transmisi'],
@@ -276,15 +279,15 @@ class DataSvc {
     hp: j['hp'],
     email: j['email'],
     kontak: j['kontak'],
-    due: j['due'],
+    due: _toInt(j['due']),
     jenisKontrakX: j['jenis_kontrak_x'],
     namaTagihan: j['nama_tagihan'],
     alamatTagihan: j['alamat_tagihan'],
     telpTagihan: j['telp_tagihan'],
     npwpTagihan: j['npwp_tagihan'],
     picTagihan: j['pic_tagihan'],
-    limitTrx: j['limit_trx'],
-    piutang: j['piutang'],
+    limitTrx: _toInt(j['limit_trx']),
+    piutang: _toInt(j['piutang']),
     peran: j['peran'],
     namaMerk: j['nama_merk'],
     namaTipe: j['nama_tipe'],
@@ -369,12 +372,6 @@ class DataSvc {
   };
 }
 
-// ===============================================================
-// Sisanya (DataSvcPaket, DataSvcDtlPart, DataSvcDtlJasa, Paket)
-// hanya mengganti semua tipe “Null?” ➜ “String?” atau “dynamic?”
-// ===============================================================
-
-// — DataSvcPaket —
 class DataSvcPaket {
   int? id;
   String? kodeSvc;
@@ -386,7 +383,7 @@ class DataSvcPaket {
   String? kodePaket;
   String? namaPaket;
   String? createdAt;
-  String? updatedAt;          // ← Null? ➜ String?
+  String? updatedAt;
 
   DataSvcPaket({
     this.id,
@@ -403,12 +400,12 @@ class DataSvcPaket {
   });
 
   factory DataSvcPaket.fromJson(Map<String, dynamic> j) => DataSvcPaket(
-    id: j['id'],
+    id: _toInt(j['id']),
     kodeSvc: j['kode_svc'],
     kode: j['kode'],
     nama: j['nama'],
-    qty: j['qty'],
-    harga: j['harga'],
+    qty: _toInt(j['qty']),
+    harga: _toInt(j['harga']),
     jenis: j['jenis'],
     kodePaket: j['kode_paket'],
     namaPaket: j['nama_paket'],
@@ -431,7 +428,6 @@ class DataSvcPaket {
   };
 }
 
-// — DataSvcDtlPart —
 class DataSvcDtlPart {
   int? id;
   String? kodeSvc;
@@ -440,31 +436,31 @@ class DataSvcDtlPart {
   int? qtySparepart;
   int? hargaSparepart;
   int? diskonSparepart;
-  String? hidSparepart;       // ← Null? ➜ String?
+  String? hidSparepart;
   int? nota;
   String? createdAt;
-  String? updatedAt;          // ← Null? ➜ String?
+  String? updatedAt;
   String? kode;
-  String? kode2;              // ← Null? ➜ String?
+  String? kode2;
   String? nama;
   String? divisi;
-  String? brand;              // ← Null? ➜ String?
+  String? brand;
   int? qty;
   int? hargaBeli;
   int? hargaJual;
-  String? barcode;            // ← Null? ➜ String?
+  String? barcode;
   String? satuan;
-  String? noStock;            // ← Null? ➜ String?
+  String? noStock;
   String? lokasi;
-  String? note;               // ← Null? ➜ String?
-  String? tipe;               // ← Null? ➜ String?
-  String? kodeSupplier;       // ← Null? ➜ String?
+  String? note;
+  String? tipe;
+  String? kodeSupplier;
   int? qtyMin;
   int? qtyMax;
-  String? ukuran;             // ← Null? ➜ String?
-  String? kualitas;           // ← Null? ➜ String?
+  String? ukuran;
+  String? kualitas;
   int? demandBulanan;
-  String? emergency;          // ← Null? ➜ String?
+  String? emergency;
   String? jenis;
   int? deleted;
   String? createdBy;
@@ -508,15 +504,15 @@ class DataSvcDtlPart {
   });
 
   factory DataSvcDtlPart.fromJson(Map<String, dynamic> j) => DataSvcDtlPart(
-    id: j['id'],
+    id: _toInt(j['id']),
     kodeSvc: j['kode_svc'],
     kodeSparepart: j['kode_sparepart'],
     namaSparepart: j['nama_sparepart'],
-    qtySparepart: j['qty_sparepart'],
-    hargaSparepart: j['harga_sparepart'],
-    diskonSparepart: j['diskon_sparepart'],
+    qtySparepart: _toInt(j['qty_sparepart']),
+    hargaSparepart: _toInt(j['harga_sparepart']),
+    diskonSparepart: _toInt(j['diskon_sparepart']),
     hidSparepart: j['hid_sparepart'],
-    nota: j['nota'],
+    nota: _toInt(j['nota']),
     createdAt: j['created_at'],
     updatedAt: j['updated_at'],
     kode: j['kode'],
@@ -524,9 +520,9 @@ class DataSvcDtlPart {
     nama: j['nama'],
     divisi: j['divisi'],
     brand: j['brand'],
-    qty: j['qty'],
-    hargaBeli: j['harga_beli'],
-    hargaJual: j['harga_jual'],
+    qty: _toInt(j['qty']),
+    hargaBeli: _toInt(j['harga_beli']),
+    hargaJual: _toInt(j['harga_jual']),
     barcode: j['barcode'],
     satuan: j['satuan'],
     noStock: j['no_stock'],
@@ -534,14 +530,14 @@ class DataSvcDtlPart {
     note: j['note'],
     tipe: j['tipe'],
     kodeSupplier: j['kode_supplier'],
-    qtyMin: j['qty_min'],
-    qtyMax: j['qty_max'],
+    qtyMin: _toInt(j['qty_min']),
+    qtyMax: _toInt(j['qty_max']),
     ukuran: j['ukuran'],
     kualitas: j['kualitas'],
-    demandBulanan: j['demand_bulanan'],
+    demandBulanan: _toInt(j['demand_bulanan']),
     emergency: j['emergency'],
     jenis: j['jenis'],
-    deleted: j['deleted'],
+    deleted: _toInt(j['deleted']),
     createdBy: j['created_by'],
   );
 
@@ -584,7 +580,6 @@ class DataSvcDtlPart {
   };
 }
 
-// — DataSvcDtlJasa —
 class DataSvcDtlJasa {
   int? id;
   String? kodeSvc;
@@ -593,9 +588,9 @@ class DataSvcDtlJasa {
   int? qtyJasa;
   int? hargaJasa;
   int? diskonJasa;
-  String? hidJasa;            // ← Null? ➜ String?
+  String? hidJasa;
   String? createdAt;
-  String? updatedAt;          // ← Null? ➜ String?
+  String? updatedAt;
   int? biaya;
   int? jam;
   String? divisiJasa;
@@ -621,20 +616,20 @@ class DataSvcDtlJasa {
   });
 
   factory DataSvcDtlJasa.fromJson(Map<String, dynamic> j) => DataSvcDtlJasa(
-    id: j['id'],
+    id: _toInt(j['id']),
     kodeSvc: j['kode_svc'],
     kodeJasa: j['kode_jasa'],
     namaJasa: j['nama_jasa'],
-    qtyJasa: j['qty_jasa'],
-    hargaJasa: j['harga_jasa'],
-    diskonJasa: j['diskon_jasa'],
+    qtyJasa: _toInt(j['qty_jasa']),
+    hargaJasa: _toInt(j['harga_jasa']),
+    diskonJasa: _toInt(j['diskon_jasa']),
     hidJasa: j['hid_jasa'],
     createdAt: j['created_at'],
     updatedAt: j['updated_at'],
-    biaya: j['biaya'],
-    jam: j['jam'],
+    biaya: _toInt(j['biaya']),
+    jam: _toInt(j['jam']),
     divisiJasa: j['divisi_jasa'],
-    deleted: j['deleted'],
+    deleted: _toInt(j['deleted']),
     createdBy: j['created_by'],
   );
 
@@ -657,7 +652,6 @@ class DataSvcDtlJasa {
   };
 }
 
-// — Paket —
 class Paket {
   int? id;
   String? kodeSvc;
@@ -669,7 +663,7 @@ class Paket {
   String? kodePaket;
   String? namaPaket;
   String? createdAt;
-  String? updatedAt;          // ← Null? ➜ String?
+  String? updatedAt;
   int? total;
 
   Paket({
@@ -688,18 +682,18 @@ class Paket {
   });
 
   factory Paket.fromJson(Map<String, dynamic> j) => Paket(
-    id: j['id'],
+    id: _toInt(j['id']),
     kodeSvc: j['kode_svc'],
     kode: j['kode'],
     nama: j['nama'],
-    qty: j['qty'],
-    harga: j['harga'],
+    qty: _toInt(j['qty']),
+    harga: _toInt(j['harga']),
     jenis: j['jenis'],
     kodePaket: j['kode_paket'],
     namaPaket: j['nama_paket'],
     createdAt: j['created_at'],
     updatedAt: j['updated_at'],
-    total: j['total'],
+    total: _toInt(j['total']),
   );
 
   Map<String, dynamic> toJson() => {

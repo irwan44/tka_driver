@@ -26,7 +26,7 @@ class EmergencyController extends GetxController {
   var emergencyList = <Data>[].obs;
   var searchQuery = ''.obs;
   DateTime? dateFilter;
-
+  var isCompressingVideo = false.obs;
   final searchController = TextEditingController();
 
   // Keluhan
@@ -217,7 +217,6 @@ class EmergencyController extends GetxController {
     }
   }
 
-
   void removeMedia(XFile file) {
     mediaList.remove(file);
   }
@@ -288,7 +287,6 @@ class EmergencyController extends GetxController {
   var selectedVehicle = ''.obs;
 
   Future<void> submitEmergencyRepair() async {
-    // Validasi tambahan
     if (selectedVehicle.value.isEmpty) {
       Get.snackbar(
         'Warning',
@@ -324,7 +322,6 @@ class EmergencyController extends GetxController {
     final lat = locSplit.isNotEmpty ? locSplit[0].trim() : '';
     final long = locSplit.length > 1 ? locSplit[1].trim() : '';
 
-    // Kompres media
     List<File> mediaFiles = [];
     try {
       mediaFiles = await _validateAndCompressMediaFiles();
@@ -349,6 +346,7 @@ class EmergencyController extends GetxController {
         longitude: long,
         mediaFiles: mediaFiles,
       );
+
       Get.snackbar(
         'Sukses',
         'Emergency berhasil dibuat!',
@@ -356,8 +354,10 @@ class EmergencyController extends GetxController {
         colorText: Colors.white,
       );
       Get.delete<EmergencyController>(force: true);
-      Get.toNamed(Routes.HOME);
-      // Reset form
+      Get.toNamed(
+        Routes.HOME,
+        arguments: {'initialTab': 1},
+      );
       mediaList.clear();
       complaintController.clear();
       complaintText.value = '';
@@ -374,6 +374,7 @@ class EmergencyController extends GetxController {
           errorString.contains("no address associated with hostname")) {
         print("Error jaringan: ${e.toString()}");
       } else {
+        print("Warning: ${e.toString()}");
         Get.snackbar(
           'Warning',
           e.toString(),
@@ -385,44 +386,49 @@ class EmergencyController extends GetxController {
       isLoading.value = false;
     }
   }
-  bool get hasEmergencyForSelectedVehicle {
-    if (selectedVehicle.value.isEmpty) return true; // tombol disable kalau belum pilih
-    return allEmergencyList.any((data) =>
-    data.noPolisi == selectedVehicle.value
-    );
+
+  bool get hasActiveEmergencyForSelectedVehicle {
+    if (selectedVehicle.value.isEmpty) return false;
+    return allEmergencyList.any((data) {
+      if (data.noPolisi != selectedVehicle.value) return false;
+      final status = data.status?.toLowerCase() ?? '';
+      return !(status == 'derek' || status == 'storing' || status == 'selesai');
+    });
   }
-  bool get disableBuatEmergencyServiceButton => hasEmergencyForSelectedVehicle;
-  // Kompres & Validasi media
+
+  bool get disableBuatEmergencyServiceButton {
+    if (selectedVehicle.value.isEmpty) return true;
+    if (hasActiveEmergencyForSelectedVehicle) return true;
+    return false;
+  }
+
   Future<List<File>> _validateAndCompressMediaFiles() async {
     final photoCount = mediaList.where((x) => !_isVideo(x)).length;
     final videoCount = mediaList.where((x) => _isVideo(x)).length;
 
-    // ===== VALIDASI =====
+    // Validasi jumlah foto: minimal 1, maksimal 4
     if (photoCount < 1) {
       throw 'Minimal harus ada 1 foto.';
     }
     if (photoCount > 4) {
       throw 'Maksimal foto yang dapat diupload adalah 4.';
     }
-    if (videoCount < 1) {
-      throw 'Minimal harus ada 1 video.';
-    }
+
+    // Validasi jumlah video: opsional, tapi maksimal 1
     if (videoCount > 1) {
       throw 'Hanya boleh mengupload 1 video.';
     }
 
-    // ===== PROSES KOMPRIM =====
     List<File> compressedFiles = [];
 
     for (var file in mediaList) {
       if (_isVideo(file)) {
+        // Kompres video jika durasi ≥ 1 menit
         final mediaInfo = await VideoCompress.getMediaInfo(file.path);
-
-        // kalau durasi ≥ 1 menit, coba kompres dulu
-        if (mediaInfo.duration != null && mediaInfo.duration! >= 60000) {
+        if (mediaInfo.duration != null && mediaInfo.duration! >= 120000) {
           final compressedVideo = await VideoCompress.compressVideo(
             file.path,
-            quality: VideoQuality.MediumQuality,
+            quality: VideoQuality.DefaultQuality,
             deleteOrigin: false,
             includeAudio: true,
           );
@@ -431,11 +437,10 @@ class EmergencyController extends GetxController {
             continue;
           }
         }
-        // default pakai file asli
+        // fallback: pakai file asli
         compressedFiles.add(File(file.path));
-
       } else {
-        // kompres gambar
+        // Kompres gambar
         final result = await FlutterImageCompress.compressWithFile(
           file.path,
           quality: 80,
@@ -448,6 +453,7 @@ class EmergencyController extends GetxController {
           await File(targetPath).writeAsBytes(result);
           compressedFiles.add(compressedImage);
         } else {
+          // fallback: pakai file asli
           compressedFiles.add(File(file.path));
         }
       }
@@ -455,5 +461,6 @@ class EmergencyController extends GetxController {
 
     return compressedFiles;
   }
+
 
 }

@@ -192,16 +192,21 @@ class _BookingViewState extends State<BookingView> {
         physics:
         const AlwaysScrollableScrollPhysics(),
         children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height *
-                0.7,
-            child: Center(
-              child: Text(
-                _selectedDate != null
-                    ? 'Tanggal yang Anda pilih tidak ada data'
-                    : 'Tidak ada data',
-              ),
+          Center(
+              child:  Container(
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.only(top: 12),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[850] : Colors.white,
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Text(
+              _selectedDate != null
+                  ? 'Tanggal yang Anda pilih tidak ada data'
+                  : 'Tidak ada data Reques Servis\n klik tombol Biru untuk memebuat Requler Repair ',
+              textAlign: TextAlign.center,
+            ),
+          )
           ),
         ],
       )
@@ -303,18 +308,21 @@ class _BookingViewState extends State<BookingView> {
         physics:
         const AlwaysScrollableScrollPhysics(),
         children: [
-          SizedBox(
-            height: MediaQuery.of(context)
-                .size
-                .height *
-                0.7,
-            child: Center(
-              child: Text(
-                _selectedDate != null
-                    ? 'Tanggal yang Anda pilih tidak ada data'
-                    : 'Tidak ada data',
-              ),
-            ),
+          Center(
+              child:  Container(
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[850] : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child:Text(
+                  _selectedDate != null
+                      ? 'Tanggal yang Anda pilih tidak ada data'
+                      : 'Tidak ada data Service Kendaraan anda',
+                  textAlign: TextAlign.center,
+                ),
+              )
           ),
         ],
       )
