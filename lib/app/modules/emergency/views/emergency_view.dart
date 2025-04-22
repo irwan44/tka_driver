@@ -413,11 +413,23 @@ class _EmergencyItemCard extends StatelessWidget {
                       decoration: BoxDecoration(
                           color: badge.withOpacity(.15),
                           borderRadius: BorderRadius.circular(20)),
-                      child: Text(stat,
-                          style: GoogleFonts.nunito(
-                              color: badge,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12)),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                                color: badge, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(stat,
+                              style: GoogleFonts.nunito(
+                                  color: badge,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12)),
+                        ],
+                      )
+
                     ),
                   ],
                 ),

@@ -155,13 +155,13 @@ class ServiceItemCard extends StatelessWidget {
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            if (!isDark)
-              BoxShadow(
-                color: Colors.grey.withOpacity(.15),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-          ],
+          if (!isDark)
+            BoxShadow(
+              color: Colors.grey.withOpacity(.15),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+        ],
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -192,11 +192,23 @@ class ServiceItemCard extends StatelessWidget {
                         color: badgeClr.withOpacity(.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(service.status ?? '-',
-                          style: GoogleFonts.nunito(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: txtClr)),
+                      child: Row(
+                       children: [
+                         Container(
+                           width: 8,
+                           height: 8,
+                           decoration: BoxDecoration(
+                               color: txtClr, shape: BoxShape.circle),
+                         ),
+                         const SizedBox(width: 6),
+                         Text(service.status ?? '-',
+                             style: GoogleFonts.nunito(
+                                 fontSize: 14,
+                                 fontWeight: FontWeight.bold,
+                                 color: txtClr)),
+                       ],
+                      )
+
                     ),
                   ],
                 ),
