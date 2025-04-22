@@ -88,26 +88,45 @@ class _BookingViewState extends State<BookingView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      'Filter',
+                      style: GoogleFonts.nunito(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.grey[300] : Colors.grey[800],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildFilterSection(isDark),
+                    const SizedBox(height: 8),
+                    RoundedDivider(
+                      thickness: 1,
+                      color: Colors.grey,
+                      indent: 10,
+                      endIndent: 10,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
                       'Riwayat Service',
                       style: GoogleFonts.lato(
                         textStyle: Theme.of(context)
                             .textTheme
                             .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                            ?.copyWith(fontWeight: FontWeight.bold,fontSize: 18),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    _buildFilterSection(isDark),
-                    const SizedBox(height: 10),
                   ],
                 ),
               ),
             ),
             SliverPersistentHeader(
               pinned: true,
-              delegate: _TabBarDelegate(
-                child: _buildTabBar(isDark),
+              delegate:  _TabBarDelegate(
                 backgroundColor: isDark ? Colors.grey[850]! : Colors.white,
+                // wrap TabBar (yang internalnya Obx) jadi PreferredSizeWidget:
+                child: PreferredSize(
+                  preferredSize: const Size.fromHeight(kTextTabBarHeight), // biasanya 48
+                  child: _buildTabBar(isDark),
+                ),
               ),
             ),
           ],
@@ -687,15 +706,65 @@ class _BookingViewState extends State<BookingView> {
     ),
   );
 
-  Widget _buildTabBar(bool isDark) => TabBar(
-    labelColor: isDark ? Colors.lightBlueAccent : Colors.blue,
-    unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey,
-    indicatorColor: Colors.transparent,
-    tabs: const [
-      Tab(text: 'Request Service'),
-      Tab(text: 'Service'),
-    ],
-  );
+  Widget _buildTabBar(bool isDark) {
+    final BookingController c = Get.find<BookingController>();
+
+    return Obx(() {
+      final int reqCount = c.filteredRequests.length;
+      final int svcCount = c.filteredServices.length;
+
+      Widget badge(int count) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+        child: Text(
+          '$count',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+
+      return TabBar(
+        labelColor:    isDark ? Colors.lightBlueAccent : Colors.blue,
+        unselectedLabelColor:
+        isDark ? Colors.grey[400]     : Colors.grey,
+        indicatorColor: Colors.transparent,
+        tabs: [
+          Tab(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Request Service'),
+                if (reqCount > 0) ...[
+                  const SizedBox(width: 4),
+                  badge(reqCount),
+                ],
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Service'),
+                if (svcCount > 0) ...[
+                  const SizedBox(width: 4),
+                  badge(svcCount),
+                ],
+              ],
+            ),
+          ),
+        ],
+      );
+    });
+  }
 }
 
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
@@ -785,3 +854,34 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
 }
 
 typedef RequestService = dynamic;
+
+class RoundedDivider extends StatelessWidget {
+  final double thickness;
+  final Color? color;
+  final double indent;
+  final double endIndent;
+
+  const RoundedDivider({
+    Key? key,
+    this.thickness = 2,
+    this.color,
+    this.indent = 0,
+    this.endIndent = 0,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final dividerColor = color ?? Theme.of(context).dividerColor;
+    return Padding(
+      padding: EdgeInsets.only(left: indent, right: endIndent),
+      child: Container(
+        width: double.infinity,
+        height: thickness,
+        decoration: BoxDecoration(
+          color: dividerColor,
+          borderRadius: BorderRadius.circular(thickness / 2),
+        ),
+      ),
+    );
+  }
+}

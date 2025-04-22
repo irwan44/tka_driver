@@ -10,12 +10,13 @@ class HomeController extends GetxController {
     tabIndex = index;
     update();
   }
+
   Future<void> fetchDiterimaCount() async {
     try {
       final listEmergency = await API.fetchListEmergency();
       if (listEmergency.data != null) {
         diterimaCount.value = listEmergency.data!
-            .where((e) => e.status?.toLowerCase() == 'selesai')
+            .where((e) => e.status?.toLowerCase() == 'mekanik dalam perjalanan')
             .length;
       } else {
         diterimaCount.value = 0;
@@ -32,7 +33,6 @@ class HomeController extends GetxController {
     final args = Get.arguments;
     if (args is Map<String, dynamic> && args['initialTab'] != null) {
       tabIndex = args['initialTab'] as int;
-      // pastikan UI ter‐rebuild
       update();
     }
     fetchDiterimaCount();

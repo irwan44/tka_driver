@@ -65,7 +65,7 @@ Future<void> initOneSignal() async {
     final result = await Permission.notification.request();
     if (!result.isGranted) {
       debugPrint('Notification permission denied');
-      return; // skip OneSignal init if no permission
+      return;
     }
   }
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);

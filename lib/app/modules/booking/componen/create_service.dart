@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -16,7 +17,8 @@ class RegularRepairPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final BookingController c = Get.find<BookingController>();
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
+    final Color bgColor = isDark ? Colors.grey[800]! : const Color(0xFFF6F7FB);
+    final Color hintColor = isDark ? Colors.grey[400]! : Colors.grey;
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[900] : const Color(0xFFF6F7FB),
       appBar: AppBar(
@@ -103,23 +105,61 @@ class RegularRepairPage extends StatelessWidget {
                         ],
                       ),
                       const Divider(height: 20),
-                      DropdownButton<String>(
-                        value: c.selectedVehicle.value.isEmpty ? null : c.selectedVehicle.value,
-                        icon: const Icon(Icons.arrow_drop_down),
-                        hint: const Text('Pilih Kendaraan'),
-                        isExpanded: true,
-                        onChanged: (val) {
-                          if (val != null) {
-                            c.selectedVehicle.value = val;
-                          }
-                        },
-                        items: c.availableVehicles.map((vehicle) {
-                          return DropdownMenuItem<String>(
-                            value: vehicle,
-                            child: Text(vehicle),
-                          );
-                        }).toList(),
-                      ),
+                      Obx(() {
+                        final bool isDark = Theme.of(context).brightness == Brightness.dark;
+                        // pakai .shadeXXX agar selalu return Color (bukan Color?)
+                        final Color bgColor = isDark
+                            ? Colors.grey.shade800
+                            : const Color(0xFFF6F7FB);
+                        final Color borderColor = isDark
+                            ? Colors.grey.shade600
+                            : Colors.grey;
+
+                        final listItemDecoration = ListItemDecoration(
+                          splashColor: Colors.transparent,
+                          highlightColor: isDark
+                              ? Colors.grey.shade700
+                              : const Color(0xFFEEEEEE),
+                          selectedColor: isDark
+                              ? Colors.grey.shade800
+                              : const Color(0xFFF5F5F5),
+                          selectedIconColor: borderColor,
+                          selectedIconBorder: BorderSide(color: borderColor),
+                          selectedIconShape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        );
+
+                        return CustomDropdown<String>(
+                          hintText: 'Pilih Kendaraan',
+                          items: c.availableVehicles,
+                          initialItem: c.selectedVehicle.value.isEmpty
+                              ? null
+                              : c.selectedVehicle.value,
+                          excludeSelected: false,
+                          onChanged: (value) {
+                            if (value != null) c.selectedVehicle.value = value;
+                          },
+                          decoration: CustomDropdownDecoration(
+                            closedFillColor: bgColor,
+                            expandedFillColor: bgColor,
+                            closedBorder: Border.all(color: Colors.transparent),
+                            closedBorderRadius: BorderRadius.circular(12),
+                            expandedBorder: Border.all(color: Colors.transparent),
+                            expandedBorderRadius: BorderRadius.circular(12),
+                            closedSuffixIcon:
+                            Icon(Icons.arrow_drop_down, color: borderColor),
+                            expandedSuffixIcon:
+                            Icon(Icons.arrow_drop_up, color: borderColor),
+                            hintStyle: TextStyle(color: borderColor),
+                            headerStyle:
+                            TextStyle(color: isDark ? Colors.white : Colors.black),
+                            listItemStyle:
+                            TextStyle(color: isDark ? Colors.white : Colors.black),
+                            listItemDecoration: listItemDecoration,
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -161,11 +201,28 @@ class RegularRepairPage extends StatelessWidget {
                           c.complaintText.value = val;
                         },
                         maxLines: 3,
+                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
                         decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          hintText: 'Jelaskan kerusakan/keluhan...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                           filled: true,
-                          fillColor: isDark ? Colors.grey[800] : Colors.white,
+                          fillColor: bgColor,
+                          hintText: 'Jelaskan kerusakan/keluhan...',
+                          hintStyle: TextStyle(color: hintColor),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                       ),
                     ],

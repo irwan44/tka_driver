@@ -40,12 +40,30 @@ class EmergencyView extends GetView<EmergencyController> {
           if (controller.isLoading.value) {
             return SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Filter',
+                      style: GoogleFonts.nunito(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.grey[300] : Colors.grey[800],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   _buildFilterSection(context, controller),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  RoundedDivider(
+                    thickness: 1,
+                    color: Colors.grey,
+                    indent: 10,
+                    endIndent: 10,
+                  ),
+                  const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -103,11 +121,30 @@ class EmergencyView extends GetView<EmergencyController> {
 
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             child: Column(
               children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Filter',
+                    style: GoogleFonts.nunito(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.grey[300] : Colors.grey[800],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 _buildFilterSection(context, controller),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
+                RoundedDivider(
+                  thickness: 1,
+                  color: Colors.grey,
+                  indent: 10,
+                  endIndent: 10,
+                ),
+                const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -157,108 +194,97 @@ class EmergencyView extends GetView<EmergencyController> {
   // SECTION: Filter dan Search
   Widget _buildFilterSection(BuildContext context, EmergencyController c) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    String formatDate(DateTime? date) {
-      if (date == null) return '-';
-      return DateFormat('dd MMM yyyy').format(date);
-    }
+    String formatDate(DateTime? date) =>
+        date == null ? "Pilih Tanggal" : DateFormat('dd/MM/yyyy').format(date);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[850] : Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? Colors.grey[800] : Colors.white,
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.05),
-            blurRadius: 5,
+            color: isDark ? Colors.black26 : Colors.grey.shade300,
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Filter',
-            textAlign: TextAlign.end,
-            style: GoogleFonts.nunito(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.grey[300] : Colors.grey[800],
-            ),
-          ),
-          // Search Bar
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[800] : const Color(0xFFF1F2F6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TextField(
-              controller: c.searchController,
-              onChanged: (val) {
-                c.searchQuery.value = val;
-                c.applyFilters();
-              },
-              decoration: const InputDecoration(
-                hintText: 'Cari Kode / No. Polisi',
-                prefixIcon: Icon(Icons.search),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          // Row Pilih Tanggal + Reset
+          Row(
+            children: [
+              Icon(Icons.calendar_today,
+                  color: isDark ? Colors.white70 : Colors.grey),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  formatDate(c.dateFilter),
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
               ),
-              style: GoogleFonts.nunito(fontSize: 14),
-            ),
+              if (c.dateFilter != null)
+                IconButton(
+                  icon: Icon(Icons.clear,
+                      color: isDark ? Colors.white70 : Colors.grey),
+                  onPressed: () {
+                    c.resetFilter();
+                    c.applyFilters();
+                  },
+                ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  await c.pickFilterDate(context);
+                  c.applyFilters();
+                },
+                child: const Text("Pilih"),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          // Pilih Tanggal
-          InkWell(
-            onTap: () async {
-              await c.pickFilterDate(context);
-              c.applyFilters();
-            },
+
+          // Search Field
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
             child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[800] : const Color(0xFFF1F2F6),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.date_range, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Tanggal: ${formatDate(c.dateFilter)}',
-                      style: GoogleFonts.nunito(fontSize: 14),
-                    ),
+              color: isDark ? Colors.grey[700] : Colors.grey[200],
+              child: TextField(
+                controller: c.searchController,
+                onChanged: (v) {
+                  c.searchQuery.value = v;
+                  c.applyFilters();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Cari Kode / No. Polisi',
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: isDark ? const Color(0xFFF1F2F6) : Colors.grey[800],
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      c.resetFilter();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
-                    child: Text(
-                      'Reset',
-                      style: GoogleFonts.nunito(color: Colors.white),
-                    ),
-                  ),
-                ],
+                  border: InputBorder.none,
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                ),
+                style: GoogleFonts.nunito(
+                  fontSize: 16,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
         ],
       ),
     );
-  }
-}
+  }}
 
-class _TicketClipper extends CustomClipper<Path> {
+  class _TicketClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     const r = 10.0;
@@ -564,3 +590,35 @@ class ShimmerEmergencyItem extends StatelessWidget {
     );
   }
 }
+
+class RoundedDivider extends StatelessWidget {
+  final double thickness;
+  final Color? color;
+  final double indent;
+  final double endIndent;
+
+  const RoundedDivider({
+    Key? key,
+    this.thickness = 2,
+    this.color,
+    this.indent = 0,
+    this.endIndent = 0,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final dividerColor = color ?? Theme.of(context).dividerColor;
+    return Padding(
+      padding: EdgeInsets.only(left: indent, right: endIndent),
+      child: Container(
+        width: double.infinity,
+        height: thickness,
+        decoration: BoxDecoration(
+          color: dividerColor,
+          borderRadius: BorderRadius.circular(thickness / 2),
+        ),
+      ),
+    );
+  }
+}
+

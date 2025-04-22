@@ -33,9 +33,56 @@ class BookingController extends GetxController {
   var errorRequest         = ''.obs;
   var confirmedPlanningSvcs = <String>{}.obs;
   final RxBool isConfirming = false.obs;
+  DateTime? _selectedDate;
+
   bool isPlanningConfirmed(String? kodeSvc) =>
       kodeSvc != null && confirmedPlanningSvcs.contains(kodeSvc);
+  DateTime _toLocalDateTime(String utcString) {
+    // Jika format ISO (yyyy-MM-ddTHH:mm:ssZ), langsung parse:
+    return DateTime.parse(utcString).toLocal();
+  }
 
+  List<RequestService> get filteredRequests {
+    return listRequestService.where((r) {
+      final nopol = (r.noPolisi ?? '').toLowerCase();
+      final q     = searchQuery.toLowerCase();
+      final matchSearch = q.isEmpty || nopol.contains(q);
+
+      bool matchDate = true;
+      if (_selectedDate != null) {
+        final created = _toLocalDateTime(r.createdAt??'');
+        final sel = _selectedDate!;
+        matchDate = created.year  == sel.year &&
+            created.month == sel.month &&
+            created.day   == sel.day;
+      }
+      return matchSearch && matchDate;
+    }).toList();
+  }
+
+  /// dan filtering yang kamu pakai di _buildServiceTab
+  List<ListService> get filteredServices {
+    return listService.where((s) {
+      final nopol = (s.noPolisi ?? '').toLowerCase();
+      final q     = searchQuery.toLowerCase();
+      final matchSearch = q.isEmpty || nopol.contains(q);
+
+      bool matchDate = true;
+      if (_selectedDate != null) {
+        matchDate = false;
+        for (final t in [s.tglEstimasi, s.tglPkb]) {
+          if (t == null) continue;
+          final d = DateFormat('yyyy-MM-dd').parse(t);
+          if (DateFormat('yyyy-MM-dd').format(d) ==
+              DateFormat('yyyy-MM-dd').format(_selectedDate!)) {
+            matchDate = true;
+            break;
+          }
+        }
+      }
+      return matchSearch && matchDate;
+    }).toList();
+  }
   Future<void> confirmPlanningService(String kodeSvc) async {
     if (isPlanningConfirmed(kodeSvc)) return;
     isConfirming.value = true;
