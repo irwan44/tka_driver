@@ -137,13 +137,13 @@ class LoginView extends StatelessWidget {
                   ),
                 )),
                 const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Lupa kata sandi?",
-                    style: GoogleFonts.nunito(color: const Color(0xFFFFD400)),
-                  ),
-                ),
+                // TextButton(
+                //   onPressed: () {},
+                //   child: Text(
+                //     "Lupa kata sandi?",
+                //     style: GoogleFonts.nunito(color: const Color(0xFFFFD400)),
+                //   ),
+                // ),
               ],
             ),
           ),

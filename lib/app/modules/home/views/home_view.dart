@@ -226,281 +226,329 @@ class _HeaderSection extends StatelessWidget {
   }
 }
 
+class DriverProfileCard extends StatelessWidget {
+  const DriverProfileCard({super.key});
+
+  @override
+  Widget build(BuildContext context) => const _DriverProfileCard();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WIDGET INTI (RESPONSIF + API)
+// ─────────────────────────────────────────────────────────────────────────────
 class _DriverProfileCard extends StatelessWidget {
   const _DriverProfileCard({Key? key}) : super(key: key);
 
+  // breakpoint & helper ukuran
+  bool _isNarrow(double w) => w < 360;
+  double _avatar(double w) => w < 350 ? 40 : w < 500 ? 50 : 60;
+  double _pad(double w) => w < 350 ? 8 : 12;
+
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return FutureBuilder<Profile2>(
-      future: API.getProfile(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Shimmer.fromColors(
-            baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-            highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
-            child: Container(
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[850] : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark ? Colors.black54 : Colors.black12,
-                    blurRadius: 3,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        final w = c.maxWidth;
+        final narrow = _isNarrow(w);
+        final avatar = _avatar(w);
+        final pad = _pad(w);
+
+        return FutureBuilder<Profile2>(
+          future: API.getProfile(),
+          builder: (ctx, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return _SkeletonCard(
+                isDark: isDark,
+                pad: pad,
+                avatar: avatar,
+                vertical: narrow,
+              );
+            }
+
+            if (snap.hasError) {
+              return _ErrorCard(isDark: isDark, pad: pad);
+            }
+
+            if (snap.hasData) {
+              final profile = snap.data!;
+              final showLabel = w > 360; // label “Logout” hilang di layar sempit
+
+              return Container(
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(horizontal: pad),
+                padding: EdgeInsets.all(pad),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[850] : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.black54 : Colors.black12,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          height: 16,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 150,
-                          height: 14,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 100,
-                          height: 14,
-                          color: Colors.white,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 60,
-                    height: 30,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return Container(
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[850] : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark ? Colors.black54 : Colors.black12,
-                  blurRadius: 3,
-                  offset: const Offset(0, 2),
+                  ],
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'Tidak ada koneksi internet',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-          );
-        } else if (snapshot.hasData) {
-          final profile = snapshot.data!;
-          return Container(
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[850] : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark ? Colors.black54 : Colors.black12,
-                  blurRadius: 3,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  child: ClipOval(
-                    child: Image.asset(
-                      "assets/icon/driver.png",
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AutoSizeText(
-                                profile.name ?? 'N/A',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                                maxLines: 2,
-                                minFontSize: 12,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              // AUTO-SIZING EMAIL
-                              Text(
-                                profile.posisi ?? '',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 48,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                Get.bottomSheet(
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? Colors.grey[850] : Colors.white,
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(20),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Logout',
-                                          style: GoogleFonts.nunito(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: isDark ? Colors.white : Colors.black,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          'Apakah Anda yakin ingin logout? Anda akan keluar dan data session akan dihapus.',
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.nunito(
-                                            color: isDark ? Colors.white70 : Colors.black87,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: isDark ? Colors.grey[700] : Colors.white,
-                                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                                              ),
-                                              onPressed: () {
-                                                Get.back();
-                                              },
-                                              child: Text(
-                                                'Batal',
-                                                style: GoogleFonts.nunito(
-                                                  color: isDark ? Colors.white : Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.red,
-                                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                                              ),
-                                              onPressed: () async {
-                                                await LocalStorages.logout();
-                                                Get.offAllNamed(Routes.LOGIN);
-                                              },
-                                              child: Text(
-                                                'Logout',
-                                                style: GoogleFonts.nunito(color: Colors.white),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  isDismissible: true,
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.logout_rounded,
-                                size: 20,
-                                color: Colors.white,
-                              ),
-                              label: Text(
-                                'Logout',
-                                style: GoogleFonts.nunito(fontSize: 12, color: Colors.white),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                minimumSize: const Size(100, 48),
-                                tapTargetSize: MaterialTapTargetSize.padded,
-                              ),
-                            ),
-                          )
-                        ],
+                child: Flex(
+                  direction: narrow ? Axis.vertical : Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // ─── AVATAR ─────────────────────────────────────────
+                    CircleAvatar(
+                      radius: avatar / 2,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/icon/driver.png',
+                          width: avatar,
+                          height: avatar,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      AutoSizeText(
-                        profile.email ?? 'N/A',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        minFontSize: 9,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(width: narrow ? 0 : 16, height: narrow ? 12 : 0),
+
+                    // ─── INFO ──────────────────────────────────────────
+                    if (narrow)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: _InfoColumn(profile: profile),
+                      )
+                    else
+                      Expanded(child: _InfoColumn(profile: profile)),
+
+                    if (!narrow) const SizedBox(width: 8),
+
+                    // ─── LOGOUT ───────────────────────────────────────
+                    _LogoutButton(showLabel: showLabel, isDark: isDark),
+                  ],
                 ),
-                SizedBox(width: 5,),
-              ],
-            ),
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
+              );
+            }
+
+            return const SizedBox.shrink(); // fallback
+          },
+        );
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-WIDGET INFO
+// ─────────────────────────────────────────────────────────────────────────────
+class _InfoColumn extends StatelessWidget {
+  const _InfoColumn({required this.profile});
+  final Profile2 profile;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AutoSizeText(
+          profile.name ?? 'N/A',
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+          maxLines: 2,
+          minFontSize: 10,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          profile.posisi ?? '',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 4),
+        AutoSizeText(
+          profile.email ?? 'N/A',
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
+          maxLines: 1,
+          minFontSize: 8,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-WIDGET LOGOUT BUTTON + SHEET
+// ─────────────────────────────────────────────────────────────────────────────
+class _LogoutButton extends StatelessWidget {
+  const _LogoutButton({required this.showLabel, required this.isDark});
+  final bool showLabel;
+  final bool isDark;
+
+  void _showSheet(BuildContext context) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[850] : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Logout',
+                style: GoogleFonts.nunito(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black)),
+            const SizedBox(height: 12),
+            Text(
+              'Apakah Anda yakin ingin logout? Anda akan keluar dan data session akan dihapus.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                  color: isDark ? Colors.white70 : Colors.black87),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark ? Colors.grey[700] : Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
+                  ),
+                  onPressed: Get.back,
+                  child: Text('Batal',
+                      style: GoogleFonts.nunito(
+                          color: isDark ? Colors.white : Colors.black)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  ),
+                  onPressed: () async {
+                    await LocalStorages.logout();
+                    Get.offAllNamed(Routes.LOGIN);
+                  },
+                  child:
+                  Text('Logout', style: GoogleFonts.nunito(color: Colors.white)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      isDismissible: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ElevatedButton.icon(
+        onPressed: () => _showSheet(context),
+        icon: const Icon(Icons.logout_rounded, size: 18,color: Colors.white,),
+        label: showLabel
+            ? const Text('Logout', style: TextStyle(fontSize: 12,color: Colors.white))
+            : const SizedBox.shrink(),
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.red,
+          padding: EdgeInsets.symmetric(horizontal: showLabel ? 16 : 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SKELETON (SHIMMER) - flexFit.loose saat vertikal
+// ─────────────────────────────────────────────────────────────────────────────
+class _SkeletonCard extends StatelessWidget {
+  const _SkeletonCard(
+      {required this.isDark,
+        required this.pad,
+        required this.avatar,
+        required this.vertical});
+
+  final bool isDark;
+  final double pad, avatar;
+  final bool vertical;
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+      highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: pad),
+        padding: EdgeInsets.all(pad),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[850] : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Flex(
+          direction: vertical ? Axis.vertical : Axis.horizontal,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: avatar,
+              height: avatar,
+              decoration: const BoxDecoration(
+                  shape: BoxShape.circle, color: Colors.white),
+            ),
+            SizedBox(width: vertical ? 0 : 16, height: vertical ? 12 : 0),
+            Flexible(
+              fit: FlexFit.loose, // <- aman di Column
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(width: double.infinity, height: 16, color: Colors.white),
+                  const SizedBox(height: 8),
+                  Container(width: 150, height: 14, color: Colors.white),
+                  const SizedBox(height: 8),
+                  Container(width: 100, height: 14, color: Colors.white),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ERROR CARD
+// ─────────────────────────────────────────────────────────────────────────────
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.isDark, required this.pad});
+  final bool isDark;
+  final double pad;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: pad),
+      padding: EdgeInsets.all(pad),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[850] : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text('Tidak ada koneksi internet',
+            style: Theme.of(context).textTheme.bodyMedium),
+      ),
     );
   }
 }

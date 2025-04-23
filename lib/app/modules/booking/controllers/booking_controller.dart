@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:video_compress/video_compress.dart';
 import '../../../data/data_respon/detailservice.dart';
 import '../../../data/data_respon/listservice.dart';
@@ -85,7 +87,7 @@ class BookingController extends GetxController {
       return matchSearch && matchDate;
     }).toList();
   }
-  Future<void> confirmPlanningService(String kodeSvc) async {
+  Future<void> confirmPlanningService(BuildContext ctx,String kodeSvc) async {
     if (isPlanningConfirmed(kodeSvc)) return;
     isConfirming.value = true;
     try {
@@ -93,8 +95,11 @@ class BookingController extends GetxController {
       confirmedPlanningSvcs.add(kodeSvc);
       Get.delete<BookingController>(force: true);
       Get.toNamed(Routes.HOME);
-      Get.snackbar('Sukses', 'Planning service berhasil dikonfirmasi',backgroundColor: Colors.blue,
-        colorText: Colors.white,);
+      await QuickAlert.show(
+        context: ctx,
+        type: QuickAlertType.success,
+        text: 'Planning service berhasil dikonfirmasi',
+      );
     } on SilentException catch (_) {
       Get.snackbar('Error', 'Tidak ada koneksi internet');
     } catch (e) {
@@ -339,26 +344,20 @@ class BookingController extends GetxController {
   var availableVehicles = <String>[];
   var selectedVehicle = ''.obs;
 
-  Future<void> submitEmergencyRepair() async {
+  Future<void> submitEmergencyRepair(BuildContext ctx) async {
+    // 1) VALIDASI INPUT
     if (selectedVehicle.value.isEmpty) {
-      Get.snackbar(
-        'Warning',
-        'Kendaraan harus dipilih.',
-        backgroundColor: Colors.yellow,
-        colorText: Colors.black,
-      );
+      Get.snackbar('Warning', 'Kendaraan harus dipilih.',
+          backgroundColor: Colors.yellow, colorText: Colors.black);
       return;
     }
     if (complaintController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Warning',
-        'Keluhan harus diisi.',
-        backgroundColor: Colors.yellow,
-        colorText: Colors.black,
-      );
+      Get.snackbar('Warning', 'Keluhan harus diisi.',
+          backgroundColor: Colors.yellow, colorText: Colors.black);
       return;
     }
 
+    // 2) PERSIAPAN DATA
     final now = DateTime.now();
     final strTgl = DateFormat('yyyy-MM-dd').format(now);
     final strJam = DateFormat('HH:mm').format(now);
@@ -370,15 +369,12 @@ class BookingController extends GetxController {
     try {
       mediaFiles = await _validateAndCompressMediaFiles();
     } catch (e) {
-      Get.snackbar(
-        'Warning',
-        e.toString(),
-        backgroundColor: Colors.yellow,
-        colorText: Colors.black,
-      );
+      Get.snackbar('Warning', e.toString(),
+          backgroundColor: Colors.yellow, colorText: Colors.black);
       return;
     }
 
+    // 3) CALL API
     try {
       isLoading.value = true;
       await API.createRequest(
@@ -386,37 +382,26 @@ class BookingController extends GetxController {
         keluhan: complaintController.text.trim(),
         mediaFiles: mediaFiles,
       );
-      Get.snackbar(
-        'Sukses',
-        'Request berhasil dibuat!',
-        backgroundColor: Colors.blue,
-        colorText: Colors.white,
-      );
+      // 4) TAMPILKAN DIALOG & TUNGGU USER MENUTUP
       Get.delete<BookingController>(force: true);
-      Get.toNamed(Routes.HOME);
-      // Reset form
-      mediaList.clear();
-      complaintController.clear();
-      complaintText.value = '';
-      currentLocation.value = '';
-      fullAddress.value = '';
-      selectedVehicle.value = '';
+      Get.offAllNamed(Routes.HOME);
+      await QuickAlert.show(
+        context: ctx,
+        type: QuickAlertType.success,
+        text: 'Request berhasil dibuat!',
+      );
       fetchEmergencyList();
     } catch (e) {
-      final errorString = e.toString().toLowerCase();
+      final err = e.toString().toLowerCase();
       if (e is SocketException ||
-          errorString.contains("tidak ada jaringan") ||
-          errorString.contains("no internet") ||
-          errorString.contains("failed host lookup") ||
-          errorString.contains("no address associated with hostname")) {
-        print("Error jaringan: ${e.toString()}");
+          err.contains('tidak ada jaringan') ||
+          err.contains('no internet') ||
+          err.contains('failed host lookup') ||
+          err.contains('no address associated with hostname')) {
+        debugPrint('📡 Error jaringan: $e');
       } else {
-        Get.snackbar(
-          'Warning',
-          e.toString(),
-          backgroundColor: Colors.yellow,
-          colorText: Colors.black,
-        );
+        Get.snackbar('Error', e.toString(),
+            backgroundColor: Colors.yellow, colorText: Colors.black);
       }
     } finally {
       isLoading.value = false;

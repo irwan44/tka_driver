@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/emergency_controller.dart';
+import 'langkah_penggunaan.dart';
 
 class EmergencyRepairPage extends StatelessWidget {
   EmergencyRepairPage({Key? key}) : super(key: key) {
@@ -25,7 +26,7 @@ class EmergencyRepairPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: isDark ? Colors.grey[850] : const Color(0xFFF6F7FB),
         title: Text(
-          'Buat Emergency Repair',
+          'Buat Emergency Service',
           style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
         ),
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
@@ -64,7 +65,7 @@ class EmergencyRepairPage extends StatelessWidget {
               }
 
               // 3) Kalau tidak disable, jalankan submit
-              c.submitEmergencyRepair();
+              c.submitEmergencyRepair(context);
             },
             icon: isLoading
                 ? const SizedBox(
@@ -83,8 +84,8 @@ class EmergencyRepairPage extends StatelessWidget {
               style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDisabled ? Colors.grey : Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: isDisabled ? Colors.grey.shade300 : Colors.red,
+              foregroundColor:isDisabled ? Colors.black38 : Colors.white,
               minimumSize: const Size(double.infinity, 48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),

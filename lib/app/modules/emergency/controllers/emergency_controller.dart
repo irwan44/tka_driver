@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
@@ -308,7 +310,7 @@ class EmergencyController extends GetxController {
   var availableVehicles = <String>[];
   var selectedVehicle   = ''.obs;
 
-  Future<void> submitEmergencyRepair() async {
+  Future<void> submitEmergencyRepair(BuildContext ctx) async {
     if (selectedVehicle.value.isEmpty) {
       Get.snackbar('Warning', 'Kendaraan harus dipilih.',
           backgroundColor: Colors.yellow, colorText: Colors.black);
@@ -353,13 +355,13 @@ class EmergencyController extends GetxController {
         mediaFiles: mediaFiles,
       );
 
-      Get.snackbar('Sukses', 'Emergency berhasil dibuat!',
-          backgroundColor: Colors.blue, colorText: Colors.white);
-
-      // Reset state & kembali ke home tab ke-1
       Get.delete<EmergencyController>(force: true);
       Get.toNamed(Routes.HOME, arguments: {'initialTab': 1});
-
+      await QuickAlert.show(
+        context: ctx,
+        type: QuickAlertType.success,
+        text: 'Emergency berhasil dibuat!',
+      );
       mediaList.clear();
       complaintController.clear();
       complaintText.value  = '';

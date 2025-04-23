@@ -104,19 +104,24 @@ class EmergencyView extends GetView<EmergencyController> {
               ),
 
               // ─── Tombol Info ────────────────────────────────────────
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                tooltip: 'Informasi',
-                splashRadius: 22,
-                onPressed: () {
-                  // pakai salah satu dari dua cara di bawah
-
-                  // 1) Instance langsung
-                  // Get.to(const UsageGuidePage());
-
-                  // 2) Fungsi anon – direkomendasikan (lazy)
-                  Get.to(() => const EmergencyGuidePage());
-                },
+              ElevatedButton.icon(
+                icon: const Icon(Icons.info_outline, size: 18, color: Colors.white),
+                label: const Text(
+                  'Info',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,        // latar jingga
+                  elevation: 0,                          // flat look
+                  padding: const EdgeInsets.symmetric(   // ruang nyaman
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => Get.to(() => const EmergencyGuidePage()),
               ),
             ],
           ),

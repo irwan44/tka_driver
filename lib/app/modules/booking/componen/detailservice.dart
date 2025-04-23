@@ -63,12 +63,12 @@ class _DetailServiceViewState extends State<DetailServiceView> {
           foregroundColor: Colors.white,
           onPressed: confirmed
               ? null
-              : () => controller.confirmPlanningService(widget.kodeSvc),
+              : () => controller.confirmPlanningService(context,widget.kodeSvc),
           icon: Icon(
             confirmed ? Icons.check_circle : Icons.warning_rounded,
           ),
           label: Text(
-            confirmed ? "Sudah Dikonfirmasi" : "Konfirmasi Planning",
+            confirmed ? "Sudah Dikonfirmasi" : "Konfirmasi Planning Service",
           ),
         );
       })

@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../emergency/controllers/emergency_controller.dart';
 import '../controllers/booking_controller.dart';
+import 'langkah_penggunaan.dart';
 
 class RegularRepairPage extends StatelessWidget {
   RegularRepairPage({Key? key}) : super(key: key) {
@@ -34,7 +35,9 @@ class RegularRepairPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Obx(
               () => ElevatedButton.icon(
-            onPressed: c.disableBuatEmergencyServiceButton ? null : c.submitEmergencyRepair,
+                onPressed: c.disableBuatEmergencyServiceButton
+                    ? null
+                    : () => c.submitEmergencyRepair(context),
             icon: c.isLoading.value
                 ? const SizedBox(
               height: 20,
@@ -52,7 +55,7 @@ class RegularRepairPage extends StatelessWidget {
               style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 48),
               shape: RoundedRectangleBorder(
