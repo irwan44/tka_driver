@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -139,7 +140,7 @@ class _HeaderSection extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      height: 160,
+      height: 175,
       margin: const EdgeInsets.only(bottom: 25),
       decoration: BoxDecoration(
         color: isDark ? Colors.grey[850] : Colors.white,
@@ -358,122 +359,141 @@ class _DriverProfileCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        profile.name ?? 'N/A',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                      Row(
+                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AutoSizeText(
+                                profile.name ?? 'N/A',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                                maxLines: 2,
+                                minFontSize: 12,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              // AUTO-SIZING EMAIL
+                              Text(
+                                profile.posisi ?? '',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                Get.bottomSheet(
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? Colors.grey[850] : Colors.white,
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(20),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Logout',
+                                          style: GoogleFonts.nunito(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: isDark ? Colors.white : Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Apakah Anda yakin ingin logout? Anda akan keluar dan data session akan dihapus.',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.nunito(
+                                            color: isDark ? Colors.white70 : Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: isDark ? Colors.grey[700] : Colors.white,
+                                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                              ),
+                                              onPressed: () {
+                                                Get.back();
+                                              },
+                                              child: Text(
+                                                'Batal',
+                                                style: GoogleFonts.nunito(
+                                                  color: isDark ? Colors.white : Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                              ),
+                                              onPressed: () async {
+                                                await LocalStorages.logout();
+                                                Get.offAllNamed(Routes.LOGIN);
+                                              },
+                                              child: Text(
+                                                'Logout',
+                                                style: GoogleFonts.nunito(color: Colors.white),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  isDismissible: true,
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.logout_rounded,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                              label: Text(
+                                'Logout',
+                                style: GoogleFonts.nunito(fontSize: 12, color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                minimumSize: const Size(100, 48),
+                                tapTargetSize: MaterialTapTargetSize.padded,
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
+                      AutoSizeText(
                         profile.email ?? 'N/A',
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        profile.posisi ?? '',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        minFontSize: 9,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      Get.bottomSheet(
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark ? Colors.grey[850] : Colors.white,
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(20),
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Logout',
-                                style: GoogleFonts.nunito(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Apakah Anda yakin ingin logout? Anda akan keluar dan data session akan dihapus.',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.nunito(
-                                  color: isDark ? Colors.white70 : Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: isDark ? Colors.grey[700] : Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                                    ),
-                                    onPressed: () {
-                                      Get.back();
-                                    },
-                                    child: Text(
-                                      'Batal',
-                                      style: GoogleFonts.nunito(
-                                        color: isDark ? Colors.white : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                                    ),
-                                    onPressed: () async {
-                                      await LocalStorages.logout();
-                                      Get.offAllNamed(Routes.LOGIN);
-                                    },
-                                    child: Text(
-                                      'Logout',
-                                      style: GoogleFonts.nunito(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        isDismissible: true,
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.logout_rounded,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                    label: Text(
-                      'Logout',
-                      style: GoogleFonts.nunito(fontSize: 12, color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      minimumSize: const Size(100, 48),
-                      tapTargetSize: MaterialTapTargetSize.padded,
-                    ),
-                  ),
-                )
+                SizedBox(width: 5,),
               ],
             ),
           );

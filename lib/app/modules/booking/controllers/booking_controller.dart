@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
@@ -103,17 +105,52 @@ class BookingController extends GetxController {
   }
 
   @override
+  void onClose() {
+    _debounceTimer?.cancel();
+    _connectSub.cancel();
+    super.onClose();
+  }
+  @override
   void onInit() {
     super.onInit();
     fetchServices();
     fetchRequestService();
     fetchVehicles();
+    _connectSub = Connectivity().onConnectivityChanged.listen((event) {
+      ConnectivityResult status;
+      if (event is ConnectivityResult) {
+        status = event as ConnectivityResult;
+      } else if (event is List<ConnectivityResult>) {
+        status = event.isNotEmpty ? event.first : ConnectivityResult.none;
+      } else {
+        status = ConnectivityResult.none;
+      }
+      _setStatusDebounced(status);
+    });
   }
+
   Future<void> refreshAll() async {
     await Future.wait([
       fetchRequestService(),
       fetchServices(),
     ]);
+  }
+  final Rx<ConnectivityResult> debouncedStatus =
+      ConnectivityResult.mobile.obs;
+  late StreamSubscription _connectSub;
+  Timer? _debounceTimer;
+  void _setStatusDebounced(ConnectivityResult newStatus) {
+    if (newStatus == ConnectivityResult.none) {
+      // tunda 800 ms; kalau masih NONE, baru update
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 800), () {
+        debouncedStatus.value = newStatus;
+      });
+    } else {
+      // sinyal kembali — perbarui langsung & batalkan penundaan
+      _debounceTimer?.cancel();
+      debouncedStatus.value = newStatus;
+    }
   }
   var allEmergencyList = <Data>[].obs;
   var emergencyList = <Data>[].obs;
@@ -124,11 +161,6 @@ class BookingController extends GetxController {
   final complaintController = TextEditingController();
   RxString complaintText = ''.obs;
 
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   void performAction(Data data) {
     data.status = 'Diterima';
@@ -390,14 +422,19 @@ class BookingController extends GetxController {
       isLoading.value = false;
     }
   }
+  final RxBool networkError = false.obs;
+
   Future<void> fetchRequestService() async {
     isLoadingRequest.value = true;
     errorRequest.value = '';
     try {
+      networkError.value = false;
       listRequestService.assignAll(await API.fetchListRequestService());
     } on SilentException catch (e) {
       errorRequest.value = e.message;
+      networkError.value = true;
     } catch (e) {
+      networkError.value = false;
       errorRequest.value = e.toString();
     } finally {
       isLoadingRequest.value = false;
@@ -430,6 +467,7 @@ class BookingController extends GetxController {
       return "-";
     }
   }
+
 
   Future<List<File>> _validateAndCompressMediaFiles() async {
     final photoCount = mediaList.where((x) => !_isVideo(x)).length;

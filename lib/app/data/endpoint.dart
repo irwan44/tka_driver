@@ -42,7 +42,6 @@ class API {
       throw Exception("Session expired. Please login again.");
     }
   }
-
   // LOGIN
   static Future<Token> login({
     required String email,

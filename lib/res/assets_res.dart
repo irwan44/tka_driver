@@ -16,7 +16,17 @@ class AssetsRes {
   static const String NO_CONEXION = 'assets/icon/no_conexion.png';
   static const String OTTOGO_ICONS = 'assets/icon/ottogo_icons.png';
   static const String RUSCON_ICONS = 'assets/icon/ruscon_icons.png';
+  static const String SERVER_DOWN = 'assets/icon/server-down.png';
   static const String LOGO_OTTOGO = 'assets/logo/logo-ottogo.png';
   static const String LOGO_RUSCO = 'assets/logo/logo-rusco.png';
   static const String LOGO_DEV = 'assets/logo/logo_dev.png';
+  static const String EMERGENCY1 = 'assets/penggunaan/emergency1.png';
+  static const String EMERGENCY2 = 'assets/penggunaan/emergency2.png';
+  static const String EMERGENCY3 = 'assets/penggunaan/emergency3.png';
+  static const String EMERGENCY4 = 'assets/penggunaan/emergency4.png';
+  static const String REQUEST1 = 'assets/penggunaan/request1.png';
+  static const String REQUEST2 = 'assets/penggunaan/request2.png';
+  static const String REQUEST3 = 'assets/penggunaan/request3.png';
+  static const String REQUEST4 = 'assets/penggunaan/request4.png';
+  static const String SERVICE = 'assets/penggunaan/service.png';
 }

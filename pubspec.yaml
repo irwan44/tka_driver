@@ -31,7 +31,9 @@ dependencies:
   photo_view: ^0.15.0
   flutter_launcher_icons: ^0.14.3
   animated_custom_dropdown: ^3.1.1
-  google_nav_bar: ^5.0.7
+  smooth_page_indicator: ^1.2.1
+  auto_size_text: ^3.0.0
+  connectivity_plus: ^6.1.4
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +63,16 @@ flutter:
     - assets/icon/no_conexion.png
     - assets/icon/ottogo_icons.png
     - assets/icon/ruscon_icons.png
+    - assets/icon/server-down.png
     - assets/logo/logo-ottogo.png
     - assets/logo/logo-rusco.png
     - assets/logo/logo_dev.png
+    - assets/penggunaan/emergency1.png
+    - assets/penggunaan/emergency2.png
+    - assets/penggunaan/emergency3.png
+    - assets/penggunaan/emergency4.png
+    - assets/penggunaan/request1.png
+    - assets/penggunaan/request2.png
+    - assets/penggunaan/request3.png
+    - assets/penggunaan/request4.png
+    - assets/penggunaan/service.png

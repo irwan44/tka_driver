@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:chewie/chewie.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +11,8 @@ import 'package:video_player/video_player.dart';
 
 import '../../../data/data_respon/listservice.dart';
 import '../../../data/data_respon/reques_service.dart';
+import '../../emergency/views/emergency_view.dart';
+import '../componen/langkah_penggunaan.dart';
 import '../componen/listservicecard.dart';
 import '../componen/requesrepair.dart';
 import '../controllers/booking_controller.dart';
@@ -24,6 +28,57 @@ class BookingView extends StatefulWidget {
 class _BookingViewState extends State<BookingView> {
   String searchQuery = '';
   DateTime? _selectedDate;
+
+  // connectivity state
+  ConnectivityResult _connectivityStatus = ConnectivityResult.none;
+  late StreamSubscription<dynamic> _connectivitySub;
+  @override
+  void initState() {
+    super.initState();
+    // subscribe ke stream yang mungkin memancarkan ConnectivityResult atau List<ConnectivityResult>
+    _connectivitySub = Connectivity()
+        .onConnectivityChanged
+        .listen(_handleConnectivityChange);
+    _initConnectivity();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub.cancel();
+    super.dispose();
+  }
+
+  void _handleConnectivityChange(dynamic raw) {
+    ConnectivityResult status;
+    if (raw is List<ConnectivityResult>) {
+      // prioritas: mobile > wifi > none
+      if (raw.contains(ConnectivityResult.mobile)) {
+        status = ConnectivityResult.mobile;
+      } else if (raw.contains(ConnectivityResult.wifi)) {
+        status = ConnectivityResult.wifi;
+      } else {
+        status = ConnectivityResult.none;
+      }
+    } else if (raw is ConnectivityResult) {
+      status = raw;
+    } else {
+      status = ConnectivityResult.none;
+    }
+    setState(() {
+      _connectivityStatus = status;
+    });
+  }
+  Future<void> _initConnectivity() async {
+    dynamic raw;
+    try {
+      raw = await Connectivity().checkConnectivity();
+    } catch (_) {
+      raw = ConnectivityResult.none;
+    }
+    // langsung pakai handler yang sama
+    _handleConnectivityChange(raw);
+  }
+
 
   DateTime _parseCreatedAt(dynamic value) {
     if (value == null) return DateTime.fromMillisecondsSinceEpoch(0);
@@ -105,26 +160,52 @@ class _BookingViewState extends State<BookingView> {
                       endIndent: 10,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Riwayat Service',
-                      style: GoogleFonts.lato(
-                        textStyle: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold,fontSize: 18),
-                      ),
-                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // ─── Judul ───────────────────────────────────────────────
+                        Text(
+                          'Riwayat Service',
+                          style: GoogleFonts.lato(
+                            textStyle: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                        ),
+
+                        // ─── Tombol Info ────────────────────────────────────────
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.info_outline, size: 18, color: Colors.white),
+                          label: const Text(
+                            'Info',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,        // latar jingga
+                            elevation: 0,                          // flat look
+                            padding: const EdgeInsets.symmetric(   // ruang nyaman
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () => Get.to(() => const UsageGuidePage())
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),
             ),
             SliverPersistentHeader(
               pinned: true,
-              delegate:  _TabBarDelegate(
+              delegate: _TabBarDelegate(
                 backgroundColor: isDark ? Colors.grey[850]! : Colors.white,
-                // wrap TabBar (yang internalnya Obx) jadi PreferredSizeWidget:
                 child: PreferredSize(
-                  preferredSize: const Size.fromHeight(kTextTabBarHeight), // biasanya 48
+                  preferredSize: const Size.fromHeight(kTextTabBarHeight),
                   child: _buildTabBar(isDark),
                 ),
               ),
@@ -156,7 +237,34 @@ class _BookingViewState extends State<BookingView> {
             fit: BoxFit.contain,
           ),
           const SizedBox(height: 10),
-          Text(msg, style: GoogleFonts.nunito(color: Colors.red)),
+          Text(msg, style: GoogleFonts.nunito(color: Colors.black), textAlign: TextAlign.center),
+        ],
+      ),
+    ),
+  );
+
+  Widget _serverDown(String msg) => SingleChildScrollView(
+    physics: const AlwaysScrollableScrollPhysics(),
+    child: Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 50),
+          Image.asset(
+            'assets/icon/server-down.png',
+            width: 100,
+            height: 100,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            msg.isNotEmpty
+                ? 'Mohon Maaf 🙏🏻\nAplikasi sedang terkendala Server,\nKami akan segera memperbaikinya'
+                : 'Mohon Maaf 🙏🏻\nAplikasi sedang terkendala Server,\nKami akan segera memperbaikinya',
+            style: GoogleFonts.nunito(color: Colors.black),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     ),
@@ -171,61 +279,43 @@ class _BookingViewState extends State<BookingView> {
 
       bool matchDate = true;
       if (_selectedDate != null) {
-        final created = DateFormat('yyyy-MM-dd')
-            .format(_toLocalDateTime(r.createdAt!));
+        final created = DateFormat('yyyy-MM-dd').format(_toLocalDateTime(r.createdAt!));
         final sel = DateFormat('yyyy-MM-dd').format(_selectedDate!);
         matchDate = created == sel;
       }
       return matchSearch && matchDate;
     })
         .toList()
-      ..sort((a, b) => _toLocalDateTime(b.createdAt!)
-          .compareTo(_toLocalDateTime(a.createdAt!)));
+      ..sort((a, b) => _toLocalDateTime(b.createdAt!).compareTo(_toLocalDateTime(a.createdAt!)));
 
     return RefreshIndicator(
       onRefresh: () => c.refreshAll(),
       displacement: 40,
-      child: c.isLoadingRequest.value
+      child: (c.debouncedStatus.value == ConnectivityResult.none || c.networkError.value)
+          ? _noConnection('Tidak ada jaringan\nMohon periksa kembali jaringan internet anda')
+          : c.errorRequest.value.isNotEmpty
+          ? _serverDown(c.errorRequest.value)
+          : c.isLoadingRequest.value
           ? _buildLoadingList(isDark)
-          : c.errorRequest.value == 'Tidak ada koneksi internet'
-          ? _noConnection(c.errorRequest.value)
-          : c.errorRequest.isNotEmpty
+          : filtered.isEmpty
           ? ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          SizedBox(
-            height:
-            MediaQuery.of(context).size.height * 0.7,
-            child: Center(
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[850] : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Text(
-                c.errorRequest.value,
-                style: GoogleFonts.nunito(
-                    color: Colors.red),
+                _selectedDate != null
+                    ? 'Tanggal yang Anda pilih tidak ada data'
+                    : 'Tidak ada data Request Service\nKlik tombol biru untuk membuat Regular Repair',
+                textAlign: TextAlign.center,
               ),
             ),
-          ),
-        ],
-      )
-          : filtered.isEmpty
-          ? ListView(
-        physics:
-        const AlwaysScrollableScrollPhysics(),
-        children: [
-          Center(
-              child:  Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.only(top: 12),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[850] : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              _selectedDate != null
-                  ? 'Tanggal yang Anda pilih tidak ada data'
-                  : 'Tidak ada data Reques Servis\n klik tombol Biru untuk memebuat Requler Repair ',
-              textAlign: TextAlign.center,
-            ),
-          )
           ),
         ],
       )
@@ -235,17 +325,14 @@ class _BookingViewState extends State<BookingView> {
         itemBuilder: (ctx, i) {
           final r = filtered[i];
           return InkWell(
-            onTap: () =>
-                _showRequestDetailBottomSheet(ctx, r),
+            onTap: () => _showRequestDetailBottomSheet(ctx, r),
             child: RequestServiceItem(
               tanggal: r.createdAt ?? '-',
               status: r.status ?? '-',
               noPolisi: r.noPolisi ?? '-',
               keluhan: r.keluhan ?? '-',
-              kodereques:
-              r.kodeRequestService ?? '-',
-              kodekendaraan:
-              r.kodeKendaraan ?? '-',
+              kodereques: r.kodeRequestService ?? '-',
+              kodekendaraan: r.kodeKendaraan ?? '-',
             ),
           );
         },
@@ -266,9 +353,7 @@ class _BookingViewState extends State<BookingView> {
         for (final t in [s.tglEstimasi, s.tglPkb]) {
           if (t == null) continue;
           final d = DateFormat('yyyy-MM-dd').parse(t);
-          if (DateFormat('yyyy-MM-dd').format(d) ==
-              DateFormat('yyyy-MM-dd')
-                  .format(_selectedDate!)) {
+          if (DateFormat('yyyy-MM-dd').format(d) == DateFormat('yyyy-MM-dd').format(_selectedDate!)) {
             matchDate = true;
             break;
           }
@@ -283,78 +368,40 @@ class _BookingViewState extends State<BookingView> {
     return RefreshIndicator(
       onRefresh: () => c.refreshAll(),
       displacement: 40,
-      child: c.isLoading.value
+      child: _connectivityStatus == ConnectivityResult.none
+          ? _noConnection('Tidak ada jaringan\nMohon periksa kembali jaringan internet anda')
+          : c.errorRequest.value.isNotEmpty
+          ? _serverDown(c.errorRequest.value)
+          : c.isLoading.value
           ? _buildLoadingList(isDark)
-          : c.errorRequest.value == 'Tidak ada koneksi internet'
-          ? _noConnection(c.errorRequest.value)
-          : c.errorRequest.isNotEmpty
+          : filtered.isEmpty
           ? ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          SizedBox(
-            height:
-            MediaQuery.of(context).size.height * 0.7,
-            child: Center(
-              child: Text(
-                c.errorMessage.value,
-                style: GoogleFonts.nunito(
-                    color: Colors.red),
-              ),
-            ),
-          ),
-        ],
-      )
-          : c.errorMessage.isNotEmpty
-          ? ListView(
-        physics:
-        const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(
-            height:
-            MediaQuery.of(context).size.height * 0.7,
-            child: Center(
-              child: Text(
-                c.errorMessage.value,
-                style: GoogleFonts.nunito(
-                    color: Colors.red),
-              ),
-            ),
-          ),
-        ],
-      )
-          : filtered.isEmpty
-          ? ListView(
-        physics:
-        const AlwaysScrollableScrollPhysics(),
-        children: [
           Center(
-              child:  Container(
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
                   color: isDark ? Colors.grey[850] : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child:Text(
-                  _selectedDate != null
-                      ? 'Tanggal yang Anda pilih tidak ada data'
-                      : 'Tidak ada data Service Kendaraan anda',
-                  textAlign: TextAlign.center,
-                ),
-              )
+                  borderRadius: BorderRadius.circular(12)),
+              child: Text(
+                _selectedDate != null
+                    ? 'Tanggal yang Anda pilih tidak ada data'
+                    : 'Tidak ada data Service Kendaraan Anda',
+                textAlign: TextAlign.center,
+              ),
+            ),
           ),
         ],
       )
           : ListView.builder(
         padding: const EdgeInsets.all(10),
         itemCount: filtered.length,
-        itemBuilder: (_, i) =>
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(vertical: 8),
-              child:
-              ServiceItemCard(service: filtered[i]),
-            ),
+        itemBuilder: (_, i) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: ServiceItemCard(service: filtered[i]),
+        ),
       ),
     );
   });
@@ -627,42 +674,38 @@ class _BookingViewState extends State<BookingView> {
       color: isDark ? Colors.grey[800] : Colors.white,
       borderRadius: BorderRadius.circular(12),
       boxShadow: [
-        BoxShadow(
-          color: isDark ? Colors.black26 : Colors.grey.shade300,
-          blurRadius: 4,
-          offset: const Offset(0, 2),
-        ),
+        BoxShadow(color: isDark ? Colors.black26 : Colors.grey.shade300, blurRadius: 4, offset: const Offset(0, 2)),
       ],
     ),
     child: Column(
       children: [
         Row(
           children: [
-            Icon(Icons.calendar_today,
-                color: isDark ? Colors.white70 : Colors.grey),
+            Icon(Icons.calendar_today, color: isDark ? Colors.white70 : Colors.grey),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 _selectedDate == null
                     ? "Pilih Tanggal"
                     : "Tanggal: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}",
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
+                style: GoogleFonts.nunito(fontSize: 16, color: isDark ? Colors.white : Colors.black87),
               ),
             ),
             if (_selectedDate != null)
               IconButton(
-                icon: Icon(Icons.clear,
-                    color: isDark ? Colors.white70 : Colors.grey),
+                icon: Icon(Icons.clear, color: isDark ? Colors.white70 : Colors.grey),
                 onPressed: () => setState(() => _selectedDate = null),
               ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.green,
-              ),
+                  padding: const EdgeInsets.symmetric(   // ruang nyaman
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  foregroundColor: Colors.white, backgroundColor: Colors.green),
               onPressed: () async {
                 final picked = await showDatePicker(
                   context: context,
@@ -684,20 +727,11 @@ class _BookingViewState extends State<BookingView> {
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Cari No Polisi',
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: isDark
-                      ? const Color(0xFFF1F2F6)
-                      : Colors.grey[800],
-                ),
+                prefixIcon: Icon(Icons.search, color: isDark ? const Color(0xFFF1F2F6) : Colors.grey[800]),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               ),
-              style: GoogleFonts.nunito(
-                fontSize: 16,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
+              style: GoogleFonts.nunito(fontSize: 16, color: isDark ? Colors.white : Colors.black87),
               onChanged: (v) => setState(() => searchQuery = v),
             ),
           ),
@@ -710,57 +744,22 @@ class _BookingViewState extends State<BookingView> {
     final BookingController c = Get.find<BookingController>();
 
     return Obx(() {
-      final int reqCount = c.filteredRequests.length;
-      final int svcCount = c.filteredServices.length;
-
+      final reqCount = c.filteredRequests.length;
+      final svcCount = c.filteredServices.length;
       Widget badge(int count) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(8)),
         constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-        child: Text(
-          '$count',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
+        child: Text('$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
       );
 
       return TabBar(
-        labelColor:    isDark ? Colors.lightBlueAccent : Colors.blue,
-        unselectedLabelColor:
-        isDark ? Colors.grey[400]     : Colors.grey,
+        labelColor: isDark ? Colors.lightBlueAccent : Colors.blue,
+        unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey,
         indicatorColor: Colors.transparent,
         tabs: [
-          Tab(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Request Service'),
-                if (reqCount > 0) ...[
-                  const SizedBox(width: 4),
-                  badge(reqCount),
-                ],
-              ],
-            ),
-          ),
-          Tab(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Service'),
-                if (svcCount > 0) ...[
-                  const SizedBox(width: 4),
-                  badge(svcCount),
-                ],
-              ],
-            ),
-          ),
+          Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [const Text('Request Service'), if (reqCount > 0) ...[const SizedBox(width: 4), badge(reqCount)]])),
+          Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [const Text('Service'), if (svcCount > 0) ...[const SizedBox(width: 4), badge(svcCount)]])),
         ],
       );
     });
@@ -778,17 +777,14 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => minExtent;
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) =>
-      Material(
-        color: backgroundColor,
-        elevation: overlapsContent ? 2 : 0,
-        child: child,
-      );
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => Material(
+    color: backgroundColor,
+    elevation: overlapsContent ? 2 : 0,
+    child: child,
+  );
 
   @override
-  bool shouldRebuild(_TabBarDelegate old) =>
-      old.backgroundColor != backgroundColor || old.child != child;
+  bool shouldRebuild(_TabBarDelegate old) => old.backgroundColor != backgroundColor || old.child != child;
 }
 class MediaViewerPage extends StatefulWidget {
   final String url;
@@ -854,34 +850,3 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
 }
 
 typedef RequestService = dynamic;
-
-class RoundedDivider extends StatelessWidget {
-  final double thickness;
-  final Color? color;
-  final double indent;
-  final double endIndent;
-
-  const RoundedDivider({
-    Key? key,
-    this.thickness = 2,
-    this.color,
-    this.indent = 0,
-    this.endIndent = 0,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final dividerColor = color ?? Theme.of(context).dividerColor;
-    return Padding(
-      padding: EdgeInsets.only(left: indent, right: endIndent),
-      child: Container(
-        width: double.infinity,
-        height: thickness,
-        decoration: BoxDecoration(
-          color: dividerColor,
-          borderRadius: BorderRadius.circular(thickness / 2),
-        ),
-      ),
-    );
-  }
-}
