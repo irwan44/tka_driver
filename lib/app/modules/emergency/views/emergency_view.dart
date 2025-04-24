@@ -694,6 +694,35 @@ class _EmergencyItemCard extends StatelessWidget {
       return 'Error: $e';
     }
   }
+  bool _isNewItem() {
+    DateTime? itemDate;
+
+    // 1) Coba format ISO 8601 (yyyy-MM-ddTHH:mm:ss.SSSZ)
+    try {
+      itemDate = DateTime.parse(item.tgl ?? '-').toLocal();
+    } catch (_) {}
+
+    // 2) Coba “yyyy-MM-dd HH:mm” (tanpa detik)
+    if (itemDate == null) {
+      try {
+        itemDate = DateFormat('yyyy-MM-dd HH:mm').parse(item.tgl ?? '-', true).toLocal();
+      } catch (_) {}
+    }
+
+    // 3) Coba hanya tanggal “yyyy-MM-dd”
+    if (itemDate == null) {
+      try {
+        itemDate = DateFormat('yyyy-MM-dd').parse(item.tgl ?? '-', true).toLocal();
+      } catch (_) {}
+    }
+
+    if (itemDate == null) return false; // gagal parse → bukan item baru
+
+    final now = DateTime.now();
+    return itemDate.year  == now.year &&
+        itemDate.month == now.month &&
+        itemDate.day   == now.day;   // masih di hari yang sama
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -709,6 +738,7 @@ class _EmergencyItemCard extends StatelessWidget {
     final keluh = item.keluhan ?? '-';
     final badge = _getBadgeColor(stat);
 
+    final isNew   = _isNewItem();
     return ClipPath(
       clipper: _TicketClipper(),
       child: Container(
@@ -730,7 +760,30 @@ class _EmergencyItemCard extends StatelessWidget {
           onTap: () => Get.toNamed(Routes.DETAILEMERGENCY, arguments: item),
           child: Column(
             children: [
-              // HEADER
+              if (isNew)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(.15),
+                    borderRadius: BorderRadius.circular(30)),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                          color: Colors.green, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 6),
+                    Text('Emergency Service baru yang anda buat',
+                        style: GoogleFonts.nunito(
+                            color: Colors.green,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(

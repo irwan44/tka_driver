@@ -143,34 +143,7 @@ class _BookingViewState extends State<BookingView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Obx(() {
-                      final waitingList = c.listService
-                          .where((s) =>
-                      (s.status ?? '').toString().toUpperCase() == 'NOT CONFIRMED')
-                          .toList();
-
-                      if (waitingList.isEmpty) return const SizedBox.shrink();
-                      const double kRightPadding = 16;
-                      final bool   single    = waitingList.length == 1;
-                      final double screenW   = MediaQuery.of(context).size.width;
-                      final double cardW     = single ? screenW - kRightPadding : screenW * 0.80;
-                      final double cardH     = single ? 200.0 : 220.0;
-
-                      return SizedBox(
-                        height: cardH,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.only(right: kRightPadding),
-                          itemCount: waitingList.length,
-                          itemBuilder: (_, i) => Container(
-                            width : cardW,
-                            height: cardH,
-                            margin: EdgeInsets.only(right: i == waitingList.length - 1 ? 0 : 12),
-                            child : PlanningServiceItemCard(service: waitingList[i]),
-                          ),
-                        ),
-                      );
-                    }),
+                    _buildPlanning(c, isDark),
                     SizedBox(height: 10,),
                     Text(
                       'Filter',
@@ -242,13 +215,11 @@ class _BookingViewState extends State<BookingView> {
               ),
             ),
           ],
-          body: Expanded(
-            child: TabBarView(
-              children: [
-                _buildRequestTab(c, isDark),
-                _buildServiceTab(c, isDark),
-              ],
-            ),
+          body: TabBarView(
+            children: [
+              _buildRequestTab(c, isDark),
+              _buildServiceTab(c, isDark),
+            ],
           ),
         ),
       ),
@@ -302,6 +273,35 @@ class _BookingViewState extends State<BookingView> {
       ),
     ),
   );
+
+  Widget _buildPlanning(BookingController c, bool isDark) => Obx(() {
+    final waitingList = c.listService
+        .where((s) =>
+    (s.status ?? '').toString().toUpperCase() == 'NOT CONFIRMED')
+        .toList();
+
+    if (waitingList.isEmpty) return const SizedBox.shrink();
+    const double kRightPadding = 16;
+    final bool   single    = waitingList.length == 1;
+    final double screenW   = MediaQuery.of(context).size.width;
+    final double cardW     = single ? screenW - kRightPadding : screenW * 0.80;
+    final double cardH     = single ? 200.0 : 220.0;
+
+    return SizedBox(
+      height: cardH,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(right: kRightPadding),
+        itemCount: waitingList.length,
+        itemBuilder: (_, i) => Container(
+          width : cardW,
+          height: cardH,
+          margin: EdgeInsets.only(right: i == waitingList.length - 1 ? 0 : 12),
+          child : PlanningServiceItemCard(service: waitingList[i]),
+        ),
+      ),
+    );
+  });
 
   Widget _buildRequestTab(BookingController c, bool isDark) => Obx(() {
     final filtered = c.listRequestService

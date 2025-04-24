@@ -50,49 +50,9 @@ class _DashPainter extends CustomPainter {
 
 class PlanningServiceItemCard extends StatelessWidget {
   final ListService service;
-  const PlanningServiceItemCard({Key? key, required this.service}) : super(key: key);
-
-  // Helper row
-  Widget _detailRow({
-    required IconData icon,
-    required String label,
-    required String value,
-    required bool isDark,
-  }) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[800]),
-            const SizedBox(width: 10),
-            Expanded(
-              child: RichText(
-                text: TextSpan(
-                  text: '$label: ',
-                  style: GoogleFonts.nunito(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: value,
-                      style: GoogleFonts.nunito(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 15,
-                        color: isDark ? Colors.white : Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-
+  PlanningServiceItemCard({Key? key, required this.service}) : super(key: key);
   // Mini chip util
+  final bookingController = Get.find<BookingController>();
   Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
     final isDark = Theme.of(ctx).brightness == Brightness.dark;
     return Container(
@@ -114,6 +74,8 @@ class PlanningServiceItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+        builder: (context, constraints) {
     final bookingController = Get.find<BookingController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -142,7 +104,10 @@ class PlanningServiceItemCard extends StatelessWidget {
     else if (isPKB || isPKBTutup || isPlanning){ leadingIcn = Icons.assignment; leadingTitle = 'PKB Service'; }
 
     final cardBg = isDark ? const Color(0xFF2B2B2B) : Colors.white;
-
+    final bool narrow   = constraints.maxWidth < 350;
+    final double hPad   = narrow ? 8 : 12;
+    final double vPad   = narrow ? 4 : 6;
+    final double fSize  = narrow ? 12 : 14;
     return ClipPath(
       clipper: _TicketClipper(),
       child: Container(
@@ -241,20 +206,27 @@ class PlanningServiceItemCard extends StatelessWidget {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                            width: double.infinity,
+                            // memastikan teks tetap membungkus alih-alih overflow
+                            constraints: const BoxConstraints(minWidth: 0),
+                            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
                             decoration: BoxDecoration(
                               color: bgColor,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              confirmed ? 'Sudah Konfirmasi' : 'Belum Konfirmasi',
+                              confirmed ? 'Sudah Konfirmasi' : 'Anda belum Konfirmasi Planning Service',
+                              maxLines: 2,
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
                               style: GoogleFonts.nunito(
-                                fontSize: 14,
+                                fontSize: fSize,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white, // selalu putih agar kontras baik
+                                color: Colors.white,
                               ),
                             ),
-                          ),
+                          )
                         );
                       }),
                   ],
@@ -264,6 +236,8 @@ class PlanningServiceItemCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+    }
     );
   }
 }

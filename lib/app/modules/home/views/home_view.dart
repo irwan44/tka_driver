@@ -20,7 +20,7 @@ class ThemeController extends GetxController {
   @override
   void onInit() {
     isDark.value =
-        WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
+        WidgetsBinding.instance.window.platformBrightness == Brightness.light;
     super.onInit();
   }
 

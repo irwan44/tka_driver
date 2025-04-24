@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'app/modules/booking/controllers/booking_controller.dart';
 import 'app/routes/app_pages.dart';
 
 class AssetsRes {
@@ -72,6 +73,10 @@ Future<void> main() async {
   await GetStorage.init('preferences-mekanik');
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
+  Get.put<BookingController>(
+    BookingController(),
+    permanent: true,
+  );
   runApp(const MyApp());
 }
 

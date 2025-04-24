@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class _TicketClipper extends CustomClipper<Path> {
   @override
@@ -81,24 +82,6 @@ class RequestServiceItem extends StatelessWidget {
     }
   }
 
-  Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
-    final isDark = Theme.of(ctx).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icn, size: 14, color: Theme.of(ctx).hintColor),
-          const SizedBox(width: 4),
-          Text(txt, style: GoogleFonts.nunito(fontSize: 12)),
-        ],
-      ),
-    );
-  }
 
   Widget _infoRow(BuildContext ctx, IconData icn, String label, String value,
       {int maxLines = 1, TextStyle? valueStyle}) {
@@ -123,14 +106,60 @@ class RequestServiceItem extends StatelessWidget {
       ],
     );
   }
+  bool _isNewItem() {
+    DateTime? itemDate;
 
+    // 1) Coba format ISO 8601 (yyyy-MM-ddTHH:mm:ss.SSSZ)
+    try {
+      itemDate = DateTime.parse(tanggal).toLocal();
+    } catch (_) {}
+
+    // 2) Coba “yyyy-MM-dd HH:mm” (tanpa detik)
+    if (itemDate == null) {
+      try {
+        itemDate = DateFormat('yyyy-MM-dd HH:mm').parse(tanggal, true).toLocal();
+      } catch (_) {}
+    }
+
+    // 3) Coba hanya tanggal “yyyy-MM-dd”
+    if (itemDate == null) {
+      try {
+        itemDate = DateFormat('yyyy-MM-dd').parse(tanggal, true).toLocal();
+      } catch (_) {}
+    }
+
+    if (itemDate == null) return false; // gagal parse → bukan item baru
+
+    final now = DateTime.now();
+    return itemDate.year  == now.year &&
+        itemDate.month == now.month &&
+        itemDate.day   == now.day;   // masih di hari yang sama
+  }
+  Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
+    final isDark = Theme.of(ctx).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icn, size: 14, color: Theme.of(ctx).hintColor),
+          const SizedBox(width: 4),
+          Text(txt, style: GoogleFonts.nunito(fontSize: 12)),
+        ],
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF2B2B2B) : Colors.white;
     final statusCol = _statusColor();
-
+    final isNew   = _isNewItem();
     return ClipPath(
       clipper: _TicketClipper(),
       child: Container(
@@ -149,6 +178,34 @@ class RequestServiceItem extends StatelessWidget {
         ),
         child: Column(
           children: [
+            if (isNew)
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(.15),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                          color: Colors.green, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Request Service baru yang anda buat',
+                      style: GoogleFonts.nunito(
+                        color: Colors.green,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Padding(
               padding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
