@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -39,9 +40,15 @@ class EmergencyController extends GetxController {
   final Rx<ConnectivityResult> connectivityStatus =
       ConnectivityResult.mobile.obs;
   late final StreamSubscription _connectSub;
+  final Map<String, String> _lastStatusByNoPol = {};
+  late final AndroidNotificationChannel _statusChannel;
+
+  final FlutterLocalNotificationsPlugin _fln = FlutterLocalNotificationsPlugin();
+  late final Timer _bgTimer;
   @override
   void onInit() {
     super.onInit();
+    _initLocalNotifications();
     _connectSub = Connectivity()
         .onConnectivityChanged
         .listen((dynamic event) {
@@ -60,6 +67,12 @@ class EmergencyController extends GetxController {
 
     fetchEmergencyList();
     fetchVehicles();
+
+    _initLocalNotifications();
+    _bgTimer = Timer.periodic(
+      const Duration(seconds: 10),
+          (_) => fetchEmergencyList(silent: true),
+    );
   }
 
   final Rx<ConnectivityResult> debouncedStatus =
@@ -75,10 +88,12 @@ class EmergencyController extends GetxController {
       debouncedStatus.value = newStatus;
     }
   }
+
   @override
   void onClose() {
     _debounceTimer?.cancel();
     _connectSub.cancel();
+    _bgTimer.cancel();
     super.onClose();
   }
 
@@ -98,38 +113,100 @@ class EmergencyController extends GetxController {
     update();
   }
 
-  Future<void> fetchEmergencyList() async {
+  Future<void> _initLocalNotifications() async {
+    // 1) Buat channel Android sekali
+    _statusChannel = const AndroidNotificationChannel(
+      'emergency_status',                  // id
+      'Perubahan Status Emergency',        // name
+      description: 'Notifikasi status emergency berubah',
+      importance: Importance.high,
+      playSound: true,
+    );
+
+    final android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final ios     = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    await _fln.initialize(InitializationSettings(android: android, iOS: ios));
+    await _fln
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(_statusChannel);
+
+    final androidPlugin = _fln
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidPlugin != null &&
+        (await androidPlugin.areNotificationsEnabled()) == false) {
+      await androidPlugin.requestNotificationsPermission();
+    }
+  }
+
+  Future<void> _notifyChange(String noPol, String? oldSt, String newSt) async {
+    Get.snackbar('Nomor Polisi ${noPol.toUpperCase()} Status', '$newSt',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.blue, colorText: Colors.white,
+        duration: const Duration(seconds: 3));
+  }
+
+  Future<void> fetchEmergencyList({bool silent = false}) async {
+    // ——— early-exit jika tak ada internet ————————————————
     if (!await _hasRealInternet()) {
-      errorMessage.value =
-      'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
-      allEmergencyList.clear();
-      emergencyList.clear();
+      if (!silent) {
+        errorMessage.value =
+        'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
+        allEmergencyList.clear();
+        emergencyList.clear();
+      }
       return;
     }
 
-    isLoading.value = true;
-    errorMessage.value = '';
+    if (!silent) isLoading.value = true;
+
     try {
       if (LocalStorages.getToken.isEmpty) {
         throw Exception('Token is empty! Mohon login terlebih dahulu.');
       }
+
       final response = await API.fetchListEmergency();
       allEmergencyList.value = response.data ?? [];
       emergencyList.value    = allEmergencyList;
-    } catch (e) {
-      if (e.toString().toLowerCase().contains("tidak ada jaringan") ||
-          e.toString().toLowerCase().contains("no internet")) {
-        errorMessage.value =
-        'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
-      } else {
-        errorMessage.value = e.toString();
+
+      final newList = response.data ?? [];
+      for (final item in newList) {
+        final noPol  = (item.noPolisi ?? '').trim();
+        final status = (item.status   ?? '').trim();
+        if (noPol.isEmpty) continue;
+        final old = _lastStatusByNoPol[noPol];
+        if (old == null || old != status) {
+          await _notifyChange(noPol, old, status);
+        }
       }
-      allEmergencyList.clear();
-      emergencyList.clear();
+      _lastStatusByNoPol
+        ..clear()
+        ..addEntries(newList.map((e) =>
+            MapEntry((e.noPolisi ?? '').trim(), (e.status ?? '').trim())));
+
+    } catch (e) {
+      if (!silent) {
+        final low = e.toString().toLowerCase();
+        errorMessage.value = low.contains('tidak ada jaringan') || low.contains('no internet')
+            ? 'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda'
+            : e.toString();
+        allEmergencyList.clear();
+        emergencyList.clear();
+      }
     } finally {
-      isLoading.value = false;
+      if (!silent) isLoading.value = false;
     }
   }
+
+
+
 
   // ─────────────────── FETCH VEHICLES ──────────────────────────
   Future<void> fetchVehicles() async {

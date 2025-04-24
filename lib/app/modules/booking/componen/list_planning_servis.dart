@@ -48,9 +48,9 @@ class _DashPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class ServiceItemCard extends StatelessWidget {
+class PlanningServiceItemCard extends StatelessWidget {
   final ListService service;
-  const ServiceItemCard({Key? key, required this.service}) : super(key: key);
+  const PlanningServiceItemCard({Key? key, required this.service}) : super(key: key);
 
   // Helper row
   Widget _detailRow({
@@ -129,7 +129,7 @@ class ServiceItemCard extends StatelessWidget {
     else if (isPKB)    { badgeClr = Colors.green.shade200;   txtClr = Colors.green.shade800; }
     else if (isPKBTutup){ badgeClr = Colors.red.shade200;    txtClr = Colors.red.shade800; }
     else if (isInvoice){ badgeClr = Colors.blue.shade200;    txtClr = Colors.blue.shade800; }
-    else if (isPlanning){ badgeClr = Colors.purple.shade200; txtClr = Colors.purple.shade800; }
+    else if (isPlanning){ badgeClr = Colors.red.shade200; txtClr = Colors.red.shade800; }
     else               { badgeClr = isDark? Colors.grey.shade700 : Colors.grey.shade300;
     txtClr = isDark? Colors.white : Colors.black; }
     final kodeLabel = isEstimasi ? 'Kode Estimasi:' : 'Kode PKB:';
@@ -173,38 +173,14 @@ class ServiceItemCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(
                   children: [
-                    Icon(leadingIcn, size: 26, color: Theme.of(context).hintColor),
-                    const SizedBox(width: 12),
+                    Icon(Icons.notifications_active_rounded, size: 16, color: isDark ? Colors.redAccent[400] : Colors.redAccent[400]),
+                    SizedBox(width: 10,),
                     Expanded(
-                      child: Text(leadingTitle,
+                      child: Text('Pemberitahuan Planning Service',
                           style: GoogleFonts.nunito(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: isDark ? Colors.white : Colors.black87)),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: badgeClr.withOpacity(.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                       children: [
-                         Container(
-                           width: 8,
-                           height: 8,
-                           decoration: BoxDecoration(
-                               color: txtClr, shape: BoxShape.circle),
-                         ),
-                         const SizedBox(width: 6),
-                         Text(service.status ?? '-',
-                             style: GoogleFonts.nunito(
-                                 fontSize: 14,
-                                 fontWeight: FontWeight.bold,
-                                 color: txtClr)),
-                       ],
-                      )
-
                     ),
                   ],
                 ),
@@ -220,82 +196,48 @@ class ServiceItemCard extends StatelessWidget {
               ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 12),
+                    Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: badgeClr.withOpacity(.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                  color: txtClr, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(service.status ?? '-',
+                                style: GoogleFonts.nunito(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: txtClr)),
+                          ],
+                        )
+                    ),
+                    const SizedBox(height: 12),
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
                       children: [
                         _miniChip(context, Icons.confirmation_num, service.kodeSvc ?? '-'),
-                        _miniChip(context, Icons.code, kodeValue),
                         if ((service.noPolisi ?? '').isNotEmpty)
                           _miniChip(context, Icons.directions_car, service.noPolisi!),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    // label kode utama
-                    Text('$kodeLabel $kodeValue',
-                        style: GoogleFonts.nunito(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87)),
-                    const SizedBox(height: 8),
-                    const Divider(height: 20),
-                    _detailRow(
-                        icon: Icons.confirmation_num,
-                        label: 'Kode Svc',
-                        value: service.kodeSvc ?? '-',
-                        isDark: isDark),
-                    _detailRow(
-                        icon: Icons.build,
-                        label: 'Tipe Svc',
-                        value: service.tipeSvc ?? '-',
-                        isDark: isDark),
-                    if (isEstimasi) ...[
-                      _detailRow(
-                          icon: Icons.calendar_today,
-                          label: 'Tgl Estimasi',
-                          value: service.tglEstimasi ?? '-',
-                          isDark: isDark),
-                      _detailRow(
-                          icon: Icons.directions_car,
-                          label: 'No Polisi',
-                          value: service.noPolisi ?? '-',
-                          isDark: isDark),
-                      _detailRow(
-                          icon: Icons.directions_car_filled,
-                          label: 'Kode Kendaraan',
-                          value: service.kodeKendaraan ?? '-',
-                          isDark: isDark),
-                    ] else if (isPKB || isPKBTutup || isInvoice || isPlanning) ...[
-                      _detailRow(
-                          icon: Icons.calendar_today,
-                          label: 'Tgl PKB',
-                          value: service.tglPkb ?? '-',
-                          isDark: isDark),
-                      _detailRow(
-                          icon: Icons.calendar_view_day,
-                          label: 'Tgl Tutup',
-                          value: service.tglTutup ?? '-',
-                          isDark: isDark),
-                      _detailRow(
-                          icon: Icons.directions_car,
-                          label: 'No Polisi',
-                          value: service.noPolisi ?? '-',
-                          isDark: isDark),
-                      _detailRow(
-                          icon: Icons.directions_car_filled,
-                          label: 'Kode Kendaraan',
-                          value: service.kodeKendaraan ?? '-',
-                          isDark: isDark),
-                    ],
                     if (isPlanning)
                       Obx(() {
                         final confirmed = bookingController.isPlanningConfirmed(service.kodeSvc);
                         final bgColor = confirmed ? Colors.green : Colors.red;
-
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Container(

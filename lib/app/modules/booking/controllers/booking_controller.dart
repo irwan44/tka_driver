@@ -12,19 +12,10 @@ import '../../../data/data_respon/detailservice.dart';
 import '../../../data/data_respon/listservice.dart';
 import '../../../data/data_respon/reques_service.dart';
 import '../../../data/endpoint.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
 import 'package:tka_customer/app/data/localstorage.dart';
-import 'package:tka_customer/app/data/endpoint.dart';
-
-import '../../home/controllers/home_controller.dart';
 
 class BookingController extends GetxController {
   var currentStep = 0.obs;
@@ -42,7 +33,6 @@ class BookingController extends GetxController {
   bool isPlanningConfirmed(String? kodeSvc) =>
       kodeSvc != null && confirmedPlanningSvcs.contains(kodeSvc);
   DateTime _toLocalDateTime(String utcString) {
-    // Jika format ISO (yyyy-MM-ddTHH:mm:ssZ), langsung parse:
     return DateTime.parse(utcString).toLocal();
   }
 
@@ -64,7 +54,6 @@ class BookingController extends GetxController {
     }).toList();
   }
 
-  /// dan filtering yang kamu pakai di _buildServiceTab
   List<ListService> get filteredServices {
     return listService.where((s) {
       final nopol = (s.noPolisi ?? '').toLowerCase();
@@ -87,6 +76,7 @@ class BookingController extends GetxController {
       return matchSearch && matchDate;
     }).toList();
   }
+
   Future<void> confirmPlanningService(BuildContext ctx,String kodeSvc) async {
     if (isPlanningConfirmed(kodeSvc)) return;
     isConfirming.value = true;
@@ -345,7 +335,6 @@ class BookingController extends GetxController {
   var selectedVehicle = ''.obs;
 
   Future<void> submitEmergencyRepair(BuildContext ctx) async {
-    // 1) VALIDASI INPUT
     if (selectedVehicle.value.isEmpty) {
       Get.snackbar('Warning', 'Kendaraan harus dipilih.',
           backgroundColor: Colors.yellow, colorText: Colors.black);
@@ -357,7 +346,6 @@ class BookingController extends GetxController {
       return;
     }
 
-    // 2) PERSIAPAN DATA
     final now = DateTime.now();
     final strTgl = DateFormat('yyyy-MM-dd').format(now);
     final strJam = DateFormat('HH:mm').format(now);
@@ -458,7 +446,6 @@ class BookingController extends GetxController {
     final photoCount = mediaList.where((x) => !_isVideo(x)).length;
     final videoCount = mediaList.where((x) => _isVideo(x)).length;
 
-    // Validasi jumlah foto: minimal 1, maksimal 4
     if (photoCount < 1) {
       throw 'Minimal harus ada 1 foto.';
     }
@@ -466,7 +453,6 @@ class BookingController extends GetxController {
       throw 'Maksimal foto yang dapat diupload adalah 4.';
     }
 
-    // Validasi jumlah video: opsional, tapi maks 1
     if (videoCount > 1) {
       throw 'Hanya boleh mengupload 1 video.';
     }
@@ -475,7 +461,6 @@ class BookingController extends GetxController {
 
     for (var file in mediaList) {
       if (_isVideo(file)) {
-        // Kompres video jika durasi ≥ 1 menit
         final mediaInfo = await VideoCompress.getMediaInfo(file.path);
         if (mediaInfo.duration != null && mediaInfo.duration! >= 120000) {
           final compressedVideo = await VideoCompress.compressVideo(
@@ -489,10 +474,8 @@ class BookingController extends GetxController {
             continue;
           }
         }
-        // fallback: pakai file asli
         compressedFiles.add(File(file.path));
       } else {
-        // Kompres gambar
         final result = await FlutterImageCompress.compressWithFile(
           file.path,
           quality: 80,
@@ -505,7 +488,6 @@ class BookingController extends GetxController {
           await File(targetPath).writeAsBytes(result);
           compressedFiles.add(compressedImage);
         } else {
-          // fallback: pakai file asli
           compressedFiles.add(File(file.path));
         }
       }
@@ -546,6 +528,4 @@ class BookingController extends GetxController {
       isLoading.value = false;
     }
   }
-
-
 }

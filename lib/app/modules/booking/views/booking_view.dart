@@ -13,6 +13,7 @@ import '../../../data/data_respon/listservice.dart';
 import '../../../data/data_respon/reques_service.dart';
 import '../../emergency/views/emergency_view.dart';
 import '../componen/langkah_penggunaan.dart';
+import '../componen/list_planning_servis.dart';
 import '../componen/listservicecard.dart';
 import '../componen/requesrepair.dart';
 import '../controllers/booking_controller.dart';
@@ -142,6 +143,35 @@ class _BookingViewState extends State<BookingView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Obx(() {
+                      final waitingList = c.listService
+                          .where((s) =>
+                      (s.status ?? '').toString().toUpperCase() == 'NOT CONFIRMED')
+                          .toList();
+
+                      if (waitingList.isEmpty) return const SizedBox.shrink();
+                      const double kRightPadding = 16;
+                      final bool   single    = waitingList.length == 1;
+                      final double screenW   = MediaQuery.of(context).size.width;
+                      final double cardW     = single ? screenW - kRightPadding : screenW * 0.80;
+                      final double cardH     = single ? 200.0 : 220.0;
+
+                      return SizedBox(
+                        height: cardH,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.only(right: kRightPadding),
+                          itemCount: waitingList.length,
+                          itemBuilder: (_, i) => Container(
+                            width : cardW,
+                            height: cardH,
+                            margin: EdgeInsets.only(right: i == waitingList.length - 1 ? 0 : 12),
+                            child : PlanningServiceItemCard(service: waitingList[i]),
+                          ),
+                        ),
+                      );
+                    }),
+                    SizedBox(height: 10,),
                     Text(
                       'Filter',
                       style: GoogleFonts.nunito(
@@ -195,7 +225,8 @@ class _BookingViewState extends State<BookingView> {
                           onPressed: () => Get.to(() => const UsageGuidePage())
                         ),
                       ],
-                    )
+                    ),
+
                   ],
                 ),
               ),
@@ -211,11 +242,13 @@ class _BookingViewState extends State<BookingView> {
               ),
             ),
           ],
-          body: TabBarView(
-            children: [
-              _buildRequestTab(c, isDark),
-              _buildServiceTab(c, isDark),
-            ],
+          body: Expanded(
+            child: TabBarView(
+              children: [
+                _buildRequestTab(c, isDark),
+                _buildServiceTab(c, isDark),
+              ],
+            ),
           ),
         ),
       ),
@@ -320,7 +353,7 @@ class _BookingViewState extends State<BookingView> {
         ],
       )
           : ListView.builder(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.only(top: 4, bottom: 120),
         itemCount: filtered.length,
         itemBuilder: (ctx, i) {
           final r = filtered[i];
@@ -396,10 +429,10 @@ class _BookingViewState extends State<BookingView> {
         ],
       )
           : ListView.builder(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.only(bottom: 120),
         itemCount: filtered.length,
         itemBuilder: (_, i) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: ServiceItemCard(service: filtered[i]),
         ),
       ),

@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'app/routes/app_pages.dart';
 
 class AssetsRes {
@@ -59,40 +57,7 @@ class OneSignalConfig {
 }
 
 
-Future<void> initOneSignal() async {
-  final status = await Permission.notification.status;
-  if (!status.isGranted) {
-    final result = await Permission.notification.request();
-    if (!result.isGranted) {
-      debugPrint('Notification permission denied');
-      return;
-    }
-  }
-  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-  OneSignal.Debug.setAlertLevel(OSLogLevel.none);
-  OneSignal.consentRequired(false);
-  OneSignal.initialize(OneSignalConfig.appId);
-  OneSignal.LiveActivities.setupDefault();
-  OneSignal.Notifications.clearAll();
-  OneSignal.Notifications.addClickListener((event) {
-    print('Notification clicked: ${event.notification.jsonRepresentation()}');
-  });
 
-  OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-    if (Get.currentRoute == Routes.LOGIN) {
-      event.preventDefault();
-      return;
-    }
-    event.preventDefault();
-    event.notification.display();
-  });
-
-  final boxPrefs = GetStorage('preferences-mekanik');
-  final storedEmail = boxPrefs.read('user_email') ?? "";
-  if (storedEmail.isNotEmpty) {
-    OneSignal.User.addEmail(storedEmail);
-  }
-}
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -105,7 +70,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init('token-mekanik');
   await GetStorage.init('preferences-mekanik');
-  await initOneSignal();
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
@@ -125,7 +89,7 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData.dark().copyWith(
         textTheme: GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       builder: (context, child) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         SystemChrome.setSystemUIOverlayStyle(
