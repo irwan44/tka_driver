@@ -384,18 +384,11 @@ class _NoConnectionWidget extends StatelessWidget {
                   ),
                 ),
 
-                // ─── Tombol Info ────────────────────────────────────────
                 IconButton(
                   icon: const Icon(Icons.info_outline),
                   tooltip: 'Informasi',
                   splashRadius: 22,
                   onPressed: () {
-                    // pakai salah satu dari dua cara di bawah
-
-                    // 1) Instance langsung
-                    // Get.to(const UsageGuidePage());
-
-                    // 2) Fungsi anon – direkomendasikan (lazy)
                     Get.to(() => const EmergencyGuidePage());
                   },
                 ),

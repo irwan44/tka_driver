@@ -1,3 +1,4 @@
+import 'package:flutter/animation.dart';
 import 'package:get/get.dart';
 
 import '../modules/booking/bindings/booking_binding.dart';
@@ -34,6 +35,11 @@ class AppPages {
       name: _Paths.LOGIN,
       page: () => const LoginView(),
       binding: LoginBinding(),
+      transition: Transition.zoom,
+      transitionDuration: const Duration(
+        milliseconds: 900,
+      ),
+      curve: Curves.easeOutBack,
     ),
     GetPage(
       name: _Paths.EMERGENCY,

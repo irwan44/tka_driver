@@ -36,6 +36,7 @@ dependencies:
   connectivity_plus: ^6.1.4
   quickalert: ^1.1.0
   flutter_local_notifications: ^19.1.0
+  package_info_plus: ^8.3.0
 
 dev_dependencies:
   flutter_test:

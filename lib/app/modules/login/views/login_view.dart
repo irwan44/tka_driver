@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:tka_customer/app/modules/login/controllers/login_controller.dart';
 
 import '../../../../main.dart';
+import '../../booking/componen/langkah_penggunaan.dart';
+import '../../emergency/componen/langkah_penggunaan.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -136,7 +139,73 @@ class LoginView extends StatelessWidget {
                     ),
                   ),
                 )),
-                const SizedBox(height: 16),
+                const SizedBox(height: 30),
+                Text(
+                  "Panduan Aplikasi",
+                  style: GoogleFonts.nunito(
+                    color:isDark ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 20,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.info_outline, size: 18, color: Colors.white),
+                      label: const Text(
+                        'Reguler Service',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,        // latar jingga
+                        elevation: 0,                          // flat look
+                        padding: const EdgeInsets.symmetric(   // ruang nyaman
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Get.to(() => const UsageGuidePage()),
+                    ),
+
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.info_outline, size: 18, color: Colors.white),
+                      label: const Text(
+                        'Emergency Service',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Get.to(() => const EmergencyGuidePage()),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 50,),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snap) {
+                    final v = snap.data?.version ?? '–';
+                    return Text(
+                      'Versi Aplikasi $v',
+                      style: GoogleFonts.nunito(
+                        color: isDark ? Colors.white70 : Colors.black54,
+                        fontSize: 12,
+                      ),
+                    );
+                  },
+                ),
                 // TextButton(
                 //   onPressed: () {},
                 //   child: Text(
