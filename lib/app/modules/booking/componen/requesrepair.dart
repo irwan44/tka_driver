@@ -109,32 +109,30 @@ class RequestServiceItem extends StatelessWidget {
   bool _isNewItem() {
     DateTime? itemDate;
 
-    // 1) Coba format ISO 8601 (yyyy-MM-ddTHH:mm:ss.SSSZ)
     try {
       itemDate = DateTime.parse(tanggal).toLocal();
     } catch (_) {}
 
-    // 2) Coba “yyyy-MM-dd HH:mm” (tanpa detik)
     if (itemDate == null) {
       try {
         itemDate = DateFormat('yyyy-MM-dd HH:mm').parse(tanggal, true).toLocal();
       } catch (_) {}
     }
 
-    // 3) Coba hanya tanggal “yyyy-MM-dd”
     if (itemDate == null) {
       try {
         itemDate = DateFormat('yyyy-MM-dd').parse(tanggal, true).toLocal();
       } catch (_) {}
     }
 
-    if (itemDate == null) return false; // gagal parse → bukan item baru
+    if (itemDate == null) return false;
 
     final now = DateTime.now();
     return itemDate.year  == now.year &&
         itemDate.month == now.month &&
-        itemDate.day   == now.day;   // masih di hari yang sama
+        itemDate.day   == now.day;
   }
+
   Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
     final isDark = Theme.of(ctx).brightness == Brightness.dark;
     return Container(

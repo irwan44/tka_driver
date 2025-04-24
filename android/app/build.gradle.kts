@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "id.co.twka.fms.driver"
-    compileSdk = flutter.compileSdkVersion     // biarkan di-set oleh Flutter
+    compileSdk = flutter.compileSdkVersion
 
     defaultConfig {
         applicationId  = "id.co.twka.fms.driver"
@@ -17,7 +17,6 @@ android {
         versionName    = flutter.versionName
     }
 
-    // ─── Flavors ───────────────────────────────────────────────────────────────
     flavorDimensions += "app"
     productFlavors {
         create("dev") {
@@ -42,11 +41,10 @@ android {
         getByName("release") { signingConfig = signingConfigs.getByName("debug") }
     }
 
-    // ─── Java & Desugaring ─────────────────────────────────────────────────────
     compileOptions {
-        sourceCompatibility          = JavaVersion.VERSION_11        // atau 17
+        sourceCompatibility          = JavaVersion.VERSION_11
         targetCompatibility          = JavaVersion.VERSION_11
-        isCoreLibraryDesugaringEnabled = true        // ⬅️ pakai *is* + tanda '='
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
@@ -54,10 +52,9 @@ android {
 }
 
 dependencies {
-    // ⬅️ panggil fungsi, bukan assignment ala Groovy
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 flutter {
-    source = "../.."   // tetap
+    source = "../.."
 }
