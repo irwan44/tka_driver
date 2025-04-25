@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:video_player/video_player.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:video_player/video_player.dart';
 
 import '../controllers/emergency_controller.dart';
 import 'lacak_mekanik.dart';
@@ -32,7 +32,7 @@ class FullscreenVideoView extends StatefulWidget {
 class _FullscreenVideoViewState extends State<FullscreenVideoView> {
   late double _realAspect;
   VideoPlayerController? _vCtrl;
-  ChewieController?     _cCtrl;
+  ChewieController? _cCtrl;
 
   @override
   void initState() {
@@ -46,11 +46,15 @@ class _FullscreenVideoViewState extends State<FullscreenVideoView> {
 
     final meta = _vCtrl!.value.size;
     int rot = 0;
-    try { rot = _vCtrl!.value.rotationCorrection ?? 0; } catch (_) {}
+    try {
+      rot = _vCtrl!.value.rotationCorrection ?? 0;
+    } catch (_) {}
     double w = meta.width;
     double h = meta.height;
     if (rot == 90 || rot == 270) {
-      final tmp = w; w = h; h = tmp;
+      final tmp = w;
+      w = h;
+      h = tmp;
     }
     _realAspect = (w == 0 || h == 0) ? 9 / 16 : w / h;
 
@@ -67,7 +71,7 @@ class _FullscreenVideoViewState extends State<FullscreenVideoView> {
       autoPlay: true,
       looping: false,
       aspectRatio: _realAspect,
-      additionalOptions: (context) => [],   // sama seperti di contoh Anda
+      additionalOptions: (context) => [], // sama seperti di contoh Anda
     );
 
     if (mounted) setState(() {});
@@ -79,6 +83,7 @@ class _FullscreenVideoViewState extends State<FullscreenVideoView> {
     _vCtrl?.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.black,
@@ -91,10 +96,10 @@ class _FullscreenVideoViewState extends State<FullscreenVideoView> {
       ),
     ),
     body: Center(
-      child: (_cCtrl == null ||
-          !_cCtrl!.videoPlayerController.value.isInitialized)
-          ? const CircularProgressIndicator()
-          : _videoView(),
+      child:
+          (_cCtrl == null || !_cCtrl!.videoPlayerController.value.isInitialized)
+              ? const CircularProgressIndicator()
+              : _videoView(),
     ),
   );
 
@@ -118,7 +123,6 @@ class _FullscreenVideoViewState extends State<FullscreenVideoView> {
   }
 }
 
-
 class FullscreenImageView extends StatelessWidget {
   final String url;
   const FullscreenImageView({Key? key, required this.url}) : super(key: key);
@@ -126,7 +130,8 @@ class FullscreenImageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final overlayStyle = isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark;
+    final overlayStyle =
+        isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlayStyle,
       child: Scaffold(
@@ -135,14 +140,19 @@ class FullscreenImageView extends StatelessWidget {
           backgroundColor: isDark ? Colors.black : Colors.white,
           title: Text(
             'Preview Foto',
-            style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
+            style: GoogleFonts.nunito(
+              color: isDark ? Colors.white : Colors.black,
+            ),
           ),
           iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black),
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDark ? Colors.white : Colors.black,
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
@@ -171,7 +181,6 @@ class FullscreenImageView extends StatelessWidget {
   }
 }
 
-// Emergency Detail View
 class EmergencyDetailView extends StatefulWidget {
   const EmergencyDetailView({Key? key}) : super(key: key);
 
@@ -200,7 +209,6 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
     super.dispose();
   }
 
-  // Fungsi bantu get address
   Future<String> _getAddress(String? lat, String? lng) async {
     double? latitude = double.tryParse(lat ?? '');
     double? longitude = double.tryParse(lng ?? '');
@@ -208,7 +216,10 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
       return "Alamat tidak tersedia";
     }
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
         String address =
@@ -224,7 +235,8 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final overlayStyle = isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark;
+    final overlayStyle =
+        isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark;
 
     final Data data = Get.arguments as Data; // data emergency
     final mediaList = data.emergencyMedia ?? [];
@@ -237,23 +249,26 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
           elevation: 1,
           title: Text(
             'Detail Emergency',
-            style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
+            style: GoogleFonts.nunito(
+              color: isDark ? Colors.white : Colors.black,
+            ),
           ),
           iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black),
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDark ? Colors.white : Colors.black,
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         backgroundColor: isDark ? Colors.grey[900] : const Color(0xFFF6F7FB),
         body: SafeArea(
           child: RefreshIndicator(
-            onRefresh: () async {
-              // Logic refresh (jika diperlukan)
-            },
+            onRefresh: () async {},
             child: Obx(() {
               if (detailController.isLoading.value) {
                 return _buildShimmerLoading();
@@ -270,7 +285,6 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
                   ),
                 );
               }
-              // Animasi transisi
               _animController.forward();
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
@@ -295,7 +309,6 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
   }
 
   Widget _buildTicketInfoSection(Data data, bool isDark) {
-
     final disableStatuses = [
       'Diterima',
       'Mekanik Ditugaskan',
@@ -338,35 +351,57 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
                 ],
               ),
               const SizedBox(height: 12),
-              _buildRowInfo(Icons.calendar_today, 'Tanggal', data.tgl ?? '-', isDark),
+              _buildRowInfo(
+                Icons.calendar_today,
+                'Tanggal',
+                data.tgl ?? '-',
+                isDark,
+              ),
               _buildRowInfo(Icons.access_time, 'Jam', data.jam ?? '-', isDark),
-              _buildRowInfo(Icons.directions_car, 'No. Polisi', data.noPolisi ?? '-', isDark),
+              _buildRowInfo(
+                Icons.directions_car,
+                'No. Polisi',
+                data.noPolisi ?? '-',
+                isDark,
+              ),
               _buildDottedSeparator(),
               _buildRowInfo(Icons.person, 'Nama', data.nama ?? '-', isDark),
               _buildRowInfo(Icons.phone, 'HP', data.hp ?? '-', isDark),
               _buildRowInfo(Icons.email, 'Email', data.email ?? '-', isDark),
-              _buildRowInfo(Icons.report_problem, 'Keluhan', data.keluhan ?? '-', isDark),
+              _buildRowInfo(
+                Icons.report_problem,
+                'Keluhan',
+                data.keluhan ?? '-',
+                isDark,
+              ),
               _buildDottedSeparator(),
-              // Alamat
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.location_on, size: 18, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                    Icon(
+                      Icons.location_on,
+                      size: 18,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
                     const SizedBox(width: 8),
                     SizedBox(
                       width: 100,
                       child: Text(
                         "Alamat",
-                        style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                     Expanded(
                       child: FutureBuilder<String>(
                         future: _getAddress(data.latitude, data.longitude),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return Text(
                               "Mengambil alamat...",
                               style: GoogleFonts.nunito(fontSize: 14),
@@ -389,58 +424,86 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
                 ),
               ),
               _buildDottedSeparator(),
-              _buildRowInfo(Icons.build, 'Kode Service', data.kode ?? '-', isDark),
-              _buildRowInfo(Icons.person_pin, 'Kode Forman', data.kodeForman ?? '-', isDark),
-              _buildRowInfo(Icons.handyman, 'Kode Ottogo', data.kodeOttogo ?? '-', isDark),
+              _buildRowInfo(
+                Icons.build,
+                'Kode Service',
+                data.kode ?? '-',
+                isDark,
+              ),
+              _buildRowInfo(
+                Icons.person_pin,
+                'Kode Forman',
+                data.kodeForman ?? '-',
+                isDark,
+              ),
+              _buildRowInfo(
+                Icons.handyman,
+                'Kode Ottogo',
+                data.kodeOttogo ?? '-',
+                isDark,
+              ),
               _buildDottedSeparator(),
-              _buildRowInfo(Icons.edit_note, 'Catatan Mekanik', data.catatanMekanik ?? '-', isDark),
+              _buildRowInfo(
+                Icons.edit_note,
+                'Catatan Mekanik',
+                data.catatanMekanik ?? '-',
+                isDark,
+              ),
               const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.orange, size: 18),
+                  const Icon(
+                    Icons.info_outline,
+                    color: Colors.orange,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Status: ${data.status ?? '-'}',
-                      style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
-
-              // Bagian TOMBOL LACAK
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  // onPressed = null => button disable
-                  onPressed: isTrackingDisabled
-                      ? null
-                      : () {
-                    // Jika status "Mekanik Dalam Perjalanan", misal,
-                    // user boleh ke LacakMekanik
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LacakMekanik(data: data),
-                        maintainState: false,
-
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.location_searching, color: Colors.white),
+                  onPressed:
+                      isTrackingDisabled
+                          ? null
+                          : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LacakMekanik(data: data),
+                                maintainState: false,
+                              ),
+                            );
+                          },
+                  icon: const Icon(
+                    Icons.location_searching,
+                    color: Colors.white,
+                  ),
                   label: Text(
                     'Lacak Posisi Mekanik',
                     style: GoogleFonts.nunito(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    // Jika disable => warna abu-abu; jika enable => warna biru
-                    backgroundColor: isTrackingDisabled ? Colors.grey : Colors.blue,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    backgroundColor:
+                        isTrackingDisabled ? Colors.grey : Colors.blue,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -486,7 +549,6 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
     );
   }
 
-  /// Bagian Media
   Widget _buildTicketMediaSection(List<EmergencyMedia> mediaList, bool isDark) {
     return Stack(
       children: [
@@ -534,7 +596,7 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final double itemWidth =
-                    constraints.maxWidth < 450 ? 150.0 : 200.0;
+                        constraints.maxWidth < 450 ? 150.0 : 200.0;
                     return SizedBox(
                       height: itemWidth + 10,
                       child: ListView.separated(
@@ -543,7 +605,12 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
                         separatorBuilder: (ctx, i) => const SizedBox(width: 12),
                         itemBuilder: (ctx, i) {
                           final EmergencyMedia media = mediaList[i];
-                          return _buildMediaItem(context, media, itemWidth, isDark);
+                          return _buildMediaItem(
+                            context,
+                            media,
+                            itemWidth,
+                            isDark,
+                          );
                         },
                       ),
                     );
@@ -594,28 +661,29 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
     );
   }
 
-  // Helper widget
   Widget _buildRowInfo(IconData icon, String label, String value, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+          Icon(
+            icon,
+            size: 18,
+            color: isDark ? Colors.grey[400] : Colors.grey[600],
+          ),
           const SizedBox(width: 8),
           SizedBox(
             width: 100,
             child: Text(
               label,
-              style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w500),
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.nunito(fontSize: 14),
-            ),
-          ),
+          Expanded(child: Text(value, style: GoogleFonts.nunito(fontSize: 14))),
         ],
       ),
     );
@@ -637,7 +705,12 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
     );
   }
 
-  Widget _buildMediaItem(BuildContext context, EmergencyMedia media, double size, bool isDark) {
+  Widget _buildMediaItem(
+    BuildContext context,
+    EmergencyMedia media,
+    double size,
+    bool isDark,
+  ) {
     final String url = media.media ?? '';
     final String type = media.type?.toLowerCase() ?? '';
     final bool isVideo = type.contains('video') || type.contains('mp4');
@@ -652,7 +725,11 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
             color: Colors.black12,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.slow_motion_video_rounded, size: 48, color: Colors.grey),
+          child: const Icon(
+            Icons.slow_motion_video_rounded,
+            size: 48,
+            color: Colors.grey,
+          ),
         ),
       );
     } else {

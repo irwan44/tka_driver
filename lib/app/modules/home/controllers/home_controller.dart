@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
 
 import '../../../../main.dart';
 import '../../../data/endpoint.dart';
@@ -21,9 +20,12 @@ class HomeController extends GetxController {
     try {
       final listEmergency = await API.fetchListEmergency();
       if (listEmergency.data != null) {
-        diterimaCount.value = listEmergency.data!
-            .where((e) => e.status?.toLowerCase() == 'mekanik dalam perjalanan')
-            .length;
+        diterimaCount.value =
+            listEmergency.data!
+                .where(
+                  (e) => e.status?.toLowerCase() == 'mekanik dalam perjalanan',
+                )
+                .length;
       } else {
         diterimaCount.value = 0;
       }
@@ -32,6 +34,7 @@ class HomeController extends GetxController {
       print("Error fetching emergency count: $e");
     }
   }
+
   Future<void> initOneSignal() async {
     final status = await Permission.notification.status;
     if (!status.isGranted) {
@@ -66,6 +69,7 @@ class HomeController extends GetxController {
       OneSignal.User.addEmail(storedEmail);
     }
   }
+
   @override
   void onInit() {
     super.onInit();

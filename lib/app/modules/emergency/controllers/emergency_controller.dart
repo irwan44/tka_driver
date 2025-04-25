@@ -4,33 +4,29 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
-
-import 'package:tka_customer/app/routes/app_pages.dart';
-import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
-import 'package:tka_customer/app/data/localstorage.dart';
-import 'package:tka_customer/app/data/endpoint.dart';
-import '../../../data/data_respon/meknaikposisi.dart';
-
 // Tambahan kompres
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
+import 'package:tka_customer/app/data/endpoint.dart';
+import 'package:tka_customer/app/data/localstorage.dart';
+import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:video_compress/video_compress.dart';
 
 class EmergencyController extends GetxController {
-  var isLoading     = false.obs;
-  var errorMessage  = ''.obs;
+  var isLoading = false.obs;
+  var errorMessage = ''.obs;
 
   var allEmergencyList = <Data>[].obs;
-  var emergencyList    = <Data>[].obs;
-  var searchQuery      = ''.obs;
+  var emergencyList = <Data>[].obs;
+  var searchQuery = ''.obs;
   DateTime? dateFilter;
   var isCompressingVideo = false.obs;
   final searchController = TextEditingController();
@@ -43,15 +39,14 @@ class EmergencyController extends GetxController {
   final Map<String, String> _lastStatusByNoPol = {};
   late final AndroidNotificationChannel _statusChannel;
 
-  final FlutterLocalNotificationsPlugin _fln = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _fln =
+      FlutterLocalNotificationsPlugin();
   late final Timer _bgTimer;
   @override
   void onInit() {
     super.onInit();
     _initLocalNotifications();
-    _connectSub = Connectivity()
-        .onConnectivityChanged
-        .listen((dynamic event) {
+    _connectSub = Connectivity().onConnectivityChanged.listen((dynamic event) {
       ConnectivityResult status;
       if (event is ConnectivityResult) {
         status = event;
@@ -71,12 +66,11 @@ class EmergencyController extends GetxController {
     _initLocalNotifications();
     _bgTimer = Timer.periodic(
       const Duration(seconds: 10),
-          (_) => fetchEmergencyList(silent: true),
+      (_) => fetchEmergencyList(silent: true),
     );
   }
 
-  final Rx<ConnectivityResult> debouncedStatus =
-      ConnectivityResult.mobile.obs;
+  final Rx<ConnectivityResult> debouncedStatus = ConnectivityResult.mobile.obs;
   void _setStatusDebounced(ConnectivityResult newStatus) {
     if (newStatus == ConnectivityResult.none) {
       _debounceTimer?.cancel();
@@ -99,8 +93,9 @@ class EmergencyController extends GetxController {
 
   Future<bool> _hasRealInternet() async {
     try {
-      final result = await InternetAddress.lookup('example.com')
-          .timeout(const Duration(seconds: 3));
+      final result = await InternetAddress.lookup(
+        'example.com',
+      ).timeout(const Duration(seconds: 3));
       return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
     } on SocketException {
       return false;
@@ -123,7 +118,7 @@ class EmergencyController extends GetxController {
     );
 
     final android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    final ios     = DarwinInitializationSettings(
+    final ios = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
@@ -132,12 +127,15 @@ class EmergencyController extends GetxController {
     await _fln.initialize(InitializationSettings(android: android, iOS: ios));
     await _fln
         .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_statusChannel);
 
-    final androidPlugin = _fln
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin =
+        _fln
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
 
     if (androidPlugin != null &&
         (await androidPlugin.areNotificationsEnabled()) == false) {
@@ -146,17 +144,21 @@ class EmergencyController extends GetxController {
   }
 
   Future<void> _notifyChange(String noPol, String? oldSt, String newSt) async {
-    Get.snackbar('Nomor Polisi ${noPol.toUpperCase()} Status', '$newSt',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.blue, colorText: Colors.white,
-        duration: const Duration(seconds: 3));
+    Get.snackbar(
+      'Nomor Polisi ${noPol.toUpperCase()} Status',
+      '$newSt',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.blue,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
   }
 
   Future<void> fetchEmergencyList({bool silent = false}) async {
     if (!await _hasRealInternet()) {
       if (!silent) {
         errorMessage.value =
-        'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
+            'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
         allEmergencyList.clear();
         emergencyList.clear();
       }
@@ -172,12 +174,12 @@ class EmergencyController extends GetxController {
 
       final response = await API.fetchListEmergency();
       allEmergencyList.value = response.data ?? [];
-      emergencyList.value    = allEmergencyList;
+      emergencyList.value = allEmergencyList;
 
       final newList = response.data ?? [];
       for (final item in newList) {
-        final noPol  = (item.noPolisi ?? '').trim();
-        final status = (item.status   ?? '').trim();
+        final noPol = (item.noPolisi ?? '').trim();
+        final status = (item.status ?? '').trim();
         if (noPol.isEmpty) continue;
         final old = _lastStatusByNoPol[noPol];
         if (old == null || old != status) {
@@ -186,15 +188,18 @@ class EmergencyController extends GetxController {
       }
       _lastStatusByNoPol
         ..clear()
-        ..addEntries(newList.map((e) =>
-            MapEntry((e.noPolisi ?? '').trim(), (e.status ?? '').trim())));
-
+        ..addEntries(
+          newList.map(
+            (e) => MapEntry((e.noPolisi ?? '').trim(), (e.status ?? '').trim()),
+          ),
+        );
     } catch (e) {
       if (!silent) {
         final low = e.toString().toLowerCase();
-        errorMessage.value = low.contains('tidak ada jaringan') || low.contains('no internet')
-            ? 'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda'
-            : e.toString();
+        errorMessage.value =
+            low.contains('tidak ada jaringan') || low.contains('no internet')
+                ? 'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda'
+                : e.toString();
         allEmergencyList.clear();
         emergencyList.clear();
       }
@@ -202,9 +207,6 @@ class EmergencyController extends GetxController {
       if (!silent) isLoading.value = false;
     }
   }
-
-
-
 
   // ─────────────────── FETCH VEHICLES ──────────────────────────
   Future<void> fetchVehicles() async {
@@ -224,7 +226,7 @@ class EmergencyController extends GetxController {
           e.toString().toLowerCase().contains("no internet") ||
           e.toString().toLowerCase().contains("failed host lookup")) {
         errorMessage.value =
-        'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
+            'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
       } else {
         errorMessage.value = e.toString();
       }
@@ -238,25 +240,28 @@ class EmergencyController extends GetxController {
     List<Data> filtered = allEmergencyList.toList();
     if (searchQuery.value.trim().isNotEmpty) {
       final queryLower = searchQuery.value.trim().toLowerCase();
-      filtered = filtered.where((item) {
-        final kodeLower     = (item.kode ?? '').toLowerCase();
-        final noPolisiLower = (item.noPolisi ?? '').toLowerCase();
-        return kodeLower.contains(queryLower) || noPolisiLower.contains(queryLower);
-      }).toList();
+      filtered =
+          filtered.where((item) {
+            final kodeLower = (item.kode ?? '').toLowerCase();
+            final noPolisiLower = (item.noPolisi ?? '').toLowerCase();
+            return kodeLower.contains(queryLower) ||
+                noPolisiLower.contains(queryLower);
+          }).toList();
     }
     if (dateFilter != null) {
-      filtered = filtered.where((item) {
-        final tglStr = item.tgl ?? '';
-        DateTime? tglParsed;
-        try {
-          tglParsed = DateFormat('yyyy-MM-dd').parse(tglStr);
-        } catch (_) {
-          return false;
-        }
-        return (tglParsed.year  == dateFilter!.year &&
-            tglParsed.month == dateFilter!.month &&
-            tglParsed.day   == dateFilter!.day);
-      }).toList();
+      filtered =
+          filtered.where((item) {
+            final tglStr = item.tgl ?? '';
+            DateTime? tglParsed;
+            try {
+              tglParsed = DateFormat('yyyy-MM-dd').parse(tglStr);
+            } catch (_) {
+              return false;
+            }
+            return (tglParsed.year == dateFilter!.year &&
+                tglParsed.month == dateFilter!.month &&
+                tglParsed.day == dateFilter!.day);
+          }).toList();
     }
     emergencyList.value = filtered;
   }
@@ -282,8 +287,8 @@ class EmergencyController extends GetxController {
 
   // ─────────────────── MEDIA & LOKASI ────────────────────────
   var currentLocation = ''.obs;
-  var fullAddress     = ''.obs;
-  var mediaList       = <XFile>[].obs;
+  var fullAddress = ''.obs;
+  var mediaList = <XFile>[].obs;
   final ImagePicker _picker = ImagePicker();
 
   bool _isVideo(XFile file) {
@@ -300,14 +305,22 @@ class EmergencyController extends GetxController {
 
       final photoCount = mediaList.where((x) => !_isVideo(x)).length;
       if (photoCount >= 4) {
-        Get.snackbar('Warning', 'Maksimal 4 foto yang dapat diupload.',
-            backgroundColor: Colors.yellow, colorText: Colors.black);
+        Get.snackbar(
+          'Warning',
+          'Maksimal 4 foto yang dapat diupload.',
+          backgroundColor: Colors.yellow,
+          colorText: Colors.black,
+        );
         return;
       }
       mediaList.add(file);
     } catch (e) {
-      Get.snackbar('Warning', 'Gagal mengambil foto: $e',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Gagal mengambil foto: $e',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
     }
   }
 
@@ -318,19 +331,26 @@ class EmergencyController extends GetxController {
 
       final videoCount = mediaList.where((x) => _isVideo(x)).length;
       if (videoCount >= 1) {
-        Get.snackbar('Warning', 'Hanya boleh mengupload 1 video.',
-            backgroundColor: Colors.yellow, colorText: Colors.black);
+        Get.snackbar(
+          'Warning',
+          'Hanya boleh mengupload 1 video.',
+          backgroundColor: Colors.yellow,
+          colorText: Colors.black,
+        );
         return;
       }
       mediaList.add(file);
     } catch (e) {
-      Get.snackbar('Warning', 'Gagal merekam video: $e',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Gagal merekam video: $e',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
     }
   }
 
   void removeMedia(XFile file) => mediaList.remove(file);
-
   // ──────────────── LOKASI & PERMISSION ────────────────
   Future<void> checkLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -349,13 +369,22 @@ class EmergencyController extends GetxController {
     try {
       await checkLocationPermission();
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.high,
+      );
       currentLocation.value = '${position.latitude}, ${position.longitude}';
-      Get.snackbar('Sukses', 'Berhasil mendapatkan lokasi Anda',
-          backgroundColor: Colors.blue, colorText: Colors.white);
+      Get.snackbar(
+        'Sukses',
+        'Berhasil mendapatkan lokasi Anda',
+        backgroundColor: Colors.blue,
+        colorText: Colors.white,
+      );
     } catch (e) {
-      Get.snackbar('Warning', 'Gagal mendapatkan lokasi: $e',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Gagal mendapatkan lokasi: $e',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
     }
   }
 
@@ -371,61 +400,81 @@ class EmergencyController extends GetxController {
           if (placemarks.isNotEmpty) {
             final p = placemarks.first;
             fullAddress.value =
-            '${p.street}, ${p.subLocality}, ${p.locality}, ${p.postalCode}, ${p.country}';
+                '${p.street}, ${p.subLocality}, ${p.locality}, ${p.postalCode}, ${p.country}';
           }
         }
       }
     } catch (e) {
-      Get.snackbar('Warning', 'Gagal mendapatkan alamat: $e',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Gagal mendapatkan alamat: $e',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
     }
   }
 
   // ─────────────────── EMERGENCY SUBMIT ─────────────────────
   var availableVehicles = <String>[];
-  var selectedVehicle   = ''.obs;
+  var selectedVehicle = ''.obs;
 
   Future<void> submitEmergencyRepair(BuildContext ctx) async {
     if (selectedVehicle.value.isEmpty) {
-      Get.snackbar('Warning', 'Kendaraan harus dipilih.',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Kendaraan harus dipilih.',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
       return;
     }
     if (complaintController.text.trim().isEmpty) {
-      Get.snackbar('Warning', 'Keluhan harus diisi.',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Keluhan harus diisi.',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
       return;
     }
     if (currentLocation.value.isEmpty) {
-      Get.snackbar('Warning', 'Lokasi belum ditentukan.',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Lokasi belum ditentukan.',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
       return;
     }
 
-    final now    = DateTime.now();
+    final now = DateTime.now();
     final strTgl = DateFormat('yyyy-MM-dd').format(now);
     final strJam = DateFormat('HH:mm').format(now);
-    final loc    = currentLocation.value.split(',');
-    final lat    = loc.isNotEmpty ? loc[0].trim() : '';
-    final long   = loc.length > 1 ? loc[1].trim() : '';
+    final loc = currentLocation.value.split(',');
+    final lat = loc.isNotEmpty ? loc[0].trim() : '';
+    final long = loc.length > 1 ? loc[1].trim() : '';
 
     List<File> mediaFiles = [];
     try {
       mediaFiles = await _validateAndCompressMediaFiles();
     } catch (e) {
-      Get.snackbar('Warning', e.toString(),
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        e.toString(),
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
       return;
     }
 
     try {
       isLoading.value = true;
       await API.createEmergency(
-        noPolisi : selectedVehicle.value,
-        tgl      : strTgl,
-        jam      : strJam,
-        keluhan  : complaintController.text.trim(),
-        latitude : lat,
+        noPolisi: selectedVehicle.value,
+        tgl: strTgl,
+        jam: strJam,
+        keluhan: complaintController.text.trim(),
+        latitude: lat,
         longitude: long,
         mediaFiles: mediaFiles,
       );
@@ -439,23 +488,27 @@ class EmergencyController extends GetxController {
       );
       mediaList.clear();
       complaintController.clear();
-      complaintText.value  = '';
+      complaintText.value = '';
       currentLocation.value = '';
-      fullAddress.value     = '';
+      fullAddress.value = '';
       selectedVehicle.value = '';
       fetchEmergencyList();
     } catch (e) {
       final err = e.toString().toLowerCase();
       if (e is SocketException ||
           err.contains("tidak ada jaringan") ||
-          err.contains("no internet")    ||
+          err.contains("no internet") ||
           err.contains("failed host lookup") ||
           err.contains("no address associated with hostname")) {
         print("Error jaringan: $e");
       } else {
         print("Warning: $e");
-        Get.snackbar('Warning', e.toString(),
-            backgroundColor: Colors.yellow, colorText: Colors.black);
+        Get.snackbar(
+          'Warning',
+          e.toString(),
+          backgroundColor: Colors.yellow,
+          colorText: Colors.black,
+        );
       }
     } finally {
       isLoading.value = false;
@@ -520,8 +573,7 @@ class EmergencyController extends GetxController {
           final fileName = file.path.split(Platform.pathSeparator).last;
           final targetPath =
               '${Directory.systemTemp.path}/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-          final compressedImage =
-          await File(targetPath).writeAsBytes(result);
+          final compressedImage = await File(targetPath).writeAsBytes(result);
           compressedFiles.add(compressedImage);
         } else {
           compressedFiles.add(File(file.path));

@@ -1,16 +1,16 @@
 // emergency_repair_page.dart
 import 'dart:io';
+
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../controllers/emergency_controller.dart';
-import 'langkah_penggunaan.dart';
 
 class EmergencyRepairPage extends StatelessWidget {
   EmergencyRepairPage({Key? key}) : super(key: key) {
-    // Inisialisasi lokasi saat halaman dibuka
     final EmergencyController c = Get.put(EmergencyController());
     c.initLocation();
   }
@@ -27,7 +27,9 @@ class EmergencyRepairPage extends StatelessWidget {
         backgroundColor: isDark ? Colors.grey[850] : const Color(0xFFF6F7FB),
         title: Text(
           'Buat Emergency Service',
-          style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
+          style: GoogleFonts.nunito(
+            color: isDark ? Colors.white : Colors.black,
+          ),
         ),
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
       ),
@@ -41,8 +43,6 @@ class EmergencyRepairPage extends StatelessWidget {
           return ElevatedButton.icon(
             onPressed: () {
               if (isLoading) return;
-
-              // 1) Belum pilih kendaraan
               if (c.selectedVehicle.value.isEmpty) {
                 Get.snackbar(
                   "Peringatan",
@@ -53,7 +53,6 @@ class EmergencyRepairPage extends StatelessWidget {
                 return;
               }
 
-              // 2) Sudah ada emergency aktif (status ≠ Derek/Storing/Selesai)
               if (c.hasActiveEmergencyForSelectedVehicle) {
                 Get.snackbar(
                   "Peringatan",
@@ -64,28 +63,29 @@ class EmergencyRepairPage extends StatelessWidget {
                 return;
               }
 
-              // 3) Kalau tidak disable, jalankan submit
               c.submitEmergencyRepair(context);
             },
-            icon: isLoading
-                ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-                : const Icon(Icons.send),
-            label: isLoading
-                ? const Text("Loading...")
-                : Text(
-              "Kirim Permintaan",
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
-            ),
+            icon:
+                isLoading
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                    : const Icon(Icons.send),
+            label:
+                isLoading
+                    ? const Text("Loading...")
+                    : Text(
+                      "Kirim Permintaan",
+                      style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+                    ),
             style: ElevatedButton.styleFrom(
               backgroundColor: isDisabled ? Colors.grey.shade300 : Colors.red,
-              foregroundColor:isDisabled ? Colors.black38 : Colors.white,
+              foregroundColor: isDisabled ? Colors.black38 : Colors.white,
               minimumSize: const Size(double.infinity, 48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -93,13 +93,12 @@ class EmergencyRepairPage extends StatelessWidget {
             ),
           );
         }),
-
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Obx(
-                () => Column(
+            () => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -107,7 +106,6 @@ class EmergencyRepairPage extends StatelessWidget {
                   style: GoogleFonts.nunito(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
-                // Container Kendaraan
                 Container(
                   decoration: BoxDecoration(
                     color: isDark ? Colors.grey[850] : Colors.white,
@@ -127,7 +125,11 @@ class EmergencyRepairPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.directions_bus, size: 24, color: Colors.blue),
+                          const Icon(
+                            Icons.directions_bus,
+                            size: 24,
+                            color: Colors.blue,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Kendaraan',
@@ -141,23 +143,25 @@ class EmergencyRepairPage extends StatelessWidget {
                       ),
                       const Divider(height: 20),
                       Obx(() {
-                        final bool isDark = Theme.of(context).brightness == Brightness.dark;
-                        // pakai .shadeXXX agar selalu return Color (bukan Color?)
-                        final Color bgColor = isDark
-                            ? Colors.grey.shade800
-                            : const Color(0xFFF6F7FB);
-                        final Color borderColor = isDark
-                            ? Colors.grey.shade600
-                            : Colors.grey;
+                        final bool isDark =
+                            Theme.of(context).brightness == Brightness.dark;
+                        final Color bgColor =
+                            isDark
+                                ? Colors.grey.shade800
+                                : const Color(0xFFF6F7FB);
+                        final Color borderColor =
+                            isDark ? Colors.grey.shade600 : Colors.grey;
 
                         final listItemDecoration = ListItemDecoration(
                           splashColor: Colors.transparent,
-                          highlightColor: isDark
-                              ? Colors.grey.shade700
-                              : const Color(0xFFEEEEEE),
-                          selectedColor: isDark
-                              ? Colors.grey.shade800
-                              : const Color(0xFFF5F5F5),
+                          highlightColor:
+                              isDark
+                                  ? Colors.grey.shade700
+                                  : const Color(0xFFEEEEEE),
+                          selectedColor:
+                              isDark
+                                  ? Colors.grey.shade800
+                                  : const Color(0xFFF5F5F5),
                           selectedIconColor: borderColor,
                           selectedIconBorder: BorderSide(color: borderColor),
                           selectedIconShape: RoundedRectangleBorder(
@@ -168,9 +172,10 @@ class EmergencyRepairPage extends StatelessWidget {
                         return CustomDropdown<String>(
                           hintText: 'Pilih Kendaraan',
                           items: c.availableVehicles,
-                          initialItem: c.selectedVehicle.value.isEmpty
-                              ? null
-                              : c.selectedVehicle.value,
+                          initialItem:
+                              c.selectedVehicle.value.isEmpty
+                                  ? null
+                                  : c.selectedVehicle.value,
                           excludeSelected: false,
                           onChanged: (value) {
                             if (value != null) c.selectedVehicle.value = value;
@@ -180,30 +185,33 @@ class EmergencyRepairPage extends StatelessWidget {
                             expandedFillColor: bgColor,
                             closedBorder: Border.all(color: Colors.transparent),
                             closedBorderRadius: BorderRadius.circular(12),
-                            expandedBorder: Border.all(color: Colors.transparent),
+                            expandedBorder: Border.all(
+                              color: Colors.transparent,
+                            ),
                             expandedBorderRadius: BorderRadius.circular(12),
-                            closedSuffixIcon:
-                            Icon(Icons.arrow_drop_down, color: borderColor),
-                            expandedSuffixIcon:
-                            Icon(Icons.arrow_drop_up, color: borderColor),
+                            closedSuffixIcon: Icon(
+                              Icons.arrow_drop_down,
+                              color: borderColor,
+                            ),
+                            expandedSuffixIcon: Icon(
+                              Icons.arrow_drop_up,
+                              color: borderColor,
+                            ),
                             hintStyle: TextStyle(color: borderColor),
-                            headerStyle:
-                            TextStyle(color: isDark ? Colors.white : Colors.black),
-                            listItemStyle:
-                            TextStyle(color: isDark ? Colors.white : Colors.black),
+                            headerStyle: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                            listItemStyle: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                             listItemDecoration: listItemDecoration,
                           ),
                         );
                       }),
-
-
-
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Container Lokasi
-
                 Container(
                   decoration: BoxDecoration(
                     color: isDark ? Colors.grey[850] : Colors.white,
@@ -223,7 +231,11 @@ class EmergencyRepairPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 24, color: Colors.red),
+                          const Icon(
+                            Icons.location_on,
+                            size: 24,
+                            color: Colors.red,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Lokasi',
@@ -239,7 +251,9 @@ class EmergencyRepairPage extends StatelessWidget {
                       if (c.currentLocation.value.isEmpty)
                         Text(
                           'Sedang mengambil lokasi...\nMohon tunggu.',
-                          style: GoogleFonts.nunito(color: isDark ? Colors.grey[400] : Colors.grey[700]),
+                          style: GoogleFonts.nunito(
+                            color: isDark ? Colors.grey[400] : Colors.grey[700],
+                          ),
                         )
                       else ...[
                         Text(
@@ -266,7 +280,9 @@ class EmergencyRepairPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          c.fullAddress.value.isEmpty ? 'Sedang mencari alamat...' : c.fullAddress.value,
+                          c.fullAddress.value.isEmpty
+                              ? 'Sedang mencari alamat...'
+                              : c.fullAddress.value,
                           style: GoogleFonts.nunito(fontSize: 14),
                         ),
                       ],
@@ -274,7 +290,6 @@ class EmergencyRepairPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Container Keluhan
                 Container(
                   decoration: BoxDecoration(
                     color: isDark ? Colors.grey[850] : Colors.white,
@@ -294,7 +309,10 @@ class EmergencyRepairPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          FaIcon(FontAwesomeIcons.exclamationCircle, color: Colors.orange[700]),
+                          FaIcon(
+                            FontAwesomeIcons.exclamationCircle,
+                            color: Colors.orange[700],
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Keluhan',
@@ -313,7 +331,9 @@ class EmergencyRepairPage extends StatelessWidget {
                           c.complaintText.value = val;
                         },
                         maxLines: 3,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -337,8 +357,6 @@ class EmergencyRepairPage extends StatelessWidget {
                           ),
                         ),
                       ),
-
-
                     ],
                   ),
                 ),
@@ -350,7 +368,10 @@ class EmergencyRepairPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: isDark ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.1),
+                        color:
+                            isDark
+                                ? Colors.black.withOpacity(0.5)
+                                : Colors.black.withOpacity(0.1),
                         blurRadius: 6,
                         offset: const Offset(0, 3),
                       ),
@@ -362,7 +383,11 @@ class EmergencyRepairPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.camera_alt, size: 24, color: Colors.green),
+                          const Icon(
+                            Icons.camera_alt,
+                            size: 24,
+                            color: Colors.green,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Bukti Kerusakan',
@@ -380,22 +405,40 @@ class EmergencyRepairPage extends StatelessWidget {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+                                backgroundColor:
+                                    isDark ? Colors.grey[800] : Colors.white,
                               ),
                               onPressed: () => c.pickImage(),
-                              icon: Icon(Icons.photo_camera, color: isDark ? Colors.white : Colors.black),
-                              label: Text('Foto', style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black)),
+                              icon: Icon(
+                                Icons.photo_camera,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              label: Text(
+                                'Foto',
+                                style: GoogleFonts.nunito(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+                                backgroundColor:
+                                    isDark ? Colors.grey[800] : Colors.white,
                               ),
                               onPressed: () => c.pickVideo(),
-                              icon: Icon(Icons.videocam, color: isDark ? Colors.white : Colors.black),
-                              label: Text('Video', style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black)),
+                              icon: Icon(
+                                Icons.videocam,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              label: Text(
+                                'Video',
+                                style: GoogleFonts.nunito(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -405,56 +448,72 @@ class EmergencyRepairPage extends StatelessWidget {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: c.mediaList.map((file) {
-                            final bool isVideo = file.path.toLowerCase().endsWith('.mp4') ||
-                                file.path.toLowerCase().endsWith('.mov') ||
-                                file.path.toLowerCase().endsWith('.avi');
-                            return Stack(
-                              children: [
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    color: isDark ? Colors.grey[800] : Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: isVideo
-                                      ? const Center(child: Icon(Icons.videocam, size: 32))
-                                      : ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      File(file.path),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 2,
-                                  right: 2,
-                                  child: GestureDetector(
-                                    onTap: () => c.removeMedia(file),
-                                    child: Container(
+                          children:
+                              c.mediaList.map((file) {
+                                final bool isVideo =
+                                    file.path.toLowerCase().endsWith('.mp4') ||
+                                    file.path.toLowerCase().endsWith('.mov') ||
+                                    file.path.toLowerCase().endsWith('.avi');
+                                return Stack(
+                                  children: [
+                                    Container(
+                                      width: 80,
+                                      height: 80,
                                       decoration: BoxDecoration(
-                                        color: Colors.black54,
-                                        borderRadius: BorderRadius.circular(16),
+                                        color:
+                                            isDark
+                                                ? Colors.grey[800]
+                                                : Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      padding: const EdgeInsets.all(4),
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 16,
+                                      child:
+                                          isVideo
+                                              ? const Center(
+                                                child: Icon(
+                                                  Icons.videocam,
+                                                  size: 32,
+                                                ),
+                                              )
+                                              : ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                child: Image.file(
+                                                  File(file.path),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                    ),
+                                    Positioned(
+                                      top: 2,
+                                      right: 2,
+                                      child: GestureDetector(
+                                        onTap: () => c.removeMedia(file),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black54,
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.all(4),
+                                          child: const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                                  ],
+                                );
+                              }).toList(),
                         )
                       else
                         Text(
                           'Belum ada foto atau video.',
-                          style: GoogleFonts.nunito(color: isDark ? Colors.grey[400] : Colors.grey[700]),
+                          style: GoogleFonts.nunito(
+                            color: isDark ? Colors.grey[400] : Colors.grey[700],
+                          ),
                         ),
                     ],
                   ),

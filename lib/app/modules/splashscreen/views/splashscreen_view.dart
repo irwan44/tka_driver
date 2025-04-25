@@ -15,7 +15,6 @@ class SplashscreenView extends StatefulWidget {
 class _SplashscreenViewState extends State<SplashscreenView> {
   double _opacity = 0;
   double _scale = 0.8;
-  // Inisialisasi controller
   final splashController = Get.put(SplashscreenController());
 
   @override
@@ -32,21 +31,21 @@ class _SplashscreenViewState extends State<SplashscreenView> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: isDark
-              ? const LinearGradient(
-            colors: [Color(0xFF1F1F1F), Color(0xFF121212)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          )
-              : const LinearGradient(
-            colors: [Color(0xFFF5F5F5), Color(0xFFFFFFFF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          gradient:
+              isDark
+                  ? const LinearGradient(
+                    colors: [Color(0xFF1F1F1F), Color(0xFF121212)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  )
+                  : const LinearGradient(
+                    colors: [Color(0xFFF5F5F5), Color(0xFFFFFFFF)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
         ),
         child: Center(
           child: AnimatedOpacity(
@@ -95,7 +94,6 @@ class _SplashscreenViewState extends State<SplashscreenView> {
                   Text(
                     "Menghubungkan Anda dengan layanan terbaik",
                     style: GoogleFonts.nunito(
-
                       color: isDark ? Colors.white70 : Colors.black54,
                     ),
                   ),

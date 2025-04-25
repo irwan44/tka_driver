@@ -6,18 +6,25 @@ class _TicketClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     const r = 10.0;
-    final p = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width, size.height / 2 - r)
-      ..arcToPoint(Offset(size.width, size.height / 2 + r),
-          radius: const Radius.circular(r), clockwise: false)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..lineTo(0, size.height / 2 + r)
-      ..arcToPoint(Offset(0, size.height / 2 - r),
-          radius: const Radius.circular(r), clockwise: false)
-      ..close();
+    final p =
+        Path()
+          ..moveTo(0, 0)
+          ..lineTo(size.width, 0)
+          ..lineTo(size.width, size.height / 2 - r)
+          ..arcToPoint(
+            Offset(size.width, size.height / 2 + r),
+            radius: const Radius.circular(r),
+            clockwise: false,
+          )
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
+          ..lineTo(0, size.height / 2 + r)
+          ..arcToPoint(
+            Offset(0, size.height / 2 - r),
+            radius: const Radius.circular(r),
+            clockwise: false,
+          )
+          ..close();
     return p;
   }
 
@@ -28,12 +35,14 @@ class _TicketClipper extends CustomClipper<Path> {
 class _DashPainter extends CustomPainter {
   final double dashWidth, dashSpace;
   final Color color;
-  _DashPainter(
-      {this.dashWidth = 6, this.dashSpace = 4, required this.color});
+  _DashPainter({this.dashWidth = 6, this.dashSpace = 4, required this.color});
 
   @override
   void paint(Canvas c, Size s) {
-    final paint = Paint()..color = color..strokeWidth = 1;
+    final paint =
+        Paint()
+          ..color = color
+          ..strokeWidth = 1;
     double x = 0, y = s.height / 2;
     while (x < s.width) {
       c.drawLine(Offset(x, y), Offset(x + dashWidth, y), paint);
@@ -82,30 +91,37 @@ class RequestServiceItem extends StatelessWidget {
     }
   }
 
-
-  Widget _infoRow(BuildContext ctx, IconData icn, String label, String value,
-      {int maxLines = 1, TextStyle? valueStyle}) {
+  Widget _infoRow(
+    BuildContext ctx,
+    IconData icn,
+    String label,
+    String value, {
+    int maxLines = 1,
+    TextStyle? valueStyle,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icn, size: 16, color: Theme.of(ctx).hintColor),
         const SizedBox(width: 6),
-        Text('$label : ',
-            style:
-            GoogleFonts.nunito(fontSize: 13, fontWeight: FontWeight.w700)),
+        Text(
+          '$label : ',
+          style: GoogleFonts.nunito(fontSize: 13, fontWeight: FontWeight.w700),
+        ),
         Expanded(
           child: Text(
             value,
             maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
-            style: valueStyle ??
-                GoogleFonts.nunito(
-                    fontSize: 13, fontWeight: FontWeight.normal),
+            style:
+                valueStyle ??
+                GoogleFonts.nunito(fontSize: 13, fontWeight: FontWeight.normal),
           ),
         ),
       ],
     );
   }
+
   bool _isNewItem() {
     DateTime? itemDate;
 
@@ -115,7 +131,8 @@ class RequestServiceItem extends StatelessWidget {
 
     if (itemDate == null) {
       try {
-        itemDate = DateFormat('yyyy-MM-dd HH:mm').parse(tanggal, true).toLocal();
+        itemDate =
+            DateFormat('yyyy-MM-dd HH:mm').parse(tanggal, true).toLocal();
       } catch (_) {}
     }
 
@@ -128,9 +145,9 @@ class RequestServiceItem extends StatelessWidget {
     if (itemDate == null) return false;
 
     final now = DateTime.now();
-    return itemDate.year  == now.year &&
+    return itemDate.year == now.year &&
         itemDate.month == now.month &&
-        itemDate.day   == now.day;
+        itemDate.day == now.day;
   }
 
   Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
@@ -151,13 +168,14 @@ class RequestServiceItem extends StatelessWidget {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF2B2B2B) : Colors.white;
     final statusCol = _statusColor();
-    final isNew   = _isNewItem();
+    final isNew = _isNewItem();
     return ClipPath(
       clipper: _TicketClipper(),
       child: Container(
@@ -178,8 +196,10 @@ class RequestServiceItem extends StatelessWidget {
           children: [
             if (isNew)
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.green.withOpacity(.15),
                   borderRadius: BorderRadius.circular(30),
@@ -190,7 +210,9 @@ class RequestServiceItem extends StatelessWidget {
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                          color: Colors.green, shape: BoxShape.circle),
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -205,8 +227,7 @@ class RequestServiceItem extends StatelessWidget {
                 ),
               ),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
                   Icon(Icons.event, size: 18, color: theme.hintColor),
@@ -215,29 +236,39 @@ class RequestServiceItem extends StatelessWidget {
                     child: Text(
                       tanggal,
                       style: GoogleFonts.nunito(
-                          fontSize: 14, fontWeight: FontWeight.w600),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                        color: statusCol.withOpacity(.15),
-                        borderRadius: BorderRadius.circular(30)),
+                      color: statusCol.withOpacity(.15),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                     child: Row(
                       children: [
                         Container(
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                              color: statusCol, shape: BoxShape.circle),
+                            color: statusCol,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                         const SizedBox(width: 6),
-                        Text(status.toUpperCase(),
-                            style: GoogleFonts.nunito(
-                                color: statusCol,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700)),
+                        Text(
+                          status.toUpperCase(),
+                          style: GoogleFonts.nunito(
+                            color: statusCol,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -246,33 +277,49 @@ class RequestServiceItem extends StatelessWidget {
             ),
 
             LayoutBuilder(
-              builder: (_, cs) => CustomPaint(
-                size: Size(cs.maxWidth, 1),
-                painter: _DashPainter(
-                    color:
-                    isDark ? Colors.grey.shade600 : Colors.grey.shade400),
-              ),
+              builder:
+                  (_, cs) => CustomPaint(
+                    size: Size(cs.maxWidth, 1),
+                    painter: _DashPainter(
+                      color:
+                          isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                    ),
+                  ),
             ),
 
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _infoRow(context, Icons.confirmation_number,
-                      'Kode Request', kodereques),
+                  _infoRow(
+                    context,
+                    Icons.confirmation_number,
+                    'Kode Request',
+                    kodereques,
+                  ),
                   const SizedBox(height: 10),
-                  _infoRow(context, Icons.directions_car, 'Kode Kendaraan',
-                      kodekendaraan),
-                  _infoRow(context, Icons.directions_car, 'No Polisi',
-                      noPolisi),
+                  _infoRow(
+                    context,
+                    Icons.directions_car,
+                    'Kode Kendaraan',
+                    kodekendaraan,
+                  ),
+                  _infoRow(
+                    context,
+                    Icons.directions_car,
+                    'No Polisi',
+                    noPolisi,
+                  ),
                   const SizedBox(height: 4),
-                  _infoRow(context, Icons.report_problem, 'Keluhan',
-                      keluhan.isEmpty ? '–' : keluhan,
-                      maxLines: 3),
+                  _infoRow(
+                    context,
+                    Icons.report_problem,
+                    'Keluhan',
+                    keluhan.isEmpty ? '–' : keluhan,
+                    maxLines: 3,
+                  ),
                   const SizedBox(height: 10),
-
                 ],
               ),
             ),

@@ -33,10 +33,7 @@ class LoginView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    AssetsRes.LOGO,
-                    height: 70,
-                  ),
+                  child: Image.asset(AssetsRes.LOGO, height: 70),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -65,102 +62,131 @@ class LoginView extends StatelessWidget {
                       color: isDark ? Colors.white : Colors.black,
                     ),
                     hintText: "Email",
-                    hintStyle: GoogleFonts.nunito(color: isDark ? Colors.white70 : Colors.grey),
+                    hintStyle: GoogleFonts.nunito(
+                      color: isDark ? Colors.white70 : Colors.grey,
+                    ),
                     helperText: "Anda harus memasukkan email yang valid",
-                    helperStyle: GoogleFonts.nunito(color: isDark ? Colors.white70 : Colors.grey),
+                    helperStyle: GoogleFonts.nunito(
+                      color: isDark ? Colors.white70 : Colors.grey,
+                    ),
                     filled: true,
-                    fillColor: isDark ? Colors.grey[800] : const Color(0xFFF5F5F5),
+                    fillColor:
+                        isDark ? Colors.grey[800] : const Color(0xFFF5F5F5),
                     contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
+                  style: GoogleFonts.nunito(
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                Obx(() => TextField(
-                  controller: controller.passwordController,
-                  obscureText: isObscure.value,
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isObscure.value ? Icons.visibility_off : Icons.visibility,
+                Obx(
+                  () => TextField(
+                    controller: controller.passwordController,
+                    obscureText: isObscure.value,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.lock_outline,
                         color: isDark ? Colors.white : Colors.black,
                       ),
-                      onPressed: () => isObscure.toggle(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isObscure.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                        onPressed: () => isObscure.toggle(),
+                      ),
+                      hintText: "Kata Sandi",
+                      hintStyle: GoogleFonts.nunito(
+                        color: isDark ? Colors.white70 : Colors.grey,
+                      ),
+                      helperText: "Password minimal 6 karakter",
+                      helperStyle: GoogleFonts.nunito(
+                        color: isDark ? Colors.white70 : Colors.grey,
+                      ),
+                      filled: true,
+                      fillColor:
+                          isDark ? Colors.grey[800] : const Color(0xFFF5F5F5),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
-                    hintText: "Kata Sandi",
-                    hintStyle: GoogleFonts.nunito(color: isDark ? Colors.white70 : Colors.grey),
-                    helperText: "Password minimal 6 karakter",
-                    helperStyle: GoogleFonts.nunito(color: isDark ? Colors.white70 : Colors.grey),
-                    filled: true,
-                    fillColor: isDark ? Colors.grey[800] : const Color(0xFFF5F5F5),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
+                    style: GoogleFonts.nunito(
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
-                  style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
-                )),
+                ),
                 const SizedBox(height: 24),
                 // Tombol Masuk
-                Obx(() => SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : () => controller.doLogin(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32),
+                Obx(
+                  () => SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed:
+                          controller.isLoading.value
+                              ? null
+                              : () => controller.doLogin(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
-                    ),
-                    child: controller.isLoading.value
-                        ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                        : Text(
-                      "MASUK",
-                      style: GoogleFonts.nunito(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      child:
+                          controller.isLoading.value
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                "MASUK",
+                                style: GoogleFonts.nunito(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                     ),
                   ),
-                )),
+                ),
                 const SizedBox(height: 30),
                 Text(
                   "Panduan Aplikasi",
                   style: GoogleFonts.nunito(
-                    color:isDark ? Colors.white : Colors.black,
+                    color: isDark ? Colors.white : Colors.black,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 20,),
+                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.info_outline, size: 18, color: Colors.white),
+                      icon: const Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: Colors.white,
+                      ),
                       label: const Text(
                         'Reguler Service',
                         style: TextStyle(color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,        // latar jingga
-                        elevation: 0,                          // flat look
-                        padding: const EdgeInsets.symmetric(   // ruang nyaman
+                        backgroundColor: Colors.green, // latar jingga
+                        elevation: 0, // flat look
+                        padding: const EdgeInsets.symmetric(
+                          // ruang nyaman
                           horizontal: 16,
                           vertical: 10,
                         ),
@@ -172,7 +198,11 @@ class LoginView extends StatelessWidget {
                     ),
 
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.info_outline, size: 18, color: Colors.white),
+                      icon: const Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: Colors.white,
+                      ),
                       label: const Text(
                         'Emergency Service',
                         style: TextStyle(color: Colors.white),
@@ -192,7 +222,7 @@ class LoginView extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 50,),
+                SizedBox(height: 50),
                 FutureBuilder<PackageInfo>(
                   future: PackageInfo.fromPlatform(),
                   builder: (context, snap) {
@@ -206,13 +236,6 @@ class LoginView extends StatelessWidget {
                     );
                   },
                 ),
-                // TextButton(
-                //   onPressed: () {},
-                //   child: Text(
-                //     "Lupa kata sandi?",
-                //     style: GoogleFonts.nunito(color: const Color(0xFFFFD400)),
-                //   ),
-                // ),
               ],
             ),
           ),

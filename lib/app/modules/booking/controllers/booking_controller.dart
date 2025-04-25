@@ -1,21 +1,23 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
+import 'package:tka_customer/app/data/localstorage.dart';
+import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:video_compress/video_compress.dart';
+
 import '../../../data/data_respon/detailservice.dart';
 import '../../../data/data_respon/listservice.dart';
 import '../../../data/data_respon/reques_service.dart';
 import '../../../data/endpoint.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:tka_customer/app/routes/app_pages.dart';
-import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
-import 'package:tka_customer/app/data/localstorage.dart';
 
 class BookingController extends GetxController {
   var currentStep = 0.obs;
@@ -23,9 +25,9 @@ class BookingController extends GetxController {
   var listService = <ListService>[].obs;
   var detailService = Rxn<DetailService>();
   var errorMessage = ''.obs;
-  var isLoadingRequest     = true.obs;
-  var listRequestService   = <RequestService>[].obs;
-  var errorRequest         = ''.obs;
+  var isLoadingRequest = true.obs;
+  var listRequestService = <RequestService>[].obs;
+  var errorRequest = ''.obs;
   var confirmedPlanningSvcs = <String>{}.obs;
   final RxBool isConfirming = false.obs;
   DateTime? _selectedDate;
@@ -39,16 +41,17 @@ class BookingController extends GetxController {
   List<RequestService> get filteredRequests {
     return listRequestService.where((r) {
       final nopol = (r.noPolisi ?? '').toLowerCase();
-      final q     = searchQuery.toLowerCase();
+      final q = searchQuery.toLowerCase();
       final matchSearch = q.isEmpty || nopol.contains(q);
 
       bool matchDate = true;
       if (_selectedDate != null) {
-        final created = _toLocalDateTime(r.createdAt??'');
+        final created = _toLocalDateTime(r.createdAt ?? '');
         final sel = _selectedDate!;
-        matchDate = created.year  == sel.year &&
+        matchDate =
+            created.year == sel.year &&
             created.month == sel.month &&
-            created.day   == sel.day;
+            created.day == sel.day;
       }
       return matchSearch && matchDate;
     }).toList();
@@ -57,7 +60,7 @@ class BookingController extends GetxController {
   List<ListService> get filteredServices {
     return listService.where((s) {
       final nopol = (s.noPolisi ?? '').toLowerCase();
-      final q     = searchQuery.toLowerCase();
+      final q = searchQuery.toLowerCase();
       final matchSearch = q.isEmpty || nopol.contains(q);
 
       bool matchDate = true;
@@ -77,7 +80,7 @@ class BookingController extends GetxController {
     }).toList();
   }
 
-  Future<void> confirmPlanningService(BuildContext ctx,String kodeSvc) async {
+  Future<void> confirmPlanningService(BuildContext ctx, String kodeSvc) async {
     if (isPlanningConfirmed(kodeSvc)) return;
     isConfirming.value = true;
     try {
@@ -105,6 +108,7 @@ class BookingController extends GetxController {
     _connectSub.cancel();
     super.onClose();
   }
+
   @override
   void onInit() {
     super.onInit();
@@ -125,13 +129,10 @@ class BookingController extends GetxController {
   }
 
   Future<void> refreshAll() async {
-    await Future.wait([
-      fetchRequestService(),
-      fetchServices(),
-    ]);
+    await Future.wait([fetchRequestService(), fetchServices()]);
   }
-  final Rx<ConnectivityResult> debouncedStatus =
-      ConnectivityResult.mobile.obs;
+
+  final Rx<ConnectivityResult> debouncedStatus = ConnectivityResult.mobile.obs;
   late StreamSubscription _connectSub;
   Timer? _debounceTimer;
   void _setStatusDebounced(ConnectivityResult newStatus) {
@@ -145,6 +146,7 @@ class BookingController extends GetxController {
       debouncedStatus.value = newStatus;
     }
   }
+
   var allEmergencyList = <Data>[].obs;
   var emergencyList = <Data>[].obs;
   var searchQuery = ''.obs;
@@ -153,7 +155,6 @@ class BookingController extends GetxController {
   final searchController = TextEditingController();
   final complaintController = TextEditingController();
   RxString complaintText = ''.obs;
-
 
   void performAction(Data data) {
     data.status = 'Diterima';
@@ -214,25 +215,28 @@ class BookingController extends GetxController {
     List<Data> filtered = allEmergencyList.toList();
     if (searchQuery.value.trim().isNotEmpty) {
       final queryLower = searchQuery.value.trim().toLowerCase();
-      filtered = filtered.where((item) {
-        final kodeLower = (item.kode ?? '').toLowerCase();
-        final noPolisiLower = (item.noPolisi ?? '').toLowerCase();
-        return kodeLower.contains(queryLower) || noPolisiLower.contains(queryLower);
-      }).toList();
+      filtered =
+          filtered.where((item) {
+            final kodeLower = (item.kode ?? '').toLowerCase();
+            final noPolisiLower = (item.noPolisi ?? '').toLowerCase();
+            return kodeLower.contains(queryLower) ||
+                noPolisiLower.contains(queryLower);
+          }).toList();
     }
     if (dateFilter != null) {
-      filtered = filtered.where((item) {
-        final tglStr = item.tgl ?? '';
-        DateTime? tglParsed;
-        try {
-          tglParsed = DateFormat('yyyy-MM-dd').parse(tglStr);
-        } catch (_) {
-          return false;
-        }
-        return (tglParsed.year == dateFilter!.year &&
-            tglParsed.month == dateFilter!.month &&
-            tglParsed.day == dateFilter!.day);
-      }).toList();
+      filtered =
+          filtered.where((item) {
+            final tglStr = item.tgl ?? '';
+            DateTime? tglParsed;
+            try {
+              tglParsed = DateFormat('yyyy-MM-dd').parse(tglStr);
+            } catch (_) {
+              return false;
+            }
+            return (tglParsed.year == dateFilter!.year &&
+                tglParsed.month == dateFilter!.month &&
+                tglParsed.day == dateFilter!.day);
+          }).toList();
     }
     emergencyList.value = filtered;
   }
@@ -325,18 +329,27 @@ class BookingController extends GetxController {
   void removeMedia(XFile file) {
     mediaList.remove(file);
   }
+
   var availableVehicles = <String>[];
   var selectedVehicle = ''.obs;
 
   Future<void> submitEmergencyRepair(BuildContext ctx) async {
     if (selectedVehicle.value.isEmpty) {
-      Get.snackbar('Warning', 'Kendaraan harus dipilih.',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Kendaraan harus dipilih.',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
       return;
     }
     if (complaintController.text.trim().isEmpty) {
-      Get.snackbar('Warning', 'Keluhan harus diisi.',
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        'Keluhan harus diisi.',
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
       return;
     }
 
@@ -351,8 +364,12 @@ class BookingController extends GetxController {
     try {
       mediaFiles = await _validateAndCompressMediaFiles();
     } catch (e) {
-      Get.snackbar('Warning', e.toString(),
-          backgroundColor: Colors.yellow, colorText: Colors.black);
+      Get.snackbar(
+        'Warning',
+        e.toString(),
+        backgroundColor: Colors.yellow,
+        colorText: Colors.black,
+      );
       return;
     }
 
@@ -365,10 +382,7 @@ class BookingController extends GetxController {
       );
 
       Get.delete<BookingController>(force: true);
-      Get.put<BookingController>(
-        BookingController(),
-        permanent: true,
-      );
+      Get.put<BookingController>(BookingController(), permanent: true);
       Get.offAllNamed(Routes.HOME);
       await QuickAlert.show(
         context: ctx,
@@ -385,13 +399,18 @@ class BookingController extends GetxController {
           err.contains('no address associated with hostname')) {
         debugPrint('📡 Error jaringan: $e');
       } else {
-        Get.snackbar('Error', e.toString(),
-            backgroundColor: Colors.yellow, colorText: Colors.black);
+        Get.snackbar(
+          'Error',
+          e.toString(),
+          backgroundColor: Colors.yellow,
+          colorText: Colors.black,
+        );
       }
     } finally {
       isLoading.value = false;
     }
   }
+
   final RxBool networkError = false.obs;
 
   Future<void> fetchRequestService() async {
@@ -410,6 +429,7 @@ class BookingController extends GetxController {
       isLoadingRequest.value = false;
     }
   }
+
   bool get disableBuatEmergencyServiceButton {
     return selectedVehicle.value.isEmpty ||
         complaintText.value.trim().isEmpty ||
@@ -419,8 +439,11 @@ class BookingController extends GetxController {
   String get currentEmergencyActiveStatus {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     try {
-      final record = allEmergencyList.firstWhere((data) =>
-      data.tgl == today && (data.status != "Derek" && data.status != "Storing"));
+      final record = allEmergencyList.firstWhere(
+        (data) =>
+            data.tgl == today &&
+            (data.status != "Derek" && data.status != "Storing"),
+      );
       return record.status ?? "-";
     } catch (e) {
       return "-";
@@ -430,14 +453,16 @@ class BookingController extends GetxController {
   String get currentEmergencyActiveStatusdetail {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     try {
-      final record = allEmergencyList.firstWhere((data) =>
-      data.tgl == today && data.status?.trim().toLowerCase() == "diterima");
+      final record = allEmergencyList.firstWhere(
+        (data) =>
+            data.tgl == today &&
+            data.status?.trim().toLowerCase() == "diterima",
+      );
       return record.status ?? '-';
     } catch (e) {
       return "-";
     }
   }
-
 
   Future<List<File>> _validateAndCompressMediaFiles() async {
     final photoCount = mediaList.where((x) => !_isVideo(x)).length;
@@ -481,8 +506,7 @@ class BookingController extends GetxController {
           final fileName = file.path.split(Platform.pathSeparator).last;
           final targetPath =
               '${Directory.systemTemp.path}/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-          final compressedImage =
-          await File(targetPath).writeAsBytes(result);
+          final compressedImage = await File(targetPath).writeAsBytes(result);
           compressedFiles.add(compressedImage);
         } else {
           compressedFiles.add(File(file.path));

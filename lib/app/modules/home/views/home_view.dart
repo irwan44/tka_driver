@@ -5,14 +5,15 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:tka_customer/app/data/localstorage.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
+
 import '../../../../main.dart';
 import '../../../data/data_respon/profile2.dart';
 import '../../../data/endpoint.dart';
 import '../../booking/views/booking_view.dart';
 import '../../emergency/views/emergency_view.dart';
 import '../controllers/home_controller.dart';
-import 'package:tka_customer/app/data/localstorage.dart';
 
 class ThemeController extends GetxController {
   RxBool isDark = false.obs;
@@ -33,10 +34,7 @@ class ThemeController extends GetxController {
 class HomeView extends GetView<HomeController> {
   HomeView({Key? key}) : super(key: key);
 
-  final List<Widget> _pages = const [
-    BookingView(),
-    EmergencyView(),
-  ];
+  final List<Widget> _pages = const [BookingView(), EmergencyView()];
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +65,6 @@ class HomeView extends GetView<HomeController> {
               BottomNavigationBarItem(
                 icon: Obx(() {
                   final count = controller.diterimaCount.value;
-                  // Jika count > 0, tampilkan badge + icon
                   if (count > 0) {
                     return Stack(
                       clipBehavior: Clip.none,
@@ -101,12 +98,10 @@ class HomeView extends GetView<HomeController> {
                       ],
                     );
                   }
-                  // Kalau count null atau 0, kembalikan ikon standar
                   return const Icon(Icons.warning_amber_outlined);
                 }),
                 label: 'Darurat',
               ),
-
             ],
           ),
         );
@@ -121,9 +116,12 @@ class _HeaderSection extends StatelessWidget {
   Future<String> _getFullAddress() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      List<Placemark> placemarks =
-      await placemarkFromCoordinates(position.latitude, position.longitude);
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
         return '${place.locality}, ${place.administrativeArea}, ${place.country}';
@@ -164,32 +162,32 @@ class _HeaderSection extends StatelessWidget {
             right: 20,
             child: Obx(() {
               return Column(
-              children: [
-                Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    "Light",
-                    style: GoogleFonts.nunito(
-                        color: isDark ? Colors.white70 : Colors.black),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Light",
+                        style: GoogleFonts.nunito(
+                          color: isDark ? Colors.white70 : Colors.black,
+                        ),
+                      ),
+                      Switch(
+                        value: themeController.isDark.value,
+                        onChanged:
+                            (value) => themeController.toggleTheme(value),
+                        activeColor: Colors.blue,
+                      ),
+                      Text(
+                        "Dark",
+                        style: GoogleFonts.nunito(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
-                  Switch(
-                    value: themeController.isDark.value,
-                    onChanged: (value) => themeController.toggleTheme(value),
-                    activeColor: Colors.blue,
-                  ),
-                  Text(
-                    "Dark",
-                    style: GoogleFonts.nunito(
-                        color: isDark ? Colors.white : Colors.black),
-                  ),
-
                 ],
-              ),
-
-              ],
               );
-
             }),
           ),
 
@@ -205,10 +203,7 @@ class _HeaderSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    AssetsRes.LOGO,
-                    height: 30,
-                  ),
+                  child: Image.asset(AssetsRes.LOGO, height: 30),
                 ),
                 const SizedBox(height: 6),
               ],
@@ -233,15 +228,16 @@ class DriverProfileCard extends StatelessWidget {
   Widget build(BuildContext context) => const _DriverProfileCard();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WIDGET INTI (RESPONSIF + API)
-// ─────────────────────────────────────────────────────────────────────────────
 class _DriverProfileCard extends StatelessWidget {
   const _DriverProfileCard({Key? key}) : super(key: key);
 
-  // breakpoint & helper ukuran
   bool _isNarrow(double w) => w < 360;
-  double _avatar(double w) => w < 350 ? 40 : w < 500 ? 50 : 60;
+  double _avatar(double w) =>
+      w < 350
+          ? 40
+          : w < 500
+          ? 50
+          : 60;
   double _pad(double w) => w < 350 ? 8 : 12;
 
   @override
@@ -273,7 +269,7 @@ class _DriverProfileCard extends StatelessWidget {
 
             if (snap.hasData) {
               final profile = snap.data!;
-              final showLabel = w > 360; // label “Logout” hilang di layar sempit
+              final showLabel = w > 360;
 
               return Container(
                 width: double.infinity,
@@ -295,7 +291,6 @@ class _DriverProfileCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // ─── AVATAR ─────────────────────────────────────────
                     CircleAvatar(
                       radius: avatar / 2,
                       child: ClipOval(
@@ -308,8 +303,6 @@ class _DriverProfileCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: narrow ? 0 : 16, height: narrow ? 12 : 0),
-
-                    // ─── INFO ──────────────────────────────────────────
                     if (narrow)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -319,14 +312,11 @@ class _DriverProfileCard extends StatelessWidget {
                       Expanded(child: _InfoColumn(profile: profile)),
 
                     if (!narrow) const SizedBox(width: 8),
-
-                    // ─── LOGOUT ───────────────────────────────────────
                     _LogoutButton(showLabel: showLabel, isDark: isDark),
                   ],
                 ),
               );
             }
-
             return const SizedBox.shrink(); // fallback
           },
         );
@@ -335,9 +325,6 @@ class _DriverProfileCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-WIDGET INFO
-// ─────────────────────────────────────────────────────────────────────────────
 class _InfoColumn extends StatelessWidget {
   const _InfoColumn({required this.profile});
   final Profile2 profile;
@@ -349,10 +336,9 @@ class _InfoColumn extends StatelessWidget {
       children: [
         AutoSizeText(
           profile.name ?? 'N/A',
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           maxLines: 2,
           minFontSize: 10,
           overflow: TextOverflow.ellipsis,
@@ -365,10 +351,9 @@ class _InfoColumn extends StatelessWidget {
         const SizedBox(height: 4),
         AutoSizeText(
           profile.email ?? 'N/A',
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           maxLines: 1,
           minFontSize: 8,
           overflow: TextOverflow.ellipsis,
@@ -378,9 +363,6 @@ class _InfoColumn extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-WIDGET LOGOUT BUTTON + SHEET
-// ─────────────────────────────────────────────────────────────────────────────
 class _LogoutButton extends StatelessWidget {
   const _LogoutButton({required this.showLabel, required this.isDark});
   final bool showLabel;
@@ -397,17 +379,21 @@ class _LogoutButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Logout',
-                style: GoogleFonts.nunito(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black)),
+            Text(
+              'Logout',
+              style: GoogleFonts.nunito(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
             const SizedBox(height: 12),
             Text(
               'Apakah Anda yakin ingin logout? Anda akan keluar dan data session akan dihapus.',
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
-                  color: isDark ? Colors.white70 : Colors.black87),
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -417,25 +403,34 @@ class _LogoutButton extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? Colors.grey[700] : Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 16),
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                   ),
                   onPressed: Get.back,
-                  child: Text('Batal',
-                      style: GoogleFonts.nunito(
-                          color: isDark ? Colors.white : Colors.black)),
+                  child: Text(
+                    'Batal',
+                    style: GoogleFonts.nunito(
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                   ),
                   onPressed: () async {
                     await LocalStorages.logout();
                     Get.offAllNamed(Routes.LOGIN);
                   },
-                  child:
-                  Text('Logout', style: GoogleFonts.nunito(color: Colors.white)),
+                  child: Text(
+                    'Logout',
+                    style: GoogleFonts.nunito(color: Colors.white),
+                  ),
                 ),
               ],
             ),
@@ -452,10 +447,14 @@ class _LogoutButton extends StatelessWidget {
       height: 40,
       child: ElevatedButton.icon(
         onPressed: () => _showSheet(context),
-        icon: const Icon(Icons.logout_rounded, size: 18,color: Colors.white,),
-        label: showLabel
-            ? const Text('Logout', style: TextStyle(fontSize: 12,color: Colors.white))
-            : const SizedBox.shrink(),
+        icon: const Icon(Icons.logout_rounded, size: 18, color: Colors.white),
+        label:
+            showLabel
+                ? const Text(
+                  'Logout',
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                )
+                : const SizedBox.shrink(),
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: Colors.red,
@@ -469,15 +468,13 @@ class _LogoutButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SKELETON (SHIMMER) - flexFit.loose saat vertikal
-// ─────────────────────────────────────────────────────────────────────────────
 class _SkeletonCard extends StatelessWidget {
-  const _SkeletonCard(
-      {required this.isDark,
-        required this.pad,
-        required this.avatar,
-        required this.vertical});
+  const _SkeletonCard({
+    required this.isDark,
+    required this.pad,
+    required this.avatar,
+    required this.vertical,
+  });
 
   final bool isDark;
   final double pad, avatar;
@@ -504,7 +501,9 @@ class _SkeletonCard extends StatelessWidget {
               width: avatar,
               height: avatar,
               decoration: const BoxDecoration(
-                  shape: BoxShape.circle, color: Colors.white),
+                shape: BoxShape.circle,
+                color: Colors.white,
+              ),
             ),
             SizedBox(width: vertical ? 0 : 16, height: vertical ? 12 : 0),
             Flexible(
@@ -512,7 +511,11 @@ class _SkeletonCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(width: double.infinity, height: 16, color: Colors.white),
+                  Container(
+                    width: double.infinity,
+                    height: 16,
+                    color: Colors.white,
+                  ),
                   const SizedBox(height: 8),
                   Container(width: 150, height: 14, color: Colors.white),
                   const SizedBox(height: 8),
@@ -527,9 +530,6 @@ class _SkeletonCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ERROR CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _ErrorCard extends StatelessWidget {
   const _ErrorCard({required this.isDark, required this.pad});
   final bool isDark;
@@ -546,13 +546,11 @@ class _ErrorCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
-        child: Text('Tidak ada koneksi internet',
-            style: Theme.of(context).textTheme.bodyMedium),
+        child: Text(
+          'Tidak ada koneksi internet',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
       ),
     );
   }
 }
-
-
-
-

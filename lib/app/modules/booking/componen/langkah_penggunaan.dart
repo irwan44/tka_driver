@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-/// ─────────────────────────────────────────────────────────────────────────────
-/// DATA MODEL
-/// ─────────────────────────────────────────────────────────────────────────────
 class GuideStep {
   final String title;
   final String description;
@@ -15,9 +12,6 @@ class GuideStep {
   });
 }
 
-/// ─────────────────────────────────────────────────────────────────────────────
-/// MAIN PAGE
-/// ─────────────────────────────────────────────────────────────────────────────
 class UsageGuidePage extends StatefulWidget {
   const UsageGuidePage({Key? key}) : super(key: key);
 
@@ -33,28 +27,28 @@ class _UsageGuidePageState extends State<UsageGuidePage> {
     GuideStep(
       title: 'Request Service',
       description:
-      'Tekan tombol “Buat Request Service” untuk memulai permintaan servis '
+          'Tekan tombol “Buat Request Service” untuk memulai permintaan servis '
           'kendaraan Anda.',
       imagePath: 'assets/penggunaan/request1.png',
     ),
     GuideStep(
       title: 'Isi Formulir',
       description:
-      'Masukkan nomor polisi, deskripsikan keluhan, lalu unggah foto/video '
+          'Masukkan nomor polisi, deskripsikan keluhan, lalu unggah foto/video '
           'diagnosa kerusakan.',
       imagePath: 'assets/penggunaan/request2.png',
     ),
     GuideStep(
       title: 'Lihat Daftar Request',
       description:
-      'Semua request tersimpan di tab “Request Service” lengkap dengan '
+          'Semua request tersimpan di tab “Request Service” lengkap dengan '
           'status & detail kendaraan.',
       imagePath: 'assets/penggunaan/request3.png',
     ),
     GuideStep(
       title: 'Service Berkala',
       description:
-      'Di menu “Service” Anda dapat melihat paket servis, suku cadang '
+          'Di menu “Service” Anda dapat melihat paket servis, suku cadang '
           'yang diganti, dan biaya jasa.',
       imagePath: 'assets/penggunaan/service.png',
     ),
@@ -65,7 +59,6 @@ class _UsageGuidePageState extends State<UsageGuidePage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    // Warna aksen yang konsisten di kedua mode
     final accent = isDark ? Colors.orangeAccent : Colors.blueAccent;
 
     return Scaffold(
@@ -73,7 +66,6 @@ class _UsageGuidePageState extends State<UsageGuidePage> {
       body: SafeArea(
         child: Stack(
           children: [
-            /// ─── PAGE VIEW ───────────────────────────────────────────────
             PageView.builder(
               controller: _pageCtrl,
               itemCount: _steps.length,
@@ -81,17 +73,15 @@ class _UsageGuidePageState extends State<UsageGuidePage> {
               itemBuilder: (_, i) => _GuideSlide(step: _steps[i]),
             ),
 
-            /// ─── SKIP BUTTON ────────────────────────────────────────────
             Positioned(
               top: 8,
               right: 16,
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Lewati',style: TextStyle( color: textColor,),),
+                child: Text('Lewati', style: TextStyle(color: textColor)),
               ),
             ),
 
-            /// ─── INDICATOR + NAVIGATION ────────────────────────────────
             Positioned(
               left: 16,
               right: 16,
@@ -109,29 +99,31 @@ class _UsageGuidePageState extends State<UsageGuidePage> {
                         spacing: 6,
                         activeDotColor: accent,
                         dotColor:
-                        isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+                            isDark
+                                ? Colors.grey.shade700
+                                : Colors.grey.shade400,
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
 
-                  // Back button (hidden on first page)
                   if (_pageIndex > 0)
                     _CircleButton(
                       icon: Icons.arrow_back_ios_new,
-                      onTap: () => _pageCtrl.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                      ),
+                      onTap:
+                          () => _pageCtrl.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          ),
                     ),
 
                   const SizedBox(width: 8),
 
-                  // Next / Mulai button
                   _CircleButton(
-                    icon: _pageIndex == _steps.length - 1
-                        ? Icons.check
-                        : Icons.arrow_forward_ios,
+                    icon:
+                        _pageIndex == _steps.length - 1
+                            ? Icons.check
+                            : Icons.arrow_forward_ios,
                     onTap: () {
                       if (_pageIndex == _steps.length - 1) {
                         Navigator.pop(context); // ↳ ganti rute jika perlu
@@ -153,9 +145,6 @@ class _UsageGuidePageState extends State<UsageGuidePage> {
   }
 }
 
-/// ─────────────────────────────────────────────────────────────────────────────
-/// SLIDE WIDGET
-/// ─────────────────────────────────────────────────────────────────────────────
 class _GuideSlide extends StatelessWidget {
   const _GuideSlide({required this.step});
 
@@ -171,7 +160,6 @@ class _GuideSlide extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 62, 24, 120),
       child: Column(
         children: [
-          // ─── Ilustrasi ───────────────────────────────────────────────
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
@@ -184,7 +172,6 @@ class _GuideSlide extends StatelessWidget {
           ),
           const SizedBox(height: 32),
 
-          // ─── Judul ───────────────────────────────────────────────────
           Text(
             step.title,
             style: theme.textTheme.headlineSmall?.copyWith(
@@ -194,7 +181,6 @@ class _GuideSlide extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // ─── Deskripsi ───────────────────────────────────────────────
           Text(
             step.description,
             textAlign: TextAlign.center,
@@ -209,9 +195,6 @@ class _GuideSlide extends StatelessWidget {
   }
 }
 
-/// ─────────────────────────────────────────────────────────────────────────────
-/// CIRCLE BUTTON (Next / Back)
-/// ─────────────────────────────────────────────────────────────────────────────
 class _CircleButton extends StatelessWidget {
   const _CircleButton({required this.icon, required this.onTap});
 
@@ -230,10 +213,7 @@ class _CircleButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(40),
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: bgColor,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
         child: Icon(icon, size: 20, color: iconColor),
       ),
     );

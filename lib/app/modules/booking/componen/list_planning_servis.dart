@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../data/data_respon/listservice.dart';
 import '../controllers/booking_controller.dart';
 import 'detailservice.dart';
-
 
 class _TicketClipper extends CustomClipper<Path> {
   @override
@@ -14,13 +14,19 @@ class _TicketClipper extends CustomClipper<Path> {
     p.moveTo(0, 0);
     p.lineTo(size.width, 0);
     p.lineTo(size.width, size.height / 2 - r);
-    p.arcToPoint(Offset(size.width, size.height / 2 + r),
-        radius: const Radius.circular(r), clockwise: false);
+    p.arcToPoint(
+      Offset(size.width, size.height / 2 + r),
+      radius: const Radius.circular(r),
+      clockwise: false,
+    );
     p.lineTo(size.width, size.height);
     p.lineTo(0, size.height);
     p.lineTo(0, size.height / 2 + r);
-    p.arcToPoint(Offset(0, size.height / 2 - r),
-        radius: const Radius.circular(r), clockwise: false);
+    p.arcToPoint(
+      Offset(0, size.height / 2 - r),
+      radius: const Radius.circular(r),
+      clockwise: false,
+    );
     p.close();
     return p;
   }
@@ -32,11 +38,13 @@ class _TicketClipper extends CustomClipper<Path> {
 class _DashPainter extends CustomPainter {
   final double dashWidth, dashSpace;
   final Color color;
-  _DashPainter(
-      {this.dashWidth = 6, this.dashSpace = 4, required this.color});
+  _DashPainter({this.dashWidth = 6, this.dashSpace = 4, required this.color});
   @override
   void paint(Canvas c, Size s) {
-    var paint = Paint()..color = color..strokeWidth = 1;
+    var paint =
+        Paint()
+          ..color = color
+          ..strokeWidth = 1;
     double x = 0, y = s.height / 2;
     while (x < s.width) {
       c.drawLine(Offset(x, y), Offset(x + dashWidth, y), paint);
@@ -51,7 +59,7 @@ class _DashPainter extends CustomPainter {
 class PlanningServiceItemCard extends StatelessWidget {
   final ListService service;
   PlanningServiceItemCard({Key? key, required this.service}) : super(key: key);
-  // Mini chip util
+
   final bookingController = Get.find<BookingController>();
   Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
     final isDark = Theme.of(ctx).brightness == Brightness.dark;
@@ -75,169 +83,236 @@ class PlanningServiceItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-        builder: (context, constraints) {
-    final bookingController = Get.find<BookingController>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+      builder: (context, constraints) {
+        final bookingController = Get.find<BookingController>();
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final st = (service.status ?? '').trim().toLowerCase();
-    final isEstimasi = st == 'estimasi';
-    final isPKB = st == 'pkb';
-    final isPKBTutup = st == 'pkb tutup';
-    final isInvoice = st == 'invoice';
-    final isPlanning = st == 'not confirmed';
+        final st = (service.status ?? '').trim().toLowerCase();
+        final isEstimasi = st == 'estimasi';
+        final isPKB = st == 'pkb';
+        final isPKBTutup = st == 'pkb tutup';
+        final isInvoice = st == 'invoice';
+        final isPlanning = st == 'not confirmed';
 
-    Color badgeClr, txtClr;
-    if (isEstimasi)    { badgeClr = Colors.orange.shade200;  txtClr = Colors.orange.shade800; }
-    else if (isPKB)    { badgeClr = Colors.green.shade200;   txtClr = Colors.green.shade800; }
-    else if (isPKBTutup){ badgeClr = Colors.red.shade200;    txtClr = Colors.red.shade800; }
-    else if (isInvoice){ badgeClr = Colors.blue.shade200;    txtClr = Colors.blue.shade800; }
-    else if (isPlanning){ badgeClr = Colors.red.shade200; txtClr = Colors.red.shade800; }
-    else               { badgeClr = isDark? Colors.grey.shade700 : Colors.grey.shade300;
-    txtClr = isDark? Colors.white : Colors.black; }
-    final kodeLabel = isEstimasi ? 'Kode Estimasi:' : 'Kode PKB:';
-    final kodeValue = isEstimasi ? (service.kodeEstimasi ?? '-') : (service.kodePkb ?? '-');
+        Color badgeClr, txtClr;
+        if (isEstimasi) {
+          badgeClr = Colors.orange.shade200;
+          txtClr = Colors.orange.shade800;
+        } else if (isPKB) {
+          badgeClr = Colors.green.shade200;
+          txtClr = Colors.green.shade800;
+        } else if (isPKBTutup) {
+          badgeClr = Colors.red.shade200;
+          txtClr = Colors.red.shade800;
+        } else if (isInvoice) {
+          badgeClr = Colors.blue.shade200;
+          txtClr = Colors.blue.shade800;
+        } else if (isPlanning) {
+          badgeClr = Colors.red.shade200;
+          txtClr = Colors.red.shade800;
+        } else {
+          badgeClr = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+          txtClr = isDark ? Colors.white : Colors.black;
+        }
+        final kodeLabel = isEstimasi ? 'Kode Estimasi:' : 'Kode PKB:';
+        final kodeValue =
+            isEstimasi
+                ? (service.kodeEstimasi ?? '-')
+                : (service.kodePkb ?? '-');
 
-    IconData leadingIcn = Icons.info_outline;
-    String leadingTitle = 'Service';
-    if (isEstimasi) { leadingIcn = Icons.calculate; leadingTitle = 'Estimasi Service'; }
-    else if (isInvoice){ leadingIcn = Icons.receipt_long; leadingTitle = 'Invoice Service'; }
-    else if (isPKB || isPKBTutup || isPlanning){ leadingIcn = Icons.assignment; leadingTitle = 'PKB Service'; }
+        IconData leadingIcn = Icons.info_outline;
+        String leadingTitle = 'Service';
+        if (isEstimasi) {
+          leadingIcn = Icons.calculate;
+          leadingTitle = 'Estimasi Service';
+        } else if (isInvoice) {
+          leadingIcn = Icons.receipt_long;
+          leadingTitle = 'Invoice Service';
+        } else if (isPKB || isPKBTutup || isPlanning) {
+          leadingIcn = Icons.assignment;
+          leadingTitle = 'PKB Service';
+        }
 
-    final cardBg = isDark ? const Color(0xFF2B2B2B) : Colors.white;
-    final bool narrow   = constraints.maxWidth < 350;
-    final double hPad   = narrow ? 8 : 12;
-    final double vPad   = narrow ? 4 : 6;
-    final double fSize  = narrow ? 12 : 14;
-    return ClipPath(
-      clipper: _TicketClipper(),
-      child: Container(
-        margin: EdgeInsets.only(left: 10,right: 10,top: 4),
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            if (!isDark)
-              BoxShadow(
-                color: Colors.grey.withOpacity(.15),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-          ],
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Get.to(() => DetailServiceView(
-              kodeSvc: service.kodeSvc ?? '',
-              status: service.status ?? '',
-            ));
-          },
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(
-                  children: [
-                    Icon(Icons.notifications_active_rounded, size: 16, color: isDark ? Colors.redAccent[400] : Colors.redAccent[400]),
-                    SizedBox(width: 10,),
-                    Expanded(
-                      child: Text('Pemberitahuan Planning Service',
-                          style: GoogleFonts.nunito(
+        final cardBg = isDark ? const Color(0xFF2B2B2B) : Colors.white;
+        final bool narrow = constraints.maxWidth < 350;
+        final double hPad = narrow ? 8 : 12;
+        final double vPad = narrow ? 4 : 6;
+        final double fSize = narrow ? 12 : 14;
+        return ClipPath(
+          clipper: _TicketClipper(),
+          child: Container(
+            margin: EdgeInsets.only(left: 10, right: 10, top: 4),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                if (!isDark)
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+              ],
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                Get.to(
+                  () => DetailServiceView(
+                    kodeSvc: service.kodeSvc ?? '',
+                    status: service.status ?? '',
+                  ),
+                );
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.notifications_active_rounded,
+                          size: 16,
+                          color:
+                              isDark
+                                  ? Colors.redAccent[400]
+                                  : Colors.redAccent[400],
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Pemberitahuan Planning Service',
+                            style: GoogleFonts.nunito(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87)),
-                    ),
-                  ],
-                ),
-              ),
-
-              LayoutBuilder(
-                builder: (_, c) => CustomPaint(
-                  size: Size(c.maxWidth, 1),
-                  painter: _DashPainter(
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                  ),
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-                    Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: badgeClr.withOpacity(.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                  color: txtClr, shape: BoxShape.circle),
+                              color: isDark ? Colors.white : Colors.black87,
                             ),
-                            const SizedBox(width: 6),
-                            Text(service.status ?? '-',
-                                style: GoogleFonts.nunito(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: txtClr)),
-                          ],
-                        )
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        _miniChip(context, Icons.confirmation_num, service.kodeSvc ?? '-'),
-                        if ((service.noPolisi ?? '').isNotEmpty)
-                          _miniChip(context, Icons.directions_car, service.noPolisi!),
+                          ),
+                        ),
                       ],
                     ),
-                    if (isPlanning)
-                      Obx(() {
-                        final confirmed = bookingController.isPlanningConfirmed(service.kodeSvc);
-                        final bgColor = confirmed ? Colors.green : Colors.red;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Container(
-                            width: double.infinity,
-                            // memastikan teks tetap membungkus alih-alih overflow
-                            constraints: const BoxConstraints(minWidth: 0),
-                            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-                            decoration: BoxDecoration(
-                              color: bgColor,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              confirmed ? 'Sudah Konfirmasi' : 'Anda belum Konfirmasi Planning Service',
-                              maxLines: 2,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.nunito(
-                                fontSize: fSize,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                  ),
+
+                  LayoutBuilder(
+                    builder:
+                        (_, c) => CustomPaint(
+                          size: Size(c.maxWidth, 1),
+                          painter: _DashPainter(
+                            color:
+                                isDark
+                                    ? Colors.grey.shade600
+                                    : Colors.grey.shade400,
+                          ),
+                        ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeClr.withOpacity(.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: txtClr,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
+                              const SizedBox(width: 6),
+                              Text(
+                                service.status ?? '-',
+                                style: GoogleFonts.nunito(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: txtClr,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            _miniChip(
+                              context,
+                              Icons.confirmation_num,
+                              service.kodeSvc ?? '-',
                             ),
-                          )
-                        );
-                      }),
-                  ],
-                ),
+                            if ((service.noPolisi ?? '').isNotEmpty)
+                              _miniChip(
+                                context,
+                                Icons.directions_car,
+                                service.noPolisi!,
+                              ),
+                          ],
+                        ),
+                        if (isPlanning)
+                          Obx(() {
+                            final confirmed = bookingController
+                                .isPlanningConfirmed(service.kodeSvc);
+                            final bgColor =
+                                confirmed ? Colors.green : Colors.red;
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Container(
+                                width: double.infinity,
+
+                                constraints: const BoxConstraints(minWidth: 0),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: hPad,
+                                  vertical: vPad,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: bgColor,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  confirmed
+                                      ? 'Sudah Konfirmasi'
+                                      : 'Anda belum Konfirmasi Planning Service',
+                                  maxLines: 2,
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.nunito(
+                                    fontSize: fSize,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-    }
+        );
+      },
     );
   }
 }
