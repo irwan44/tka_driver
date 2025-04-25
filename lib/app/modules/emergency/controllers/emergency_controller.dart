@@ -114,10 +114,9 @@ class EmergencyController extends GetxController {
   }
 
   Future<void> _initLocalNotifications() async {
-    // 1) Buat channel Android sekali
     _statusChannel = const AndroidNotificationChannel(
-      'emergency_status',                  // id
-      'Perubahan Status Emergency',        // name
+      'emergency_status',
+      'Perubahan Status Emergency',
       description: 'Notifikasi status emergency berubah',
       importance: Importance.high,
       playSound: true,
@@ -154,7 +153,6 @@ class EmergencyController extends GetxController {
   }
 
   Future<void> fetchEmergencyList({bool silent = false}) async {
-    // ——— early-exit jika tak ada internet ————————————————
     if (!await _hasRealInternet()) {
       if (!silent) {
         errorMessage.value =

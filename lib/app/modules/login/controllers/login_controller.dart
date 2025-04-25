@@ -6,12 +6,12 @@ import '../../../data/data_respon/token.dart';
 import '../../../data/endpoint.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
+import '../../booking/controllers/booking_controller.dart';
+
 class LoginController extends GetxController {
-  // Controller untuk field email & password
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // Observable untuk loading state
   var isLoading = false.obs;
 
   Future<void> doLogin() async {
@@ -37,6 +37,7 @@ class LoginController extends GetxController {
       await boxPreferences.write('user_email', emailController.text);
       OneSignal.User.addEmail(emailController.text);
       print("OneSignal email updated to: ${emailController.text}");
+      Get.delete<BookingController>(force: true);
       Get.offAllNamed(Routes.HOME);
 
     } catch (e) {

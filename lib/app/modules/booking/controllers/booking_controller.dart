@@ -136,13 +136,11 @@ class BookingController extends GetxController {
   Timer? _debounceTimer;
   void _setStatusDebounced(ConnectivityResult newStatus) {
     if (newStatus == ConnectivityResult.none) {
-      // tunda 800 ms; kalau masih NONE, baru update
       _debounceTimer?.cancel();
       _debounceTimer = Timer(const Duration(milliseconds: 800), () {
         debouncedStatus.value = newStatus;
       });
     } else {
-      // sinyal kembali — perbarui langsung & batalkan penundaan
       _debounceTimer?.cancel();
       debouncedStatus.value = newStatus;
     }
@@ -276,8 +274,6 @@ class BookingController extends GetxController {
       if (file == null) return;
 
       int currentPhotoCount = mediaList.where((x) => !_isVideo(x)).length;
-
-      // Batasi maksimal 4 foto
       if (currentPhotoCount >= 4) {
         Get.snackbar(
           'Warning',
@@ -305,8 +301,6 @@ class BookingController extends GetxController {
       if (file == null) return;
 
       int currentVideoCount = mediaList.where((x) => _isVideo(x)).length;
-
-      // Batasi hanya 1 video
       if (currentVideoCount >= 1) {
         Get.snackbar(
           'Warning',
@@ -362,7 +356,6 @@ class BookingController extends GetxController {
       return;
     }
 
-    // 3) CALL API
     try {
       isLoading.value = true;
       await API.createRequest(
@@ -370,7 +363,7 @@ class BookingController extends GetxController {
         keluhan: complaintController.text.trim(),
         mediaFiles: mediaFiles,
       );
-      // 4) TAMPILKAN DIALOG & TUNGGU USER MENUTUP
+
       Get.delete<BookingController>(force: true);
       Get.offAllNamed(Routes.HOME);
       await QuickAlert.show(
