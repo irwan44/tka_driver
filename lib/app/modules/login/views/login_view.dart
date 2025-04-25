@@ -20,226 +20,277 @@ class LoginView extends StatelessWidget {
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[900] : Colors.white,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Logo
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.all(8),
-                  child: Image.asset(AssetsRes.LOGO, height: 70),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  "Selamat Datang!",
-                  style: GoogleFonts.nunito(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "Silakan masuk untuk melanjutkan",
-                  style: GoogleFonts.nunito(
-                    fontSize: 14,
-                    color: isDark ? Colors.white70 : Colors.black45,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                // Field Email
-                TextField(
-                  controller: controller.emailController,
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.email_outlined,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                    hintText: "Email",
-                    hintStyle: GoogleFonts.nunito(
-                      color: isDark ? Colors.white70 : Colors.grey,
-                    ),
-                    helperText: "Anda harus memasukkan email yang valid",
-                    helperStyle: GoogleFonts.nunito(
-                      color: isDark ? Colors.white70 : Colors.grey,
-                    ),
-                    filled: true,
-                    fillColor:
-                        isDark ? Colors.grey[800] : const Color(0xFFF5F5F5),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  style: GoogleFonts.nunito(
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Obx(
-                  () => TextField(
-                    controller: controller.passwordController,
-                    obscureText: isObscure.value,
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.lock_outline,
-                        color: isDark ? Colors.white : Colors.black,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // ─── PARAMETER RESPONSIF ────────────────────────────────────────────
+            final double w = constraints.maxWidth;
+            final bool isTablet = w >= 600; // >600 px dianggap tablet
+            final bool stackButtons = w < 350; // hp kecil, tombol ditumpuk
+
+            final double hPad = isTablet ? w * 0.20 : 28; // padding horiz.
+            final double logoH = isTablet ? 120 : 70;
+            final double headingSize = isTablet ? 28 : 20;
+            final double subHeadingSize = isTablet ? 18 : 14;
+            final double helperSize = isTablet ? 16 : 12;
+            final double fieldVPad = isTablet ? 20 : 16;
+            final double btnVPad = isTablet ? 18 : 16;
+
+            // ─── UI ────────────────────────────────────────────────────────────
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: hPad),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // ─── LOGO ───────────────────────────────────────────────
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Image.asset(AssetsRes.LOGO, height: logoH),
                       ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isObscure.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                      const SizedBox(height: 24),
+
+                      // ─── HEADING ────────────────────────────────────────────
+                      Text(
+                        "Selamat Datang!",
+                        style: GoogleFonts.nunito(
+                          fontSize: headingSize,
+                          fontWeight: FontWeight.w700,
                           color: isDark ? Colors.white : Colors.black,
                         ),
-                        onPressed: () => isObscure.toggle(),
                       ),
-                      hintText: "Kata Sandi",
-                      hintStyle: GoogleFonts.nunito(
-                        color: isDark ? Colors.white70 : Colors.grey,
-                      ),
-                      helperText: "Password minimal 6 karakter",
-                      helperStyle: GoogleFonts.nunito(
-                        color: isDark ? Colors.white70 : Colors.grey,
-                      ),
-                      filled: true,
-                      fillColor:
-                          isDark ? Colors.grey[800] : const Color(0xFFF5F5F5),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    style: GoogleFonts.nunito(
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Tombol Masuk
-                Obx(
-                  () => SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed:
-                          controller.isLoading.value
-                              ? null
-                              : () => controller.doLogin(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Silakan masuk untuk melanjutkan",
+                        style: GoogleFonts.nunito(
+                          fontSize: subHeadingSize,
+                          color: isDark ? Colors.white70 : Colors.black45,
                         ),
-                        elevation: 0,
                       ),
-                      child:
-                          controller.isLoading.value
-                              ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : Text(
-                                "MASUK",
-                                style: GoogleFonts.nunito(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                      const SizedBox(height: 32),
+
+                      // ─── FIELD EMAIL ────────────────────────────────────────
+                      TextField(
+                        controller: controller.emailController,
+                        decoration: _fieldDecoration(
+                          context,
+                          isDark,
+                          hint: "Email",
+                          icon: Icons.email_outlined,
+                          helper: "Anda harus memasukkan email yang valid",
+                          helperSize: helperSize,
+                          vPad: fieldVPad,
+                        ),
+                        style: GoogleFonts.nunito(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ─── FIELD PASSWORD ─────────────────────────────────────
+                      Obx(
+                        () => TextField(
+                          controller: controller.passwordController,
+                          obscureText: isObscure.value,
+                          decoration: _fieldDecoration(
+                            context,
+                            isDark,
+                            hint: "Kata Sandi",
+                            icon: Icons.lock_outline,
+                            helper: "Password minimal 6 karakter",
+                            helperSize: helperSize,
+                            vPad: fieldVPad,
+                            suffix: IconButton(
+                              icon: Icon(
+                                isObscure.value
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              onPressed: () => isObscure.toggle(),
+                            ),
+                          ),
+                          style: GoogleFonts.nunito(
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ─── TOMBOL MASUK ───────────────────────────────────────
+                      Obx(
+                        () => SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed:
+                                controller.isLoading.value
+                                    ? null
+                                    : () => controller.doLogin(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              padding: EdgeInsets.symmetric(vertical: btnVPad),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                              elevation: 0,
+                            ),
+                            child:
+                                controller.isLoading.value
+                                    ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : Text(
+                                      "MASUK",
+                                      style: GoogleFonts.nunito(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // ─── PANDUAN APLIKASI ──────────────────────────────────
+                      Text(
+                        "Panduan Aplikasi",
+                        style: GoogleFonts.nunito(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.w600,
+                          fontSize: isTablet ? 20 : 16,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      stackButtons
+                          ? Column(
+                            children: [
+                              _buildGuideBtn(
+                                label: 'Reguler Service',
+                                color: Colors.green,
+                                onTap:
+                                    () => Get.to(() => const UsageGuidePage()),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildGuideBtn(
+                                label: 'Emergency',
+                                color: Colors.redAccent,
+                                onTap:
+                                    () => Get.to(
+                                      () => const EmergencyGuidePage(),
+                                    ),
+                              ),
+                            ],
+                          )
+                          : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: _buildGuideBtn(
+                                  label: 'Reguler Service',
+                                  color: Colors.green,
+                                  onTap:
+                                      () =>
+                                          Get.to(() => const UsageGuidePage()),
                                 ),
                               ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  "Panduan Aplikasi",
-                  style: GoogleFonts.nunito(
-                    color: isDark ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton.icon(
-                      icon: const Icon(
-                        Icons.info_outline,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'Reguler Service',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green, // latar jingga
-                        elevation: 0, // flat look
-                        padding: const EdgeInsets.symmetric(
-                          // ruang nyaman
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () => Get.to(() => const UsageGuidePage()),
-                    ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildGuideBtn(
+                                  label: 'Emergency',
+                                  color: Colors.redAccent,
+                                  onTap:
+                                      () => Get.to(
+                                        () => const EmergencyGuidePage(),
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
 
-                    ElevatedButton.icon(
-                      icon: const Icon(
-                        Icons.info_outline,
-                        size: 18,
-                        color: Colors.white,
+                      const SizedBox(height: 50),
+
+                      // ─── VERSI APLIKASI ───────────────────────────────────
+                      FutureBuilder<PackageInfo>(
+                        future: PackageInfo.fromPlatform(),
+                        builder: (context, snap) {
+                          final v = snap.data?.version ?? '–';
+                          return Text(
+                            'Versi Aplikasi $v',
+                            style: GoogleFonts.nunito(
+                              color: isDark ? Colors.white70 : Colors.black54,
+                              fontSize: helperSize,
+                            ),
+                          );
+                        },
                       ),
-                      label: const Text(
-                        'Emergency Service',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () => Get.to(() => const EmergencyGuidePage()),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                SizedBox(height: 50),
-                FutureBuilder<PackageInfo>(
-                  future: PackageInfo.fromPlatform(),
-                  builder: (context, snap) {
-                    final v = snap.data?.version ?? '–';
-                    return Text(
-                      'Versi Aplikasi $v',
-                      style: GoogleFonts.nunito(
-                        color: isDark ? Colors.white70 : Colors.black54,
-                        fontSize: 12,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  InputDecoration _fieldDecoration(
+    BuildContext context,
+    bool isDark, {
+    required String hint,
+    required IconData icon,
+    required String helper,
+    required double helperSize,
+    double vPad = 16,
+    Widget? suffix,
+  }) {
+    return InputDecoration(
+      prefixIcon: Icon(icon, color: isDark ? Colors.white : Colors.black),
+      suffixIcon: suffix,
+      hintText: hint,
+      hintStyle: GoogleFonts.nunito(
+        color: isDark ? Colors.white70 : Colors.grey,
+      ),
+      helperText: helper,
+      helperStyle: GoogleFonts.nunito(
+        color: isDark ? Colors.white70 : Colors.grey,
+        fontSize: helperSize,
+      ),
+      filled: true,
+      fillColor: isDark ? Colors.grey[800] : const Color(0xFFF5F5F5),
+      contentPadding: EdgeInsets.symmetric(vertical: vPad),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  Widget _buildGuideBtn({
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: const Icon(Icons.info_outline, size: 18, color: Colors.white),
+      label: Text(label, style: const TextStyle(color: Colors.white)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

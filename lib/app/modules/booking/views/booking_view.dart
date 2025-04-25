@@ -420,7 +420,7 @@ class _BookingViewState extends State<BookingView> {
           );
 
     return RefreshIndicator(
-      onRefresh: () => c.refreshAll(),
+      onRefresh: () => c.refreshServices(),
       displacement: 40,
       child:
           _connectivityStatus == ConnectivityResult.none
@@ -429,7 +429,7 @@ class _BookingViewState extends State<BookingView> {
               )
               : c.errorRequest.value.isNotEmpty
               ? _serverDown(c.errorRequest.value)
-              : c.isLoading.value
+              : c.isLoadingServices.value
               ? _buildLoadingList(isDark)
               : filtered.isEmpty
               ? ListView(

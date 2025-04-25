@@ -31,6 +31,8 @@ class BookingController extends GetxController {
   var confirmedPlanningSvcs = <String>{}.obs;
   final RxBool isConfirming = false.obs;
   DateTime? _selectedDate;
+  Timer? _ticker;
+  final isLoadingServices = false.obs;
 
   bool isPlanningConfirmed(String? kodeSvc) =>
       kodeSvc != null && confirmedPlanningSvcs.contains(kodeSvc);
@@ -104,6 +106,7 @@ class BookingController extends GetxController {
 
   @override
   void onClose() {
+    _ticker?.cancel();
     _debounceTimer?.cancel();
     _connectSub.cancel();
     super.onClose();
@@ -112,9 +115,12 @@ class BookingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchServices();
-    fetchRequestService();
-    fetchVehicles();
+    // fetchServices();
+    // fetchRequestService();
+    // fetchVehicles();
+
+    _firstLoad();
+    _startRealtime();
     _connectSub = Connectivity().onConnectivityChanged.listen((event) {
       ConnectivityResult status;
       if (event is ConnectivityResult) {
@@ -128,8 +134,34 @@ class BookingController extends GetxController {
     });
   }
 
+  Future<void> _firstLoad() async {
+    try {
+      await Future.wait([
+        fetchServices(),
+        fetchRequestService(),
+        fetchVehicles(),
+      ]);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _startRealtime() {
+    const interval = Duration(seconds: 5);
+    _ticker?.cancel();
+    _ticker = Timer.periodic(interval, (_) {
+      fetchServices(showLoader: false);
+      fetchRequestService(showLoader: false);
+      fetchVehicles(showLoader: false);
+    });
+  }
+
   Future<void> refreshAll() async {
-    await Future.wait([fetchRequestService(), fetchServices()]);
+    await Future.wait([fetchRequestService()]);
+  }
+
+  Future<void> refreshServices() async {
+    await Future.wait([fetchServices()]);
   }
 
   final Rx<ConnectivityResult> debouncedStatus = ConnectivityResult.mobile.obs;
@@ -186,7 +218,8 @@ class BookingController extends GetxController {
     }
   }
 
-  Future<void> fetchVehicles() async {
+  Future<void> fetchVehicles({bool showLoader = true}) async {
+    if (showLoader) isLoading(true);
     try {
       isLoading.value = true;
       final resp = await API.fetchListKendaraan();
@@ -207,7 +240,7 @@ class BookingController extends GetxController {
         errorMessage.value = e.toString();
       }
     } finally {
-      isLoading.value = false;
+      if (showLoader) isLoading.value = false;
     }
   }
 
@@ -413,20 +446,25 @@ class BookingController extends GetxController {
 
   final RxBool networkError = false.obs;
 
-  Future<void> fetchRequestService() async {
-    isLoadingRequest.value = true;
+  Future<void> fetchRequestService({bool showLoader = true}) async {
     errorRequest.value = '';
+    if (showLoader) isLoadingRequest(true); // gunakan flag milik sendiri
+
     try {
-      networkError.value = false;
-      listRequestService.assignAll(await API.fetchListRequestService());
+      networkError(false);
+      final list = await API.fetchListRequestService();
+      listRequestService.assignAll(list);
+    } on SocketException {
+      errorRequest.value = 'Tidak ada koneksi internet';
+      networkError(true);
     } on SilentException catch (e) {
       errorRequest.value = e.message;
-      networkError.value = true;
+      networkError(true);
     } catch (e) {
-      networkError.value = false;
       errorRequest.value = e.toString();
+      networkError(false);
     } finally {
-      isLoadingRequest.value = false;
+      if (showLoader) isLoadingRequest(false);
     }
   }
 
@@ -532,21 +570,21 @@ class BookingController extends GetxController {
     }
   }
 
-  Future<void> fetchServices() async {
+  Future<void> fetchServices({bool showLoader = true}) async {
+    if (showLoader) isLoading(true); // 🚀 hidupkan hanya kalau perlu
+    errorMessage.value = '';
+
     try {
-      isLoading.value = true;
-      errorMessage.value = "";
-      var services = await API.fetchListService();
+      final services = await API.fetchListService();
       listService.assignAll(services);
-      print("Services berhasil diambil, jumlah: ${services.length}");
-    } on SocketException catch (e) {
-      errorMessage.value = "Tidak ada koneksi internet";
-      print("SocketException: $e");
+      debugPrint('✅ Services fetched: ${services.length}');
+    } on SocketException {
+      errorMessage.value = 'Tidak ada koneksi internet';
     } catch (e) {
       errorMessage.value = e.toString();
-      print("Generic Exception: $e");
+      debugPrint('❌ fetchServices error → $e');
     } finally {
-      isLoading.value = false;
+      if (showLoader) isLoading(false); // 📴 matikan hanya kalau perlu
     }
   }
 }
