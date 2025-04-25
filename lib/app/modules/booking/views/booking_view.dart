@@ -664,7 +664,7 @@ class _BookingViewState extends State<BookingView> {
                                           width: 120,
                                           height: 120,
                                           color: Colors.grey[300],
-                                          child: const Icon(Icons.broken_image, size: 40),
+                                          child: const Icon(Icons.slow_motion_video, size: 40),
                                         ),
                                       ),
                                       if (isVideo)

@@ -652,7 +652,7 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
             color: Colors.black12,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.videocam, size: 48, color: Colors.grey),
+          child: const Icon(Icons.slow_motion_video_rounded, size: 48, color: Colors.grey),
         ),
       );
     } else {
