@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'app/modules/booking/controllers/booking_controller.dart';
 import 'app/routes/app_pages.dart';
 
@@ -24,7 +25,6 @@ class AssetsRes {
     }
   }
 }
-
 
 class AppConfig {
   static const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'tka');
@@ -57,8 +57,6 @@ class OneSignalConfig {
   }
 }
 
-
-
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -67,16 +65,14 @@ class MyHttpOverrides extends HttpOverrides {
           (X509Certificate cert, String host, int port) => true;
   }
 }
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init('token-mekanik');
   await GetStorage.init('preferences-mekanik');
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
-  Get.put<BookingController>(
-    BookingController(),
-    permanent: true,
-  );
+  Get.put<BookingController>(BookingController(), permanent: true);
   runApp(const MyApp());
 }
 
@@ -100,7 +96,8 @@ class MyApp extends StatelessWidget {
         SystemChrome.setSystemUIOverlayStyle(
           SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
-            statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            statusBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
             statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
           ),
         );

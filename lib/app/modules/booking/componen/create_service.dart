@@ -37,7 +37,7 @@ class RegularRepairPage extends StatelessWidget {
             onPressed:
                 c.disableBuatEmergencyServiceButton
                     ? null
-                    : () => c.submitEmergencyRepair(context),
+                    : () => c.submitRequest(context),
             icon:
                 c.isLoading.value
                     ? const SizedBox(

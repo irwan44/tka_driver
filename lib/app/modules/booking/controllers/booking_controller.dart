@@ -32,6 +32,7 @@ class BookingController extends GetxController {
   DateTime? _selectedDate;
   Timer? _ticker;
   final isLoadingServices = false.obs;
+  final isLoadingVehicles = false.obs;
   final RxBool isLoadingDetail = false.obs;
 
   bool isPlanningConfirmed(String? kodeSvc) =>
@@ -192,9 +193,9 @@ class BookingController extends GetxController {
   }
 
   Future<void> fetchVehicles({bool showLoader = true}) async {
-    if (showLoader) isLoading(true);
+    if (showLoader) isLoadingVehicles(true);
     try {
-      isLoading.value = true;
+      isLoadingVehicles.value = true;
       final resp = await API.fetchListKendaraan();
       final listKendaraan = resp.data ?? [];
       availableVehicles.clear();
@@ -213,7 +214,7 @@ class BookingController extends GetxController {
         errorMessage.value = e.toString();
       }
     } finally {
-      if (showLoader) isLoading.value = false;
+      if (showLoader) isLoadingVehicles.value = false;
     }
   }
 
@@ -339,7 +340,7 @@ class BookingController extends GetxController {
   var availableVehicles = <String>[];
   var selectedVehicle = ''.obs;
 
-  Future<void> submitEmergencyRepair(BuildContext ctx) async {
+  Future<void> submitRequest(BuildContext ctx) async {
     if (selectedVehicle.value.isEmpty) {
       Get.snackbar(
         'Warning',
