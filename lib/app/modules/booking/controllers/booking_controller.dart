@@ -10,7 +10,6 @@ import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
-import 'package:tka_customer/app/data/localstorage.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:video_compress/video_compress.dart';
 
@@ -33,6 +32,7 @@ class BookingController extends GetxController {
   DateTime? _selectedDate;
   Timer? _ticker;
   final isLoadingServices = false.obs;
+  final RxBool isLoadingDetail = false.obs;
 
   bool isPlanningConfirmed(String? kodeSvc) =>
       kodeSvc != null && confirmedPlanningSvcs.contains(kodeSvc);
@@ -158,9 +158,6 @@ class BookingController extends GetxController {
 
   Future<void> refreshAll() async {
     await Future.wait([fetchRequestService()]);
-  }
-
-  Future<void> refreshServices() async {
     await Future.wait([fetchServices()]);
   }
 
@@ -192,30 +189,6 @@ class BookingController extends GetxController {
     data.status = 'Diterima';
     print("Status diubah menjadi: ${data.status}");
     update();
-  }
-
-  Future<void> fetchEmergencyList() async {
-    isLoading.value = true;
-    errorMessage.value = '';
-    try {
-      if (LocalStorages.getToken.isEmpty) {
-        throw Exception('Token is empty! Mohon login terlebih dahulu.');
-      }
-      final response = await API.fetchListEmergency();
-      allEmergencyList.value = response.data ?? [];
-      emergencyList.value = allEmergencyList;
-    } catch (e) {
-      if (e.toString().toLowerCase().contains("tidak ada jaringan") ||
-          e.toString().toLowerCase().contains("no internet")) {
-        errorMessage.value = '';
-      } else {
-        errorMessage.value = e.toString();
-      }
-      allEmergencyList.clear();
-      emergencyList.clear();
-    } finally {
-      isLoading.value = false;
-    }
   }
 
   Future<void> fetchVehicles({bool showLoader = true}) async {
@@ -422,7 +395,6 @@ class BookingController extends GetxController {
         type: QuickAlertType.success,
         text: 'Request berhasil dibuat!',
       );
-      fetchEmergencyList();
     } catch (e) {
       final err = e.toString().toLowerCase();
       if (e is SocketException ||
@@ -555,23 +527,24 @@ class BookingController extends GetxController {
     return compressedFiles;
   }
 
-  Future<void> fetchDetail(String kodeSvc) async {
+  Future<void> fetchDetail(String kodeSvc, {bool showLoader = true}) async {
+    if (showLoader) isLoadingDetail(true); // 🚀 hidupkan hanya bila diminta
+    errorMessage.value = '';
+
     try {
-      isLoading.value = true;
-      var result = await API.fetchDetailService(kodeSvc);
+      final result = await API.fetchDetailService(kodeSvc);
       detailService.value = result;
-    } on SocketException catch (e) {
-      errorMessage.value = "Tidak ada koneksi internet";
-      print("SocketException: $e");
+    } on SocketException {
+      errorMessage.value = 'Tidak ada koneksi internet';
     } catch (e) {
       errorMessage.value = e.toString();
     } finally {
-      isLoading.value = false;
+      if (showLoader) isLoadingDetail(false); // 📴 pastikan mati
     }
   }
 
   Future<void> fetchServices({bool showLoader = true}) async {
-    if (showLoader) isLoading(true); // 🚀 hidupkan hanya kalau perlu
+    if (showLoader) isLoadingServices(true); // 🚀 hidupkan hanya kalau perlu
     errorMessage.value = '';
 
     try {
@@ -584,7 +557,7 @@ class BookingController extends GetxController {
       errorMessage.value = e.toString();
       debugPrint('❌ fetchServices error → $e');
     } finally {
-      if (showLoader) isLoading(false); // 📴 matikan hanya kalau perlu
+      if (showLoader) isLoadingServices(false); // 📴 matikan hanya kalau perlu
     }
   }
 }

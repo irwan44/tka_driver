@@ -420,7 +420,7 @@ class _BookingViewState extends State<BookingView> {
           );
 
     return RefreshIndicator(
-      onRefresh: () => c.refreshServices(),
+      onRefresh: () => c.refreshAll(),
       displacement: 40,
       child:
           _connectivityStatus == ConnectivityResult.none

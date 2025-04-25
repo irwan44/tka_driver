@@ -91,7 +91,7 @@ class _DetailServiceViewState extends State<DetailServiceView> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Obx(() {
-            if (controller.isLoading.value) {
+            if (controller.isLoadingDetail.value) {
               return _buildShimmer(isDarkMode);
             }
             if (controller.errorMessage.value.isNotEmpty) {
