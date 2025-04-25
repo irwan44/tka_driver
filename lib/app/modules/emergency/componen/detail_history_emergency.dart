@@ -1,5 +1,6 @@
-// emergency_detail_view.dart
+import 'dart:async';
 
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -12,86 +13,112 @@ import 'package:geocoding/geocoding.dart';
 import '../controllers/emergency_controller.dart';
 import 'lacak_mekanik.dart';
 
-// Fullscreen Video
 class FullscreenVideoView extends StatefulWidget {
   final String url;
-  const FullscreenVideoView({Key? key, required this.url}) : super(key: key);
+  final int? width;
+  final int? height;
+
+  const FullscreenVideoView({
+    Key? key,
+    required this.url,
+    this.width,
+    this.height,
+  }) : super(key: key);
 
   @override
   State<FullscreenVideoView> createState() => _FullscreenVideoViewState();
 }
 
 class _FullscreenVideoViewState extends State<FullscreenVideoView> {
-  late VideoPlayerController _videoController;
-  bool _initialized = false;
+  late double _realAspect;
+  VideoPlayerController? _vCtrl;
+  ChewieController?     _cCtrl;
 
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.network(widget.url)
-      ..initialize().then((_) {
-        setState(() => _initialized = true);
-        _videoController.play();
-      });
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    _vCtrl = VideoPlayerController.network(widget.url);
+    await _vCtrl!.initialize();
+
+    final meta = _vCtrl!.value.size;
+    int rot = 0;
+    try { rot = _vCtrl!.value.rotationCorrection ?? 0; } catch (_) {}
+    double w = meta.width;
+    double h = meta.height;
+    if (rot == 90 || rot == 270) {
+      final tmp = w; w = h; h = tmp;
+    }
+    _realAspect = (w == 0 || h == 0) ? 9 / 16 : w / h;
+
+    if (widget.width != null &&
+        widget.height != null &&
+        widget.width! > 0 &&
+        widget.height! > 0) {
+      final apiAR = widget.width! / widget.height!;
+      if ((apiAR - _realAspect).abs() > 0.15) _realAspect = apiAR;
+    }
+
+    _cCtrl = ChewieController(
+      videoPlayerController: _vCtrl!,
+      autoPlay: true,
+      looping: false,
+      aspectRatio: _realAspect,
+      additionalOptions: (context) => [],   // sama seperti di contoh Anda
+    );
+
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _videoController.dispose();
+    _cCtrl?.dispose();
+    _vCtrl?.dispose();
     super.dispose();
   }
-
-  void _togglePlayPause() {
-    setState(() {
-      _videoController.value.isPlaying
-          ? _videoController.pause()
-          : _videoController.play();
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final mq = MediaQuery.of(context).size;
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: Colors.black,
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+    ),
+    body: Center(
+      child: (_cCtrl == null ||
+          !_cCtrl!.videoPlayerController.value.isInitialized)
+          ? const CircularProgressIndicator()
+          : _videoView(),
+    ),
+  );
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Preview Video',
-          style: GoogleFonts.nunito(color: isDark ? Colors.white : Colors.black),
-        ),
-        backgroundColor: isDark ? Colors.black : Colors.white,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-        leading: BackButton(color: isDark ? Colors.white : Colors.black),
-      ),
-      body: GestureDetector(
-        onTap: _togglePlayPause,
-        child: _initialized
-            ? SizedBox(
-          width: mq.width,
-          height: mq.height,
-          child: FittedBox(
-            fit: BoxFit.contain,
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: _videoController.value.size.width,
-              height: _videoController.value.size.height,
-              child: VideoPlayer(_videoController),
-            ),
-          ),
-        )
-            : const Center(child: CircularProgressIndicator()),
-      ),
+  Widget _videoView() {
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        double h = c.maxHeight;
+        double w = h * _realAspect;
+        if (w > c.maxWidth) {
+          w = c.maxWidth;
+          h = w / _realAspect;
+        }
+
+        return SizedBox(
+          width: w,
+          height: h,
+          child: Chewie(controller: _cCtrl!),
+        );
+      },
     );
   }
 }
 
 
-// Fullscreen Image
 class FullscreenImageView extends StatelessWidget {
   final String url;
   const FullscreenImageView({Key? key, required this.url}) : super(key: key);
@@ -267,15 +294,14 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
     );
   }
 
-  /// Bagian Info
   Widget _buildTicketInfoSection(Data data, bool isDark) {
-    // Daftar status yang mem-**disable** tombol lacak
+
     final disableStatuses = [
       'Diterima',
       'Mekanik Ditugaskan',
+      'Foreman Ditugaskan',
     ];
 
-    // Tombol lacak disable jika status ada di daftar di atas
     final isTrackingDisabled = disableStatuses.contains(data.status);
 
     return Stack(

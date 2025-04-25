@@ -50,8 +50,8 @@ class _DashPainter extends CustomPainter {
 
 class ServiceItemCard extends StatelessWidget {
   final ListService service;
-  const ServiceItemCard({Key? key, required this.service}) : super(key: key);
-
+  ServiceItemCard({Key? key, required this.service}) : super(key: key);
+  final bookingController = Get.find<BookingController>();
   // Helper row
   Widget _detailRow({
     required IconData icon,
@@ -114,7 +114,7 @@ class ServiceItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bookingController = Get.find<BookingController>();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final st = (service.status ?? '').trim().toLowerCase();
@@ -129,7 +129,7 @@ class ServiceItemCard extends StatelessWidget {
     else if (isPKB)    { badgeClr = Colors.green.shade200;   txtClr = Colors.green.shade800; }
     else if (isPKBTutup){ badgeClr = Colors.red.shade200;    txtClr = Colors.red.shade800; }
     else if (isInvoice){ badgeClr = Colors.blue.shade200;    txtClr = Colors.blue.shade800; }
-    else if (isPlanning){ badgeClr = Colors.purple.shade200; txtClr = Colors.purple.shade800; }
+    else if (isPlanning){ badgeClr = Colors.redAccent.shade200; txtClr = Colors.red.shade800; }
     else               { badgeClr = isDark? Colors.grey.shade700 : Colors.grey.shade300;
     txtClr = isDark? Colors.white : Colors.black; }
     final kodeLabel = isEstimasi ? 'Kode Estimasi:' : 'Kode PKB:';

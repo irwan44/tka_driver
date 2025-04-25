@@ -29,14 +29,12 @@ class BookingView extends StatefulWidget {
 class _BookingViewState extends State<BookingView> {
   String searchQuery = '';
   DateTime? _selectedDate;
-
-  // connectivity state
+  final BookingController c = Get.put(BookingController());
   ConnectivityResult _connectivityStatus = ConnectivityResult.none;
   late StreamSubscription<dynamic> _connectivitySub;
   @override
   void initState() {
     super.initState();
-    // subscribe ke stream yang mungkin memancarkan ConnectivityResult atau List<ConnectivityResult>
     _connectivitySub = Connectivity()
         .onConnectivityChanged
         .listen(_handleConnectivityChange);
@@ -120,7 +118,7 @@ class _BookingViewState extends State<BookingView> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final BookingController c = Get.put(BookingController());
+
 
     return DefaultTabController(
       length: 2,
@@ -819,67 +817,129 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_TabBarDelegate old) => old.backgroundColor != backgroundColor || old.child != child;
 }
+
 class MediaViewerPage extends StatefulWidget {
   final String url;
-  const MediaViewerPage({Key? key, required this.url}) : super(key: key);
+  final int? width;   // opsional dari API
+  final int? height;
+
+  const MediaViewerPage({
+    super.key,
+    required this.url,
+    this.width,
+    this.height,
+  });
 
   @override
-  _MediaViewerPageState createState() => _MediaViewerPageState();
+  State<MediaViewerPage> createState() => _MediaViewerPageState();
 }
 
 class _MediaViewerPageState extends State<MediaViewerPage> {
-  late final bool isVideo;
-  VideoPlayerController? _videoController;
-  ChewieController? _chewieController;
+  late final bool _isVideo;
+  late double _realAspect;   // w / h setelah koreksi
+  VideoPlayerController? _vCtrl;
+  ChewieController?     _cCtrl;
 
   @override
   void initState() {
     super.initState();
-    isVideo = widget.url.toLowerCase().endsWith('.mp4') || widget.url.toLowerCase().endsWith('.mov');
-    if (isVideo) {
-      _videoController = VideoPlayerController.network(widget.url)
-        ..initialize().then((_) {
-          setState(() {});
-          _chewieController = ChewieController(
-            videoPlayerController: _videoController!,
-            autoPlay: true,
-            looping: false,
-          );
-        });
+    _isVideo = widget.url.toLowerCase().endsWith('.mp4') ||
+        widget.url.toLowerCase().endsWith('.mov');
+
+    if (_isVideo) _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    _vCtrl = VideoPlayerController.network(widget.url);
+    await _vCtrl!.initialize();
+
+    // ---------- 1) ambil size + rotasi ----------
+    final meta = _vCtrl!.value.size;
+    int rot   = 0;
+    // `rotationCorrection` dipakai di versi >2.7, fallback ke 0 kalau tak ada
+    try { rot = (_vCtrl!.value.rotationCorrection) ?? 0; } catch (_) {}
+    double w = meta.width;
+    double h = meta.height;
+    if (rot == 90 || rot == 270) {
+      // tukar w <-> h → kini 'w' & 'h' merepresentasikan tampilan sebenarnya
+      final tmp = w;
+      w = h;
+      h = tmp;
     }
+    _realAspect = (w == 0 || h == 0) ? 9 / 16 : w / h;
+
+    // ---------- 2) opsi: override pakai angka API bila beda jauh ----------
+    if (widget.width != null &&
+        widget.height != null &&
+        widget.width! > 0 &&
+        widget.height! > 0) {
+      final apiAspect = widget.width! / widget.height!;
+      if ((apiAspect - _realAspect).abs() > 0.15) _realAspect = apiAspect;
+    }
+
+    _cCtrl = ChewieController(
+      videoPlayerController: _vCtrl!,
+      autoPlay: true,
+      looping: false,
+      aspectRatio: _realAspect,       // penting!
+      additionalOptions: (context) => [],
+    );
+
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _chewieController?.dispose();
-    _videoController?.dispose();
+    _cCtrl?.dispose();
+    _vCtrl?.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: Colors.black,
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
       ),
-      body: Center(
-        child: isVideo
-            ? (_chewieController != null && _chewieController!.videoPlayerController.value.isInitialized
-            ? Chewie(controller: _chewieController!)
-            : const CircularProgressIndicator())
-            : PhotoView(
-          imageProvider: NetworkImage(widget.url),
-          backgroundDecoration: const BoxDecoration(color: Colors.black),
-        ),
-      ),
+    ),
+    body: Center(
+      child: _isVideo ? _videoView() : _imageView(),
+    ),
+  );
+
+  // ───────────────────────── VIDEO ─────────────────────────
+  Widget _videoView() {
+    if (_cCtrl == null ||
+        !_cCtrl!.videoPlayerController.value.isInitialized) {
+      return const CircularProgressIndicator();
+    }
+
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        // Default → height penuh (treat as portrait)
+        double h = c.maxHeight;
+        double w = h * _realAspect;
+
+        // kalau lebarnya melewati layar, pakai mode landscape
+        if (w > c.maxWidth) {
+          w = c.maxWidth;
+          h = w / _realAspect;
+        }
+
+        return SizedBox(width: w, height: h, child: Chewie(controller: _cCtrl!));
+      },
     );
   }
+
+  // ───────────────────────── IMAGE ─────────────────────────
+  Widget _imageView() => PhotoView(
+    imageProvider: NetworkImage(widget.url),
+    backgroundDecoration: const BoxDecoration(color: Colors.black),
+  );
 }
 
 typedef RequestService = dynamic;

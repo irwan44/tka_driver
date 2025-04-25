@@ -482,45 +482,53 @@ class EmergencyController extends GetxController {
     final photoCount = mediaList.where((x) => !_isVideo(x)).length;
     final videoCount = mediaList.where((x) => _isVideo(x)).length;
 
-    if (photoCount < 1)  throw 'Minimal harus ada 1 foto.';
-    if (photoCount > 4)  throw 'Maksimal foto yang dapat diupload adalah 4.';
-    if (videoCount > 1)  throw 'Hanya boleh mengupload 1 video.';
+    if (photoCount < 1) {
+      throw 'Minimal harus ada 1 foto.';
+    }
+    if (photoCount > 4) {
+      throw 'Maksimal foto yang dapat diupload adalah 4.';
+    }
+
+    if (videoCount > 1) {
+      throw 'Hanya boleh mengupload 1 video.';
+    }
 
     List<File> compressedFiles = [];
 
-    for (var f in mediaList) {
-      if (_isVideo(f)) {
-        // Kompres video (jika durasi ≥ 2 menit)
-        final info = await VideoCompress.getMediaInfo(f.path);
-        if (info.duration != null && info.duration! >= 120000) {
-          final comp = await VideoCompress.compressVideo(
-            f.path,
+    for (var file in mediaList) {
+      if (_isVideo(file)) {
+        final mediaInfo = await VideoCompress.getMediaInfo(file.path);
+        if (mediaInfo.duration != null && mediaInfo.duration! >= 120000) {
+          final compressedVideo = await VideoCompress.compressVideo(
+            file.path,
             quality: VideoQuality.DefaultQuality,
             deleteOrigin: false,
             includeAudio: true,
           );
-          if (comp?.file != null) {
-            compressedFiles.add(comp!.file!);
+          if (compressedVideo?.file != null) {
+            compressedFiles.add(compressedVideo!.file!);
             continue;
           }
         }
-        compressedFiles.add(File(f.path)); // fallback
+        compressedFiles.add(File(file.path));
       } else {
         final result = await FlutterImageCompress.compressWithFile(
-          f.path,
+          file.path,
           quality: 80,
         );
         if (result != null) {
-          final name = f.path.split(Platform.pathSeparator).last;
-          final target =
-              '${Directory.systemTemp.path}/${DateTime.now().millisecondsSinceEpoch}_$name';
-          final imgFile = await File(target).writeAsBytes(result);
-          compressedFiles.add(imgFile);
+          final fileName = file.path.split(Platform.pathSeparator).last;
+          final targetPath =
+              '${Directory.systemTemp.path}/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+          final compressedImage =
+          await File(targetPath).writeAsBytes(result);
+          compressedFiles.add(compressedImage);
         } else {
-          compressedFiles.add(File(f.path)); // fallback
+          compressedFiles.add(File(file.path));
         }
       }
     }
+
     return compressedFiles;
   }
 }

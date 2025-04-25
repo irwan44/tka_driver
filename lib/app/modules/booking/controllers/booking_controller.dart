@@ -365,6 +365,10 @@ class BookingController extends GetxController {
       );
 
       Get.delete<BookingController>(force: true);
+      Get.put<BookingController>(
+        BookingController(),
+        permanent: true,
+      );
       Get.offAllNamed(Routes.HOME);
       await QuickAlert.show(
         context: ctx,
