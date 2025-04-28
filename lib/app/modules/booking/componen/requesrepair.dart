@@ -6,30 +6,28 @@ class _TicketClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     const r = 10.0;
-    final p =
-        Path()
-          ..moveTo(0, 0)
-          ..lineTo(size.width, 0)
-          ..lineTo(size.width, size.height / 2 - r)
-          ..arcToPoint(
-            Offset(size.width, size.height / 2 + r),
-            radius: const Radius.circular(r),
-            clockwise: false,
-          )
-          ..lineTo(size.width, size.height)
-          ..lineTo(0, size.height)
-          ..lineTo(0, size.height / 2 + r)
-          ..arcToPoint(
-            Offset(0, size.height / 2 - r),
-            radius: const Radius.circular(r),
-            clockwise: false,
-          )
-          ..close();
-    return p;
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height / 2 - r)
+      ..arcToPoint(
+        Offset(size.width, size.height / 2 + r),
+        radius: const Radius.circular(r),
+        clockwise: false,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..lineTo(0, size.height / 2 + r)
+      ..arcToPoint(
+        Offset(0, size.height / 2 - r),
+        radius: const Radius.circular(r),
+        clockwise: false,
+      )
+      ..close();
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(_) => false;
 }
 
 class _DashPainter extends CustomPainter {
@@ -39,13 +37,13 @@ class _DashPainter extends CustomPainter {
 
   @override
   void paint(Canvas c, Size s) {
-    final paint =
+    final p =
         Paint()
           ..color = color
           ..strokeWidth = 1;
     double x = 0, y = s.height / 2;
     while (x < s.width) {
-      c.drawLine(Offset(x, y), Offset(x + dashWidth, y), paint);
+      c.drawLine(Offset(x, y), Offset(x + dashWidth, y), p);
       x += dashWidth + dashSpace;
     }
   }
@@ -63,6 +61,7 @@ class RequestServiceItem extends StatelessWidget {
     required this.keluhan,
     required this.kodereques,
     required this.kodekendaraan,
+    this.unread = false,
   });
 
   final String tanggal;
@@ -71,7 +70,9 @@ class RequestServiceItem extends StatelessWidget {
   final String keluhan;
   final String kodereques;
   final String kodekendaraan;
+  final bool unread;
 
+  // ════════════════════════  UTIL  ═══════════════════════════════════════════
   Color _statusColor() {
     switch (status.toLowerCase()) {
       case 'menunggu':
@@ -123,59 +124,43 @@ class RequestServiceItem extends StatelessWidget {
   }
 
   bool _isNewItem() {
-    DateTime? itemDate;
-
+    DateTime? d;
     try {
-      itemDate = DateTime.parse(tanggal).toLocal();
+      d = DateTime.parse(tanggal).toLocal();
     } catch (_) {}
-
-    if (itemDate == null) {
+    if (d == null) {
       try {
-        itemDate =
-            DateFormat('yyyy-MM-dd HH:mm').parse(tanggal, true).toLocal();
+        d = DateFormat('yyyy-MM-dd HH:mm').parse(tanggal, true).toLocal();
       } catch (_) {}
     }
-
-    if (itemDate == null) {
+    if (d == null) {
       try {
-        itemDate = DateFormat('yyyy-MM-dd').parse(tanggal, true).toLocal();
+        d = DateFormat('yyyy-MM-dd').parse(tanggal, true).toLocal();
       } catch (_) {}
     }
-
-    if (itemDate == null) return false;
+    if (d == null) return false;
 
     final now = DateTime.now();
-    return itemDate.year == now.year &&
-        itemDate.month == now.month &&
-        itemDate.day == now.day;
+    return now.year == d.year && now.month == d.month && now.day == d.day;
   }
 
-  Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
-    final isDark = Theme.of(ctx).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icn, size: 14, color: Theme.of(ctx).hintColor),
-          const SizedBox(width: 4),
-          Text(txt, style: GoogleFonts.nunito(fontSize: 12)),
-        ],
-      ),
-    );
-  }
-
+  // ════════════════════════  BUILD  ══════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF2B2B2B) : Colors.white;
-    final statusCol = _statusColor();
+
+    // ── ubah warna latar jika unread ──
+    final cardBg =
+        unread
+            ? (isDark
+                ? Colors.orangeAccent.withOpacity(.08)
+                : const Color(0xFFFFF8E1))
+            : (isDark ? const Color(0xFF2B2B2B) : Colors.white);
+
+    final statusC = _statusColor();
     final isNew = _isNewItem();
+
     return ClipPath(
       clipper: _TicketClipper(),
       child: Container(
@@ -194,6 +179,7 @@ class RequestServiceItem extends StatelessWidget {
         ),
         child: Column(
           children: [
+            // ─── LABEL “BARU” (opsional) ───────────────────────────────────
             if (isNew)
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -226,6 +212,8 @@ class RequestServiceItem extends StatelessWidget {
                   ],
                 ),
               ),
+
+            // ─── HEADER (tanggal & status) ────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -247,7 +235,7 @@ class RequestServiceItem extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: statusCol.withOpacity(.15),
+                      color: statusC.withOpacity(.15),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Row(
@@ -256,7 +244,7 @@ class RequestServiceItem extends StatelessWidget {
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: statusCol,
+                            color: statusC,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -264,7 +252,7 @@ class RequestServiceItem extends StatelessWidget {
                         Text(
                           status.toUpperCase(),
                           style: GoogleFonts.nunito(
-                            color: statusCol,
+                            color: statusC,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                           ),
@@ -276,6 +264,7 @@ class RequestServiceItem extends StatelessWidget {
               ),
             ),
 
+            // ─── GARIS PUTUS ──────────────────────────────────────────────
             LayoutBuilder(
               builder:
                   (_, cs) => CustomPaint(
@@ -287,6 +276,7 @@ class RequestServiceItem extends StatelessWidget {
                   ),
             ),
 
+            // ─── DETAIL ──────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Column(

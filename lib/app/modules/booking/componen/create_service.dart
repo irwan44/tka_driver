@@ -35,7 +35,7 @@ class RegularRepairPage extends StatelessWidget {
         child: Obx(
           () => ElevatedButton.icon(
             onPressed:
-                c.disableBuatEmergencyServiceButton
+                c.disableSubmitButton.value
                     ? null
                     : () => c.submitRequest(context),
             icon:
@@ -144,43 +144,65 @@ class RegularRepairPage extends StatelessWidget {
                           ),
                         );
 
-                        return CustomDropdown<String>(
-                          hintText: 'Pilih Kendaraan',
-                          items: c.availableVehicles,
-                          initialItem:
-                              c.selectedVehicle.value.isEmpty
-                                  ? null
-                                  : c.selectedVehicle.value,
-                          excludeSelected: false,
-                          onChanged: (value) {
-                            if (value != null) c.selectedVehicle.value = value;
-                          },
-                          decoration: CustomDropdownDecoration(
-                            closedFillColor: bgColor,
-                            expandedFillColor: bgColor,
-                            closedBorder: Border.all(color: Colors.transparent),
-                            closedBorderRadius: BorderRadius.circular(12),
-                            expandedBorder: Border.all(
-                              color: Colors.transparent,
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomDropdown<String>(
+                              hintText: 'Pilih Kendaraan',
+                              items: c.availableVehicles,
+                              initialItem:
+                                  c.selectedVehicle.value.isEmpty
+                                      ? null
+                                      : c.selectedVehicle.value,
+                              excludeSelected: false,
+                              onChanged: c.onVehicleChanged,
+                              decoration: CustomDropdownDecoration(
+                                closedFillColor: bgColor,
+                                expandedFillColor: bgColor,
+                                closedBorder: Border.all(
+                                  color: Colors.transparent,
+                                ),
+                                closedBorderRadius: BorderRadius.circular(12),
+                                expandedBorder: Border.all(
+                                  color: Colors.transparent,
+                                ),
+                                expandedBorderRadius: BorderRadius.circular(12),
+                                closedSuffixIcon: Icon(
+                                  Icons.arrow_drop_down,
+                                  color: borderColor,
+                                ),
+                                expandedSuffixIcon: Icon(
+                                  Icons.arrow_drop_up,
+                                  color: borderColor,
+                                ),
+                                hintStyle: TextStyle(color: borderColor),
+                                headerStyle: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                                listItemStyle: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                                listItemDecoration: listItemDecoration,
+                              ),
                             ),
-                            expandedBorderRadius: BorderRadius.circular(12),
-                            closedSuffixIcon: Icon(
-                              Icons.arrow_drop_down,
-                              color: borderColor,
-                            ),
-                            expandedSuffixIcon: Icon(
-                              Icons.arrow_drop_up,
-                              color: borderColor,
-                            ),
-                            hintStyle: TextStyle(color: borderColor),
-                            headerStyle: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            listItemStyle: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            listItemDecoration: listItemDecoration,
-                          ),
+
+                            // Pesan peringatan jika kendaraan sudah punya Request Service
+                            if (c.selectedVehicle.value.isNotEmpty &&
+                                c.vehicleAlreadyRequested(
+                                  c.selectedVehicle.value,
+                                ))
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'Kendaraan ini sudah mempunyai Request Service yang masih berjalan',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 12,
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
                         );
                       }),
                     ],

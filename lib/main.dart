@@ -33,7 +33,7 @@ class AppConfig {
       case 'dev':
         return 'https://api-cartune.abeng.id';
       case 'rusco':
-        return 'https://api-cartune.abeng.id';
+        return 'https://api.rusco.id';
       case 'tka':
       default:
         return 'https://api-cartune.abeng.id';

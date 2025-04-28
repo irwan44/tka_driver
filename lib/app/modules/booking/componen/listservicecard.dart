@@ -6,33 +6,33 @@ import '../../../data/data_respon/listservice.dart';
 import '../controllers/booking_controller.dart';
 import 'detailservice.dart';
 
+// ────────────────  CLIPPER & DASH  ─────────────────────────────────────────
 class _TicketClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    const r = 10.0; // radius lubang
-    final p = Path();
-    p.moveTo(0, 0);
-    p.lineTo(size.width, 0);
-    p.lineTo(size.width, size.height / 2 - r);
-    p.arcToPoint(
-      Offset(size.width, size.height / 2 + r),
-      radius: const Radius.circular(r),
-      clockwise: false,
-    );
-    p.lineTo(size.width, size.height);
-    p.lineTo(0, size.height);
-    p.lineTo(0, size.height / 2 + r);
-    p.arcToPoint(
-      Offset(0, size.height / 2 - r),
-      radius: const Radius.circular(r),
-      clockwise: false,
-    );
-    p.close();
-    return p;
+    const r = 10.0;
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height / 2 - r)
+      ..arcToPoint(
+        Offset(size.width, size.height / 2 + r),
+        radius: const Radius.circular(r),
+        clockwise: false,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..lineTo(0, size.height / 2 + r)
+      ..arcToPoint(
+        Offset(0, size.height / 2 - r),
+        radius: const Radius.circular(r),
+        clockwise: false,
+      )
+      ..close();
   }
 
   @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(_) => false;
 }
 
 class _DashPainter extends CustomPainter {
@@ -41,33 +41,37 @@ class _DashPainter extends CustomPainter {
   _DashPainter({this.dashWidth = 6, this.dashSpace = 4, required this.color});
   @override
   void paint(Canvas c, Size s) {
-    var paint =
+    final p =
         Paint()
           ..color = color
           ..strokeWidth = 1;
     double x = 0, y = s.height / 2;
     while (x < s.width) {
-      c.drawLine(Offset(x, y), Offset(x + dashWidth, y), paint);
+      c.drawLine(Offset(x, y), Offset(x + dashWidth, y), p);
       x += dashWidth + dashSpace;
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(_) => false;
 }
 
+// ────────────────  SERVICE ITEM  ───────────────────────────────────────────
 class ServiceItemCard extends StatelessWidget {
+  ServiceItemCard({super.key, required this.service, this.unread = false});
+
   final ListService service;
-  ServiceItemCard({Key? key, required this.service}) : super(key: key);
+  final bool unread;
   final bookingController = Get.find<BookingController>();
 
+  // util row
   Widget _detailRow({
     required IconData icon,
     required String label,
     required String value,
     required bool isDark,
   }) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6.0),
+    padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -103,7 +107,7 @@ class ServiceItemCard extends StatelessWidget {
     ),
   );
 
-  // Mini chip util
+  // mini-chip
   Widget _miniChip(BuildContext ctx, IconData icn, String txt) {
     final isDark = Theme.of(ctx).brightness == Brightness.dark;
     return Container(
@@ -123,60 +127,68 @@ class ServiceItemCard extends StatelessWidget {
     );
   }
 
+  // ─────────────────────────  BUILD  ───────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // mapping status
     final st = (service.status ?? '').trim().toLowerCase();
-    final isEstimasi = st == 'estimasi';
+    final isEst = st == 'estimasi';
     final isPKB = st == 'pkb';
-    final isPKBTutup = st == 'pkb tutup';
-    final isInvoice = st == 'invoice';
-    final isPlanning = st == 'not confirmed';
+    final isPKBT = st == 'pkb tutup';
+    final isInv = st == 'invoice';
+    final isPlan = st == 'not confirmed';
 
     Color badgeClr, txtClr;
-    if (isEstimasi) {
+    if (isEst) {
       badgeClr = Colors.orange.shade200;
       txtClr = Colors.orange.shade800;
     } else if (isPKB) {
       badgeClr = Colors.green.shade200;
       txtClr = Colors.green.shade800;
-    } else if (isPKBTutup) {
+    } else if (isPKBT) {
       badgeClr = Colors.red.shade200;
       txtClr = Colors.red.shade800;
-    } else if (isInvoice) {
+    } else if (isInv) {
       badgeClr = Colors.blue.shade200;
       txtClr = Colors.blue.shade800;
-    } else if (isPlanning) {
+    } else if (isPlan) {
       badgeClr = Colors.redAccent.shade200;
       txtClr = Colors.red.shade800;
     } else {
       badgeClr = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
       txtClr = isDark ? Colors.white : Colors.black;
     }
-    final kodeLabel = isEstimasi ? 'Kode Estimasi:' : 'Kode PKB:';
-    final kodeValue =
-        isEstimasi ? (service.kodeEstimasi ?? '-') : (service.kodePkb ?? '-');
 
-    IconData leadingIcn = Icons.info_outline;
-    String leadingTitle = 'Service';
-    if (isEstimasi) {
-      leadingIcn = Icons.calculate;
-      leadingTitle = 'Estimasi Service';
-    } else if (isInvoice) {
-      leadingIcn = Icons.receipt_long;
-      leadingTitle = 'Invoice Service';
-    } else if (isPKB || isPKBTutup || isPlanning) {
-      leadingIcn = Icons.assignment;
-      leadingTitle = 'PKB Service';
+    final kodeLabel = isEst ? 'Kode Estimasi:' : 'Kode PKB:';
+    final kodeValue =
+        isEst ? (service.kodeEstimasi ?? '-') : (service.kodePkb ?? '-');
+
+    IconData leadIcn = Icons.info_outline;
+    String leadTtl = 'Service';
+    if (isEst) {
+      leadIcn = Icons.calculate;
+      leadTtl = 'Estimasi Service';
+    } else if (isInv) {
+      leadIcn = Icons.receipt_long;
+      leadTtl = 'Invoice Service';
+    } else if (isPKB || isPKBT || isPlan) {
+      leadIcn = Icons.assignment;
+      leadTtl = 'PKB Service';
     }
 
-    final cardBg = isDark ? const Color(0xFF2B2B2B) : Colors.white;
+    final cardBg =
+        unread
+            ? (isDark
+                ? Colors.orangeAccent.withOpacity(.08)
+                : const Color(0xFFFFF8E1))
+            : (isDark ? const Color(0xFF2B2B2B) : Colors.white);
 
     return ClipPath(
       clipper: _TicketClipper(),
       child: Container(
-        margin: EdgeInsets.only(left: 10, right: 10, top: 4),
+        margin: const EdgeInsets.fromLTRB(10, 4, 10, 0),
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
@@ -192,6 +204,7 @@ class ServiceItemCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
+            bookingController.markServiceOpened(service.kodeSvc);
             Get.to(
               () => DetailServiceView(
                 kodeSvc: service.kodeSvc ?? '',
@@ -201,6 +214,7 @@ class ServiceItemCard extends StatelessWidget {
           },
           child: Column(
             children: [
+              // ─── HEADER ────────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -208,15 +222,11 @@ class ServiceItemCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      leadingIcn,
-                      size: 26,
-                      color: Theme.of(context).hintColor,
-                    ),
+                    Icon(leadIcn, size: 26, color: Theme.of(context).hintColor),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        leadingTitle,
+                        leadTtl,
                         style: GoogleFonts.nunito(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -259,6 +269,7 @@ class ServiceItemCard extends StatelessWidget {
                 ),
               ),
 
+              // ─── DASH LINE ────────────────────────────────────────────
               LayoutBuilder(
                 builder:
                     (_, c) => CustomPaint(
@@ -272,6 +283,7 @@ class ServiceItemCard extends StatelessWidget {
                     ),
               ),
 
+              // ─── DETAIL ────────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -299,7 +311,6 @@ class ServiceItemCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // label kode utama
                     Text(
                       '$kodeLabel $kodeValue',
                       style: GoogleFonts.nunito(
@@ -322,7 +333,8 @@ class ServiceItemCard extends StatelessWidget {
                       value: service.tipeSvc ?? '-',
                       isDark: isDark,
                     ),
-                    if (isEstimasi) ...[
+
+                    if (isEst) ...[
                       _detailRow(
                         icon: Icons.calendar_today,
                         label: 'Tgl Estimasi',
@@ -341,10 +353,7 @@ class ServiceItemCard extends StatelessWidget {
                         value: service.kodeKendaraan ?? '-',
                         isDark: isDark,
                       ),
-                    ] else if (isPKB ||
-                        isPKBTutup ||
-                        isInvoice ||
-                        isPlanning) ...[
+                    ] else if (isPKB || isPKBT || isInv || isPlan) ...[
                       _detailRow(
                         icon: Icons.calendar_today,
                         label: 'Tgl PKB',
@@ -370,22 +379,22 @@ class ServiceItemCard extends StatelessWidget {
                         isDark: isDark,
                       ),
                     ],
-                    if (isPlanning)
+
+                    if (isPlan)
                       Obx(() {
                         final confirmed = bookingController.isPlanningConfirmed(
                           service.kodeSvc,
                         );
-                        final bgColor = confirmed ? Colors.green : Colors.red;
-
+                        final bg = confirmed ? Colors.green : Colors.red;
                         return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
+                          padding: const EdgeInsets.only(top: 8),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               vertical: 6,
                               horizontal: 12,
                             ),
                             decoration: BoxDecoration(
-                              color: bgColor,
+                              color: bg,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(

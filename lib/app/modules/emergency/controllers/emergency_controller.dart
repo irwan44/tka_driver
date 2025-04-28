@@ -181,18 +181,7 @@ class EmergencyController extends GetxController {
         final noPol = (item.noPolisi ?? '').trim();
         final status = (item.status ?? '').trim();
         if (noPol.isEmpty) continue;
-        final old = _lastStatusByNoPol[noPol];
-        if (old == null || old != status) {
-          await _notifyChange(noPol, old, status);
-        }
       }
-      _lastStatusByNoPol
-        ..clear()
-        ..addEntries(
-          newList.map(
-            (e) => MapEntry((e.noPolisi ?? '').trim(), (e.status ?? '').trim()),
-          ),
-        );
     } catch (e) {
       if (!silent) {
         final low = e.toString().toLowerCase();
@@ -417,6 +406,17 @@ class EmergencyController extends GetxController {
   // ─────────────────── EMERGENCY SUBMIT ─────────────────────
   var availableVehicles = <String>[];
   var selectedVehicle = ''.obs;
+  bool vehicleAlreadyEmergencyService(String? nopol) {
+    if (nopol == null || nopol.isEmpty) return false;
+    return allEmergencyList.any((e) {
+      final plate = e.noPolisi?.toUpperCase() ?? '';
+      final status = (e.status ?? '').toLowerCase();
+      // anggap 'derek','storing','selesai' adalah status selesai
+      final finished =
+          status == 'derek' || status == 'storing' || status == 'selesai';
+      return plate == nopol.toUpperCase() && !finished;
+    });
+  }
 
   Future<void> submitEmergencyRepair(BuildContext ctx) async {
     if (selectedVehicle.value.isEmpty) {

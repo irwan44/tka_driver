@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:video_compress/video_compress.dart';
@@ -34,6 +35,7 @@ class BookingController extends GetxController {
   final isLoadingServices = false.obs;
   final isLoadingVehicles = false.obs;
   final RxBool isLoadingDetail = false.obs;
+  final RxBool disableSubmitButton = true.obs;
 
   bool isPlanningConfirmed(String? kodeSvc) =>
       kodeSvc != null && confirmedPlanningSvcs.contains(kodeSvc);
@@ -113,13 +115,85 @@ class BookingController extends GetxController {
     super.onClose();
   }
 
+  final RxSet<String> _openedRequestIds = <String>{}.obs;
+  final RxSet<String> _openedServiceIds = <String>{}.obs;
+
+  bool requestOpened(String? id) {
+    if (id == null) return false;
+    return _openedRequestIds.contains(id.trim().toUpperCase());
+  }
+
+  bool serviceOpened(String? id) {
+    if (id == null) return false;
+    return _openedServiceIds.contains(id.trim().toUpperCase());
+  }
+
+  Future<void> markRequestOpened(String? id) async {
+    if (id == null) return;
+    final normalized = id.trim().toUpperCase();
+    if (_openedRequestIds.add(normalized)) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(
+        'opened_request_ids',
+        _openedRequestIds.toList(),
+      );
+    }
+  }
+
+  Future<void> markServiceOpened(String? id) async {
+    if (id == null) return;
+    final normalized = id.trim().toUpperCase();
+    if (_openedServiceIds.add(normalized)) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(
+        'opened_service_ids',
+        _openedServiceIds.toList(),
+      );
+    }
+  }
+
+  int get unreadRequestCount =>
+      listRequestService
+          .where((e) => !requestOpened(e.kodeRequestService))
+          .length;
+  int get unreadStatusServiceCount =>
+      listService.where((s) {
+        final st = (s.status ?? '').trim().toUpperCase();
+        return st != 'PKB TUTUP' &&
+            st != 'INVOICE' &&
+            !serviceOpened(s.kodeSvc);
+      }).length;
+  int get unreadHistoryServiceCount =>
+      listService.where((s) {
+        final st = (s.status ?? '').trim().toUpperCase();
+        return (st == 'PKB TUTUP' || st == 'INVOICE') &&
+            !serviceOpened(s.kodeSvc);
+      }).length;
+
+  Set<String> get _busyPlates {
+    return listRequestService
+        .where((r) => (r.status ?? '').toLowerCase() != 'selesai')
+        .map((r) => (r.noPolisi ?? '').toUpperCase())
+        .toSet();
+  }
+
+  bool vehicleAlreadyRequested(String? nopol) =>
+      nopol != null && _busyPlates.contains(nopol.toUpperCase());
+
+  // —— panggil setiap kali dropdown berubah ——
+  void onVehicleChanged(String? value) {
+    selectedVehicle.value = value ?? '';
+    disableSubmitButton.value =
+        value == null || value.isEmpty || vehicleAlreadyRequested(value);
+  }
+
   @override
   void onInit() {
     super.onInit();
     // fetchServices();
     // fetchRequestService();
     // fetchVehicles();
-
+    _loadOpenedIds();
     _firstLoad();
     _startRealtime();
     _connectSub = Connectivity().onConnectivityChanged.listen((event) {
@@ -133,6 +207,18 @@ class BookingController extends GetxController {
       }
       _setStatusDebounced(status);
     });
+  }
+
+  Future<void> _loadOpenedIds() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // load request IDs
+    final req = prefs.getStringList('opened_request_ids') ?? [];
+    _openedRequestIds.addAll(req.map((e) => e.trim().toUpperCase()));
+
+    // load service IDs
+    final svc = prefs.getStringList('opened_service_ids') ?? [];
+    _openedServiceIds.addAll(svc.map((e) => e.trim().toUpperCase()));
   }
 
   Future<void> _firstLoad() async {
@@ -341,6 +427,15 @@ class BookingController extends GetxController {
   var selectedVehicle = ''.obs;
 
   Future<void> submitRequest(BuildContext ctx) async {
+    if (vehicleAlreadyRequested(selectedVehicle.value)) {
+      Get.snackbar(
+        'Gagal',
+        'Nomor polisi ini masih punya Request Service',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
     if (selectedVehicle.value.isEmpty) {
       Get.snackbar(
         'Warning',

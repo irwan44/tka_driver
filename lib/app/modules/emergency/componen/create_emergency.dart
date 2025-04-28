@@ -151,61 +151,84 @@ class EmergencyRepairPage extends StatelessWidget {
                                 : const Color(0xFFF6F7FB);
                         final Color borderColor =
                             isDark ? Colors.grey.shade600 : Colors.grey;
+                        final bookingC = Get.find<EmergencyController>();
 
-                        final listItemDecoration = ListItemDecoration(
-                          splashColor: Colors.transparent,
-                          highlightColor:
-                              isDark
-                                  ? Colors.grey.shade700
-                                  : const Color(0xFFEEEEEE),
-                          selectedColor:
-                              isDark
-                                  ? Colors.grey.shade800
-                                  : const Color(0xFFF5F5F5),
-                          selectedIconColor: borderColor,
-                          selectedIconBorder: BorderSide(color: borderColor),
-                          selectedIconShape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        );
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomDropdown<String>(
+                              hintText: 'Pilih Kendaraan',
+                              items: bookingC.availableVehicles,
+                              initialItem:
+                                  bookingC.selectedVehicle.value.isEmpty
+                                      ? null
+                                      : bookingC.selectedVehicle.value,
+                              excludeSelected: false,
+                              onChanged: (value) {
+                                if (value != null)
+                                  bookingC.selectedVehicle.value = value;
+                              },
+                              decoration: CustomDropdownDecoration(
+                                closedFillColor: bgColor,
+                                expandedFillColor: bgColor,
+                                closedBorder: Border.all(
+                                  color: Colors.transparent,
+                                ),
+                                closedBorderRadius: BorderRadius.circular(12),
+                                expandedBorder: Border.all(
+                                  color: Colors.transparent,
+                                ),
+                                expandedBorderRadius: BorderRadius.circular(12),
+                                closedSuffixIcon: Icon(
+                                  Icons.arrow_drop_down,
+                                  color: borderColor,
+                                ),
+                                expandedSuffixIcon: Icon(
+                                  Icons.arrow_drop_up,
+                                  color: borderColor,
+                                ),
+                                hintStyle: TextStyle(color: borderColor),
+                                headerStyle: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                                listItemStyle: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                                listItemDecoration: ListItemDecoration(
+                                  splashColor: Colors.transparent,
+                                  highlightColor:
+                                      isDark
+                                          ? Colors.grey.shade700
+                                          : const Color(0xFFEEEEEE),
+                                  selectedColor:
+                                      isDark
+                                          ? Colors.grey.shade800
+                                          : const Color(0xFFF5F5F5),
+                                  selectedIconColor: borderColor,
+                                  selectedIconBorder: BorderSide(
+                                    color: borderColor,
+                                  ),
+                                  selectedIconShape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                            ),
 
-                        return CustomDropdown<String>(
-                          hintText: 'Pilih Kendaraan',
-                          items: c.availableVehicles,
-                          initialItem:
-                              c.selectedVehicle.value.isEmpty
-                                  ? null
-                                  : c.selectedVehicle.value,
-                          excludeSelected: false,
-                          onChanged: (value) {
-                            if (value != null) c.selectedVehicle.value = value;
-                          },
-                          decoration: CustomDropdownDecoration(
-                            closedFillColor: bgColor,
-                            expandedFillColor: bgColor,
-                            closedBorder: Border.all(color: Colors.transparent),
-                            closedBorderRadius: BorderRadius.circular(12),
-                            expandedBorder: Border.all(
-                              color: Colors.transparent,
-                            ),
-                            expandedBorderRadius: BorderRadius.circular(12),
-                            closedSuffixIcon: Icon(
-                              Icons.arrow_drop_down,
-                              color: borderColor,
-                            ),
-                            expandedSuffixIcon: Icon(
-                              Icons.arrow_drop_up,
-                              color: borderColor,
-                            ),
-                            hintStyle: TextStyle(color: borderColor),
-                            headerStyle: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            listItemStyle: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            listItemDecoration: listItemDecoration,
-                          ),
+                            // Pesan peringatan jika sudah ada Emergency Service berjalan
+                            if (bookingC.hasActiveEmergencyForSelectedVehicle)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'Kendaraan ini sudah mempunyai Emergency Service yang masih berjalan',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 12,
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
                         );
                       }),
                     ],

@@ -224,99 +224,94 @@ class EmergencyView extends GetView<EmergencyController> {
   }
 
   Widget _buildFilterSection(BuildContext context, EmergencyController c) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    String formatDate(DateTime? date) =>
-        date == null ? "Pilih Tanggal" : DateFormat('dd/MM/yyyy').format(date);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseClr = isDark ? Colors.grey[800] : Colors.white;
+    final hintClr = isDark ? Colors.white54 : Colors.grey[700];
+    final borderClr = isDark ? Colors.white24 : Colors.grey[400]!;
+
+    String formatDate(DateTime? d) =>
+        d == null ? 'Tanggal' : DateFormat('dd/MM').format(d);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800] : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black26 : Colors.grey.shade300,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: baseClr,
+        borderRadius: BorderRadius.circular(10),
+        // border: Border.all(color: borderClr, width: .6),
       ),
-      child: Column(
+
+      // ======== BARIS: Chip Tanggal + Search ========
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today,
-                color: isDark ? Colors.white70 : Colors.grey,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  formatDate(c.dateFilter),
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ),
-              if (c.dateFilter != null)
-                IconButton(
-                  icon: Icon(
-                    Icons.clear,
-                    color: isDark ? Colors.white70 : Colors.grey,
-                  ),
-                  onPressed: () {
-                    c.resetFilter();
-                    c.applyFilters();
-                  },
-                ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    // ruang nyaman
-                    horizontal: 10,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () async {
-                  await c.pickFilterDate(context);
-                  c.applyFilters();
-                },
-                child: const Text("Pilih"),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+          // ---------- CHIP TANGGAL ----------
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () async {
+              await c.pickFilterDate(context); // date-picker
+              c.applyFilters();
+            },
             child: Container(
-              color: isDark ? Colors.grey[700] : Colors.grey[200],
-              child: TextField(
-                controller: c.searchController,
-                onChanged: (v) {
-                  c.searchQuery.value = v;
-                  c.applyFilters();
-                },
-                decoration: InputDecoration(
-                  hintText: 'Cari Kode / No. Polisi',
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: isDark ? const Color(0xFFF1F2F6) : Colors.grey[800],
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: hintClr),
+                  const SizedBox(width: 4),
+                  Text(
+                    formatDate(c.dateFilter),
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      color: hintClr,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
+                  if (c.dateFilter != null) ...[
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () {
+                        c.resetFilter();
+                        c.applyFilters();
+                      },
+                      child: Icon(Icons.close, size: 14, color: hintClr),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // ---------- TEXTFIELD CARI ----------
+          Expanded(
+            child: TextField(
+              controller: c.searchController,
+              onChanged: (_) => c.applyFilters(),
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'Cari Kode / No. Polisi',
+                hintStyle: TextStyle(color: hintClr, fontSize: 14),
+                prefixIcon: Icon(Icons.search, size: 18, color: hintClr),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 34,
+                  minHeight: 34,
                 ),
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  color: isDark ? Colors.white : Colors.black87,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                filled: true,
+                fillColor: isDark ? Colors.white10 : Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),

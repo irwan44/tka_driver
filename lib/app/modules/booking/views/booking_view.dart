@@ -31,6 +31,8 @@ class _BookingViewState extends State<BookingView> {
   final BookingController c = Get.put(BookingController());
   ConnectivityResult _connectivityStatus = ConnectivityResult.none;
   late StreamSubscription<dynamic> _connectivitySub;
+  final double kInnerPad = 24;
+
   @override
   void initState() {
     super.initState();
@@ -117,7 +119,7 @@ class _BookingViewState extends State<BookingView> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
         floatingActionButton: FloatingActionButton.extended(
@@ -218,6 +220,7 @@ class _BookingViewState extends State<BookingView> {
             children: [
               _buildRequestTab(c, isDark),
               _buildServiceTab(c, isDark),
+              _buildHistoryService(c, isDark),
             ],
           ),
         ),
@@ -376,8 +379,12 @@ class _BookingViewState extends State<BookingView> {
                 itemBuilder: (ctx, i) {
                   final r = filtered[i];
                   return InkWell(
-                    onTap: () => _showRequestDetailBottomSheet(ctx, r),
+                    onTap: () {
+                      c.markRequestOpened(r.kodeRequestService);
+                      _showRequestDetailBottomSheet(ctx, r);
+                    },
                     child: RequestServiceItem(
+                      unread: !c.requestOpened(r.kodeRequestService),
                       tanggal: r.createdAt ?? '-',
                       status: r.status ?? '-',
                       noPolisi: r.noPolisi ?? '-',
@@ -394,6 +401,10 @@ class _BookingViewState extends State<BookingView> {
   Widget _buildServiceTab(BookingController c, bool isDark) => Obx(() {
     final filtered =
         c.listService.where((s) {
+            final st = (s.status ?? '').trim().toUpperCase();
+            if (st == 'PKB TUTUP' || st == 'INVOICE' || st == 'NOT CONFIRMED')
+              return false;
+
             final nopol = (s.noPolisi ?? '').toLowerCase();
             final q = searchQuery.toLowerCase();
             final matchSearch = q.isEmpty || nopol.contains(q);
@@ -456,11 +467,106 @@ class _BookingViewState extends State<BookingView> {
               : ListView.builder(
                 padding: const EdgeInsets.only(bottom: 120),
                 itemCount: filtered.length,
-                itemBuilder:
-                    (_, i) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: ServiceItemCard(service: filtered[i]),
+                itemBuilder: (_, i) {
+                  final s = filtered[i];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: ServiceItemCard(
+                      service: s,
+                      unread:
+                          !c.serviceOpened(s.kodeSvc), // ← highlight if unread
                     ),
+                  );
+                },
+              ),
+    );
+  });
+
+  Widget _buildHistoryService(BookingController c, bool isDark) => Obx(() {
+    final filtered =
+        c.listService.where((s) {
+            // hanya PKB TUTUP & INVOICE yang masuk tab History
+            final st = (s.status ?? '').trim().toUpperCase();
+            final matchStatus = st == 'PKB TUTUP' || st == 'INVOICE';
+            if (!matchStatus) return false;
+
+            // filter teks No. Polisi
+            final nopol = (s.noPolisi ?? '').toLowerCase();
+            final q = searchQuery.toLowerCase();
+            final matchSearch = q.isEmpty || nopol.contains(q);
+
+            // filter tanggal
+            bool matchDate = true;
+            if (_selectedDate != null) {
+              matchDate = false;
+              for (final t in [s.tglEstimasi, s.tglPkb]) {
+                if (t == null) continue;
+                final d = DateFormat('yyyy-MM-dd').parse(t);
+                if (DateFormat('yyyy-MM-dd').format(d) ==
+                    DateFormat('yyyy-MM-dd').format(_selectedDate!)) {
+                  matchDate = true;
+                  break;
+                }
+              }
+            }
+            return matchSearch && matchDate;
+          }).toList()
+          ..sort(
+            (a, b) => _parseCreatedAt(
+              b.createdAt,
+            ).compareTo(_parseCreatedAt(a.createdAt)),
+          );
+
+    return RefreshIndicator(
+      onRefresh: () => c.refreshAll(),
+      displacement: 40,
+      child:
+          _connectivityStatus == ConnectivityResult.none
+              ? _noConnection(
+                'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda',
+              )
+              : c.errorRequest.value.isNotEmpty
+              ? _serverDown(c.errorRequest.value)
+              : c.isLoadingServices.value
+              ? _buildLoadingList(isDark)
+              : filtered.isEmpty
+              ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(top: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey[850] : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _selectedDate != null
+                            ? 'Tanggal yang Anda pilih tidak ada data'
+                            : 'Tidak ada data Service Kendaraan Anda',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+              : ListView.builder(
+                padding: const EdgeInsets.only(bottom: 120),
+                itemCount: filtered.length,
+                itemBuilder: (_, i) {
+                  final s = filtered[i];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: ServiceItemCard(
+                      service: s,
+                      unread:
+                          !c.serviceOpened(
+                            s.kodeSvc,
+                          ), // ← highlight jika belum dibuka
+                    ),
+                  );
+                },
               ),
     );
   });
@@ -799,107 +905,110 @@ class _BookingViewState extends State<BookingView> {
     );
   }
 
-  Widget _buildFilterSection(bool isDark) => Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: isDark ? Colors.grey[800] : Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: isDark ? Colors.black26 : Colors.grey.shade300,
-          blurRadius: 4,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.calendar_today,
-              color: isDark ? Colors.white70 : Colors.grey,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                _selectedDate == null
-                    ? "Pilih Tanggal"
-                    : "Tanggal: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}",
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
+  Widget _buildFilterSection(bool isDark) {
+    final baseClr = isDark ? Colors.grey[800] : Colors.white;
+    final hintClr = isDark ? Colors.white54 : Colors.grey[700];
+    final borderClr = isDark ? Colors.white24 : Colors.grey[400]!;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: baseClr,
+        borderRadius: BorderRadius.circular(10),
+        // border: Border.all(color: borderClr, width: .6),
+      ),
+
+      // ──────────── ROW: Date + Search ────────────
+      child: Row(
+        children: [
+          // ====== tanggal (chip-like) ======
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) setState(() => _selectedDate = picked);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: hintClr),
+                  const SizedBox(width: 4),
+                  Text(
+                    _selectedDate == null
+                        ? 'Tanggal'
+                        : DateFormat('dd/MM').format(_selectedDate!),
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      color: hintClr,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (_selectedDate != null) ...[
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () => setState(() => _selectedDate = null),
+                      child: Icon(Icons.close, size: 14, color: hintClr),
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (_selectedDate != null)
-              IconButton(
-                icon: Icon(
-                  Icons.clear,
-                  color: isDark ? Colors.white70 : Colors.grey,
-                ),
-                onPressed: () => setState(() => _selectedDate = null),
-              ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  // ruang nyaman
-                  horizontal: 10,
-                  vertical: 10,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.green,
-              ),
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate ?? DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime.now(),
-                );
-                if (picked != null) setState(() => _selectedDate = picked);
-              },
-              child: const Text("Pilih"),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            color: isDark ? Colors.grey[700] : Colors.grey[200],
+          ),
+
+          const SizedBox(width: 12),
+
+          // ====== field cari ======
+          Expanded(
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Cari No Polisi',
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: isDark ? const Color(0xFFF1F2F6) : Colors.grey[800],
+                isDense: true,
+                hintText: 'Cari No. Polisi',
+                hintStyle: TextStyle(color: hintClr, fontSize: 14),
+                prefixIcon: Icon(Icons.search, size: 18, color: hintClr),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 34,
+                  minHeight: 34,
                 ),
-                border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 14,
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                filled: true,
+                fillColor: isDark ? Colors.white10 : Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
               style: GoogleFonts.nunito(
-                fontSize: 16,
+                fontSize: 14,
                 color: isDark ? Colors.white : Colors.black87,
               ),
               onChanged: (v) => setState(() => searchQuery = v),
             ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 
   Widget _buildTabBar(bool isDark) {
     final BookingController c = Get.find<BookingController>();
 
     return Obx(() {
+      final reqUnread = c.unreadRequestCount;
+      final svcUnread = c.unreadStatusServiceCount;
+      final histUnread = c.unreadHistoryServiceCount;
       final reqCount = c.filteredRequests.length;
       final svcCount = c.filteredServices.length;
       Widget badge(int count) => Container(
@@ -920,36 +1029,56 @@ class _BookingViewState extends State<BookingView> {
         ),
       );
 
-      return TabBar(
-        labelColor: isDark ? Colors.lightBlueAccent : Colors.blue,
-        unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey,
-        indicatorColor: Colors.transparent,
-        tabs: [
-          Tab(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Request Service'),
-                if (reqCount > 0) ...[
-                  const SizedBox(width: 4),
-                  badge(reqCount),
+      return Transform.translate(
+        offset: Offset(-kInnerPad, 0),
+        child: TabBar(
+          isScrollable: true,
+          padding: EdgeInsets.zero,
+          labelPadding: const EdgeInsets.only(right: 16),
+          labelColor: isDark ? Colors.lightBlueAccent : Colors.blue,
+          unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey,
+          indicatorPadding: EdgeInsets.zero,
+          indicatorColor: Colors.transparent,
+
+          tabs: [
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Request Service'),
+                  if (reqUnread > 0) ...[
+                    const SizedBox(width: 4),
+                    badge(reqUnread),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          Tab(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Service'),
-                if (svcCount > 0) ...[
-                  const SizedBox(width: 4),
-                  badge(svcCount),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Status Service'),
+                  if (svcUnread > 0) ...[
+                    const SizedBox(width: 4),
+                    badge(svcUnread),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('History Service'),
+                  if (histUnread > 0) ...[
+                    const SizedBox(width: 4),
+                    badge(histUnread),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     });
   }
