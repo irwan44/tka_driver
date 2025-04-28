@@ -22,8 +22,9 @@ import 'package:video_compress/video_compress.dart';
 
 class EmergencyController extends GetxController {
   var isLoading = false.obs;
+  var isLoadingEmergency = false.obs;
   var errorMessage = ''.obs;
-
+  Timer? _ticker;
   var allEmergencyList = <Data>[].obs;
   var emergencyList = <Data>[].obs;
   var searchQuery = ''.obs;
@@ -38,15 +39,17 @@ class EmergencyController extends GetxController {
   late final StreamSubscription _connectSub;
   final Map<String, String> _lastStatusByNoPol = {};
   late final AndroidNotificationChannel _statusChannel;
-
+  final isLoadingVehicles = false.obs;
   final FlutterLocalNotificationsPlugin _fln =
       FlutterLocalNotificationsPlugin();
   late final Timer _bgTimer;
+
   @override
   void onInit() {
     super.onInit();
     _initLocalNotifications();
     _connectSub = Connectivity().onConnectivityChanged.listen((dynamic event) {
+      // —— Deteksi status seperti sekarang ——
       ConnectivityResult status;
       if (event is ConnectivityResult) {
         status = event;
@@ -55,19 +58,41 @@ class EmergencyController extends GetxController {
       } else {
         status = ConnectivityResult.none;
       }
-
       connectivityStatus.value = status;
+
+      if (status != ConnectivityResult.none) {
+        errorMessage.value = '';
+      }
+
       _setStatusDebounced(status);
     });
 
-    fetchEmergencyList();
-    fetchVehicles();
-
+    _firstLoad();
+    _startRealtime();
     _initLocalNotifications();
-    _bgTimer = Timer.periodic(
-      const Duration(seconds: 10),
-      (_) => fetchEmergencyList(silent: true),
-    );
+  }
+
+  Future<void> refreshAll() async {
+    await Future.wait([fetchEmergencyList()]);
+    await Future.wait([fetchVehicles()]);
+  }
+
+  Future<void> _firstLoad() async {
+    try {
+      await Future.wait([fetchVehicles()]);
+      await Future.wait([fetchEmergencyList()]);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _startRealtime() {
+    const interval = Duration(seconds: 5);
+    _ticker?.cancel();
+    _ticker = Timer.periodic(interval, (_) {
+      fetchVehicles(showLoader: false);
+      fetchEmergencyList(showLoader: false);
+    });
   }
 
   final Rx<ConnectivityResult> debouncedStatus = ConnectivityResult.mobile.obs;
@@ -85,9 +110,9 @@ class EmergencyController extends GetxController {
 
   @override
   void onClose() {
+    _ticker?.cancel();
     _debounceTimer?.cancel();
     _connectSub.cancel();
-    _bgTimer.cancel();
     super.onClose();
   }
 
@@ -143,64 +168,54 @@ class EmergencyController extends GetxController {
     }
   }
 
-  Future<void> _notifyChange(String noPol, String? oldSt, String newSt) async {
-    Get.snackbar(
-      'Nomor Polisi ${noPol.toUpperCase()} Status',
-      '$newSt',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
-  }
+  Future<void> fetchEmergencyList({bool showLoader = true}) async {
+    // 1. Tampilkan loader kalau diminta
+    if (showLoader) isLoadingEmergency.value = true;
 
-  Future<void> fetchEmergencyList({bool silent = false}) async {
-    if (!await _hasRealInternet()) {
-      if (!silent) {
+    try {
+      // 2. Cek koneksi internet
+      if (!await _hasRealInternet()) {
         errorMessage.value =
             'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
         allEmergencyList.clear();
         emergencyList.clear();
+        return;
       }
-      return;
-    }
 
-    if (!silent) isLoading.value = true;
-
-    try {
+      // 3. Cek token
       if (LocalStorages.getToken.isEmpty) {
         throw Exception('Token is empty! Mohon login terlebih dahulu.');
       }
 
+      // 4. Panggil API dan assign hasilnya
       final response = await API.fetchListEmergency();
       allEmergencyList.value = response.data ?? [];
       emergencyList.value = allEmergencyList;
 
-      final newList = response.data ?? [];
-      for (final item in newList) {
-        final noPol = (item.noPolisi ?? '').trim();
-        final status = (item.status ?? '').trim();
-        if (noPol.isEmpty) continue;
-      }
+      // 5. Clear errorMessage kalau sukses
+      errorMessage.value = '';
     } catch (e) {
-      if (!silent) {
-        final low = e.toString().toLowerCase();
+      // 6. Error handling: kalau murni jaringan, pakai pesan khusus
+      final low = e.toString().toLowerCase();
+      if (low.contains('tidak ada jaringan') || low.contains('no internet')) {
         errorMessage.value =
-            low.contains('tidak ada jaringan') || low.contains('no internet')
-                ? 'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda'
-                : e.toString();
-        allEmergencyList.clear();
-        emergencyList.clear();
+            'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
+      } else {
+        errorMessage.value = e.toString();
       }
+      allEmergencyList.clear();
+      emergencyList.clear();
     } finally {
-      if (!silent) isLoading.value = false;
+      // 7. Hide loader kalau tadi diminta
+      if (showLoader) isLoadingEmergency.value = false;
     }
   }
 
   // ─────────────────── FETCH VEHICLES ──────────────────────────
-  Future<void> fetchVehicles() async {
+  Future<void> fetchVehicles({bool showLoader = true}) async {
+    if (showLoader) isLoadingVehicles(true);
     try {
-      isLoading.value = true;
+      isLoadingVehicles.value = true;
       final resp = await API.fetchListKendaraan();
       final listKendaraan = resp.data ?? [];
       availableVehicles.clear();
@@ -214,13 +229,12 @@ class EmergencyController extends GetxController {
           e.toString().toLowerCase().contains("tidak ada jaringan") ||
           e.toString().toLowerCase().contains("no internet") ||
           e.toString().toLowerCase().contains("failed host lookup")) {
-        errorMessage.value =
-            'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
+        errorMessage.value = '';
       } else {
         errorMessage.value = e.toString();
       }
     } finally {
-      isLoading.value = false;
+      if (showLoader) isLoadingVehicles.value = false;
     }
   }
 

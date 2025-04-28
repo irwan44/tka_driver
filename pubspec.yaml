@@ -38,6 +38,7 @@ dependencies:
   flutter_local_notifications: ^19.1.0
   package_info_plus: ^8.3.0
   shared_preferences: ^2.5.3
+  audioplayers: ^6.4.0
 
 dev_dependencies:
   flutter_test:
@@ -80,3 +81,4 @@ flutter:
     - assets/penggunaan/request3.png
     - assets/penggunaan/request4.png
     - assets/penggunaan/service.png
+    - assets/sounds/notifikasi_planning.mp3

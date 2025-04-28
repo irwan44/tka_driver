@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
@@ -21,7 +19,7 @@ class ThemeController extends GetxController {
   @override
   void onInit() {
     isDark.value =
-        WidgetsBinding.instance.window.platformBrightness == Brightness.light;
+        WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
     super.onInit();
   }
 
@@ -112,25 +110,6 @@ class HomeView extends GetView<HomeController> {
 
 class _HeaderSection extends StatelessWidget {
   const _HeaderSection({Key? key}) : super(key: key);
-
-  Future<String> _getFullAddress() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-      if (placemarks.isNotEmpty) {
-        final place = placemarks.first;
-        return '${place.locality}, ${place.administrativeArea}, ${place.country}';
-      }
-      return 'Alamat tidak ditemukan';
-    } catch (e) {
-      return 'Gagal mendapatkan alamat';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

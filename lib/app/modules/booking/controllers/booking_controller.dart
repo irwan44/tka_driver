@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -180,12 +181,14 @@ class BookingController extends GetxController {
   bool vehicleAlreadyRequested(String? nopol) =>
       nopol != null && _busyPlates.contains(nopol.toUpperCase());
 
-  // —— panggil setiap kali dropdown berubah ——
   void onVehicleChanged(String? value) {
     selectedVehicle.value = value ?? '';
     disableSubmitButton.value =
         value == null || value.isEmpty || vehicleAlreadyRequested(value);
   }
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  int _prevNotConfirmedCount = 0;
 
   @override
   void onInit() {
@@ -196,6 +199,11 @@ class BookingController extends GetxController {
     _loadOpenedIds();
     _firstLoad();
     _startRealtime();
+    _prevNotConfirmedCount =
+        listService
+            .where((s) => (s.status ?? '').toUpperCase() == 'NOT CONFIRMED')
+            .length;
+    ever<List<ListService>>(listService, _onListServiceChanged);
     _connectSub = Connectivity().onConnectivityChanged.listen((event) {
       ConnectivityResult status;
       if (event is ConnectivityResult) {
@@ -209,14 +217,37 @@ class BookingController extends GetxController {
     });
   }
 
+  void _onListServiceChanged(List<ListService> newList) {
+    final currentNotConfirmed =
+        newList
+            .where((s) => (s.status ?? '').toUpperCase() == 'NOT CONFIRMED')
+            .toList();
+    final currentCount = currentNotConfirmed.length;
+
+    if (currentCount > _prevNotConfirmedCount) {
+      _playNotificationSound();
+    }
+
+    _prevNotConfirmedCount = currentCount;
+  }
+
+  Future<void> _playNotificationSound() async {
+    try {
+      await _audioPlayer.play(
+        AssetSource('assets/sounds/notifikasi_planning.mp3'),
+        volume: 1.0,
+      );
+    } catch (e) {
+      print('Gagal memainkan suara: $e');
+    }
+  }
+
   Future<void> _loadOpenedIds() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // load request IDs
     final req = prefs.getStringList('opened_request_ids') ?? [];
     _openedRequestIds.addAll(req.map((e) => e.trim().toUpperCase()));
 
-    // load service IDs
     final svc = prefs.getStringList('opened_service_ids') ?? [];
     _openedServiceIds.addAll(svc.map((e) => e.trim().toUpperCase()));
   }
@@ -516,7 +547,7 @@ class BookingController extends GetxController {
 
   Future<void> fetchRequestService({bool showLoader = true}) async {
     errorRequest.value = '';
-    if (showLoader) isLoadingRequest(true); // gunakan flag milik sendiri
+    if (showLoader) isLoadingRequest(true);
 
     try {
       networkError(false);
@@ -624,7 +655,7 @@ class BookingController extends GetxController {
   }
 
   Future<void> fetchDetail(String kodeSvc, {bool showLoader = true}) async {
-    if (showLoader) isLoadingDetail(true); // 🚀 hidupkan hanya bila diminta
+    if (showLoader) isLoadingDetail(true);
     errorMessage.value = '';
 
     try {
@@ -635,12 +666,12 @@ class BookingController extends GetxController {
     } catch (e) {
       errorMessage.value = e.toString();
     } finally {
-      if (showLoader) isLoadingDetail(false); // 📴 pastikan mati
+      if (showLoader) isLoadingDetail(false);
     }
   }
 
   Future<void> fetchServices({bool showLoader = true}) async {
-    if (showLoader) isLoadingServices(true); // 🚀 hidupkan hanya kalau perlu
+    if (showLoader) isLoadingServices(true);
     errorMessage.value = '';
 
     try {
@@ -653,7 +684,7 @@ class BookingController extends GetxController {
       errorMessage.value = e.toString();
       debugPrint('❌ fetchServices error → $e');
     } finally {
-      if (showLoader) isLoadingServices(false); // 📴 matikan hanya kalau perlu
+      if (showLoader) isLoadingServices(false);
     }
   }
 }

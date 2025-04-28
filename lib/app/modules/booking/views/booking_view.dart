@@ -11,7 +11,6 @@ import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../emergency/views/emergency_view.dart';
 import '../componen/langkah_penggunaan.dart';
 import '../componen/list_planning_servis.dart';
 import '../componen/listservicecard.dart';
@@ -152,13 +151,6 @@ class _BookingViewState extends State<BookingView> {
                         ),
                         const SizedBox(height: 10),
                         _buildFilterSection(isDark),
-                        const SizedBox(height: 8),
-                        RoundedDivider(
-                          thickness: 1,
-                          color: Colors.grey,
-                          indent: 10,
-                          endIndent: 10,
-                        ),
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -485,17 +477,14 @@ class _BookingViewState extends State<BookingView> {
   Widget _buildHistoryService(BookingController c, bool isDark) => Obx(() {
     final filtered =
         c.listService.where((s) {
-            // hanya PKB TUTUP & INVOICE yang masuk tab History
             final st = (s.status ?? '').trim().toUpperCase();
             final matchStatus = st == 'PKB TUTUP' || st == 'INVOICE';
             if (!matchStatus) return false;
 
-            // filter teks No. Polisi
             final nopol = (s.noPolisi ?? '').toLowerCase();
             final q = searchQuery.toLowerCase();
             final matchSearch = q.isEmpty || nopol.contains(q);
 
-            // filter tanggal
             bool matchDate = true;
             if (_selectedDate != null) {
               matchDate = false;
@@ -918,10 +907,8 @@ class _BookingViewState extends State<BookingView> {
         // border: Border.all(color: borderClr, width: .6),
       ),
 
-      // ──────────── ROW: Date + Search ────────────
       child: Row(
         children: [
-          // ====== tanggal (chip-like) ======
           InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () async {
@@ -967,7 +954,6 @@ class _BookingViewState extends State<BookingView> {
 
           const SizedBox(width: 12),
 
-          // ====== field cari ======
           Expanded(
             child: TextField(
               decoration: InputDecoration(

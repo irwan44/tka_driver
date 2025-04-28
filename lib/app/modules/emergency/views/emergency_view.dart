@@ -240,10 +240,8 @@ class EmergencyView extends GetView<EmergencyController> {
         // border: Border.all(color: borderClr, width: .6),
       ),
 
-      // ======== BARIS: Chip Tanggal + Search ========
       child: Row(
         children: [
-          // ---------- CHIP TANGGAL ----------
           InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () async {
@@ -284,8 +282,6 @@ class EmergencyView extends GetView<EmergencyController> {
           ),
 
           const SizedBox(width: 12),
-
-          // ---------- TEXTFIELD CARI ----------
           Expanded(
             child: TextField(
               controller: c.searchController,
@@ -362,69 +358,86 @@ class _NoConnectionWidget extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Filter',
-                style: GoogleFonts.nunito(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey[300] : Colors.grey[800],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildFilterSection(context, c),
-            const SizedBox(height: 8),
-            const RoundedDivider(
-              thickness: 1,
-              color: Colors.grey,
-              indent: 10,
-              endIndent: 10,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Riwayat Layanan Darurat',
-                  style: GoogleFonts.lato(
-                    textStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+      child: RefreshIndicator(
+        onRefresh: () => c.refreshAll(),
+        displacement: 40,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Filter',
+                  style: GoogleFonts.nunito(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.grey[300] : Colors.grey[800],
                   ),
                 ),
+              ),
+              const SizedBox(height: 8),
+              _buildFilterSection(context, c),
+              const SizedBox(height: 8),
+              const RoundedDivider(
+                thickness: 1,
+                color: Colors.grey,
+                indent: 10,
+                endIndent: 10,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Riwayat Layanan Darurat',
+                    style: GoogleFonts.lato(
+                      textStyle: Theme.of(context).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                  ),
 
-                IconButton(
-                  icon: const Icon(Icons.info_outline),
-                  tooltip: 'Informasi',
-                  splashRadius: 22,
-                  onPressed: () {
-                    Get.to(() => const EmergencyGuidePage());
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 50),
-            Image.asset(
-              'assets/icon/no_conexion.png',
-              width: 100,
-              height: 100,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda',
-              style: GoogleFonts.nunito(color: Colors.black),
-              textAlign: TextAlign.center,
-            ),
-          ],
+                  ElevatedButton.icon(
+                    icon: const Icon(
+                      Icons.info_outline,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Info',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Get.to(() => const EmergencyGuidePage()),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 50),
+              Image.asset(
+                'assets/icon/no_conexion.png',
+                width: 100,
+                height: 100,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda',
+                style: GoogleFonts.nunito(color: Colors.black),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -434,96 +447,84 @@ class _NoConnectionWidget extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     String formatDate(DateTime? date) =>
         date == null ? "Pilih Tanggal" : DateFormat('dd/MM/yyyy').format(date);
-
+    final baseClr = isDark ? Colors.grey[800] : Colors.white;
+    final hintClr = isDark ? Colors.white54 : Colors.grey[700];
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800] : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black26 : Colors.grey.shade300,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: baseClr,
+        borderRadius: BorderRadius.circular(10),
+        // border: Border.all(color: borderClr, width: .6),
       ),
-      child: Column(
+
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today,
-                color: isDark ? Colors.white70 : Colors.grey,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  formatDate(c.dateFilter),
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ),
-              if (c.dateFilter != null)
-                IconButton(
-                  icon: Icon(
-                    Icons.clear,
-                    color: isDark ? Colors.white70 : Colors.grey,
-                  ),
-                  onPressed: () {
-                    c.resetFilter();
-                    c.applyFilters();
-                  },
-                ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    // ruang nyaman
-                    horizontal: 10,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () async {
-                  await c.pickFilterDate(context);
-                  c.applyFilters();
-                },
-                child: const Text("Pilih"),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () async {
+              await c.pickFilterDate(context); // date-picker
+              c.applyFilters();
+            },
             child: Container(
-              color: isDark ? Colors.grey[700] : Colors.grey[200],
-              child: TextField(
-                controller: c.searchController,
-                onChanged: (v) {
-                  c.searchQuery.value = v;
-                  c.applyFilters();
-                },
-                decoration: InputDecoration(
-                  hintText: 'Cari Kode / No. Polisi',
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: isDark ? const Color(0xFFF1F2F6) : Colors.grey[800],
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: hintClr),
+                  const SizedBox(width: 4),
+                  Text(
+                    formatDate(c.dateFilter),
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      color: hintClr,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
+                  if (c.dateFilter != null) ...[
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () {
+                        c.resetFilter();
+                        c.applyFilters();
+                      },
+                      child: Icon(Icons.close, size: 14, color: hintClr),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: c.searchController,
+              onChanged: (_) => c.applyFilters(),
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'Cari Kode / No. Polisi',
+                hintStyle: TextStyle(color: hintClr, fontSize: 14),
+                prefixIcon: Icon(Icons.search, size: 18, color: hintClr),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 34,
+                  minHeight: 34,
                 ),
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  color: isDark ? Colors.white : Colors.black87,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                filled: true,
+                fillColor: isDark ? Colors.white10 : Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -531,6 +532,7 @@ class _NoConnectionWidget extends StatelessWidget {
         ],
       ),
     );
+    ;
   }
 }
 
@@ -544,57 +546,79 @@ class _ServerDownWidget extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Filter',
-                style: GoogleFonts.nunito(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey[300] : Colors.grey[800],
+      child: RefreshIndicator(
+        onRefresh: () => c.refreshAll(),
+        displacement: 40,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Filter',
+                  style: GoogleFonts.nunito(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.grey[300] : Colors.grey[800],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            _buildFilterSection(context, c),
-            const SizedBox(height: 8),
-            const RoundedDivider(
-              thickness: 1,
-              color: Colors.grey,
-              indent: 10,
-              endIndent: 10,
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Riwayat Layanan Darurat',
-                style: GoogleFonts.nunito(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey[300] : Colors.grey[800],
-                ),
+              const SizedBox(height: 8),
+              _buildFilterSection(context, c),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Riwayat Layanan Darurat',
+                    style: GoogleFonts.lato(
+                      textStyle: Theme.of(context).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                  ),
+
+                  ElevatedButton.icon(
+                    icon: const Icon(
+                      Icons.info_outline,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Info',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Get.to(() => const EmergencyGuidePage()),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 50),
-            Image.asset(
-              'assets/icon/server-down.png',
-              width: 100,
-              height: 100,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Mohon Maaf 🙏🏻\nAplikasi sendang terkendala Server,\nKami akan segera memperbaikinya',
-              style: GoogleFonts.nunito(color: Colors.black),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 50),
+              Image.asset(
+                'assets/icon/server-down.png',
+                width: 100,
+                height: 100,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Mohon Maaf 🙏🏻\nAplikasi sendang terkendala Server,\nKami akan segera memperbaikinya',
+                style: GoogleFonts.nunito(color: Colors.black),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -604,96 +628,84 @@ class _ServerDownWidget extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     String formatDate(DateTime? date) =>
         date == null ? "Pilih Tanggal" : DateFormat('dd/MM/yyyy').format(date);
-
+    final baseClr = isDark ? Colors.grey[800] : Colors.white;
+    final hintClr = isDark ? Colors.white54 : Colors.grey[700];
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800] : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black26 : Colors.grey.shade300,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: baseClr,
+        borderRadius: BorderRadius.circular(10),
+        // border: Border.all(color: borderClr, width: .6),
       ),
-      child: Column(
+
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today,
-                color: isDark ? Colors.white70 : Colors.grey,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  formatDate(c.dateFilter),
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ),
-              if (c.dateFilter != null)
-                IconButton(
-                  icon: Icon(
-                    Icons.clear,
-                    color: isDark ? Colors.white70 : Colors.grey,
-                  ),
-                  onPressed: () {
-                    c.resetFilter();
-                    c.applyFilters();
-                  },
-                ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    // ruang nyaman
-                    horizontal: 10,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () async {
-                  await c.pickFilterDate(context);
-                  c.applyFilters();
-                },
-                child: const Text("Pilih"),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () async {
+              await c.pickFilterDate(context); // date-picker
+              c.applyFilters();
+            },
             child: Container(
-              color: isDark ? Colors.grey[700] : Colors.grey[200],
-              child: TextField(
-                controller: c.searchController,
-                onChanged: (v) {
-                  c.searchQuery.value = v;
-                  c.applyFilters();
-                },
-                decoration: InputDecoration(
-                  hintText: 'Cari Kode / No. Polisi',
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: isDark ? const Color(0xFFF1F2F6) : Colors.grey[800],
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: hintClr),
+                  const SizedBox(width: 4),
+                  Text(
+                    formatDate(c.dateFilter),
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      color: hintClr,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
+                  if (c.dateFilter != null) ...[
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () {
+                        c.resetFilter();
+                        c.applyFilters();
+                      },
+                      child: Icon(Icons.close, size: 14, color: hintClr),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: c.searchController,
+              onChanged: (_) => c.applyFilters(),
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'Cari Kode / No. Polisi',
+                hintStyle: TextStyle(color: hintClr, fontSize: 14),
+                prefixIcon: Icon(Icons.search, size: 18, color: hintClr),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 34,
+                  minHeight: 34,
                 ),
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  color: isDark ? Colors.white : Colors.black87,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                filled: true,
+                fillColor: isDark ? Colors.white10 : Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -1008,8 +1020,8 @@ class _EmergencyItemCard extends StatelessWidget {
         return Colors.green;
       case 'mekanik ditugaskan':
         return Colors.orange;
-      case 'estimasi':
-        return Colors.purple;
+      case 'selesai':
+        return Colors.green;
       case 'pkb':
         return Colors.teal;
       case 'pkb tutup':

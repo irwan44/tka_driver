@@ -49,6 +49,20 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+
+    applicationVariants.all {
+        val variant = this
+        variant.outputs
+            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+            .filter {
+                val names = it.name.split("-")
+                it.name.lowercase().contains(names[0], true) && it.name.lowercase().contains(names[1], true)
+            }
+            .forEach { output ->
+                val outputFileName = "${variant.flavorName}Dtiver${variant.buildType.name}_${variant.versionName}.apk"
+                output.outputFileName = outputFileName
+            }
+    }
 }
 
 dependencies {
