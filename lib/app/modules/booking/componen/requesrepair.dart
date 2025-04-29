@@ -222,7 +222,6 @@ class RequestServiceItem extends StatelessWidget {
                 ),
               ),
 
-            // ─── HEADER (tanggal & status) ────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -273,7 +272,6 @@ class RequestServiceItem extends StatelessWidget {
               ),
             ),
 
-            // ─── GARIS PUTUS ──────────────────────────────────────────────
             LayoutBuilder(
               builder:
                   (_, cs) => CustomPaint(
@@ -285,7 +283,6 @@ class RequestServiceItem extends StatelessWidget {
                   ),
             ),
 
-            // ─── DETAIL ──────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Column(
