@@ -72,7 +72,6 @@ class RequestServiceItem extends StatelessWidget {
   final String kodekendaraan;
   final bool unread;
 
-  // ════════════════════════  UTIL  ═══════════════════════════════════════════
   Color _statusColor() {
     switch (status.toLowerCase()) {
       case 'menunggu':
