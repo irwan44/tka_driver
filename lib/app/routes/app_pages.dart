@@ -26,24 +26,18 @@ class AppPages {
   static const INITIAL = Routes.SPLASHSCREEN;
 
   static final routes = [
-    GetPage(
-      name: _Paths.HOME,
-      page: () => HomeView(),
-      binding: HomeBinding(),
-    ),
+    GetPage(name: _Paths.HOME, page: () => HomeView(), binding: HomeBinding()),
     GetPage(
       name: _Paths.LOGIN,
       page: () => const LoginView(),
       binding: LoginBinding(),
       transition: Transition.zoom,
-      transitionDuration: const Duration(
-        milliseconds: 900,
-      ),
+      transitionDuration: const Duration(milliseconds: 900),
       curve: Curves.easeOutBack,
     ),
     GetPage(
       name: _Paths.EMERGENCY,
-      page: () => const EmergencyView(),
+      page: () => EmergencyView(),
       binding: EmergencyBinding(),
     ),
     GetPage(
@@ -68,7 +62,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.FORMEMERGENCY,
-      page: () =>  EmergencyRepairPage(),
+      page: () => EmergencyRepairPage(),
       binding: ProfileBinding(),
     ),
     GetPage(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:chewie/chewie.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -126,6 +127,8 @@ class _BookingViewState extends State<BookingView> {
     }
   }
 
+  bool _showFab = true;
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -134,99 +137,115 @@ class _BookingViewState extends State<BookingView> {
       length: 3,
       child: Scaffold(
         backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          onPressed: () => Get.toNamed(Routes.FORMREGULER),
-          icon: const Icon(Icons.warning_rounded),
-          label: const Text('Buat Reguler Repair'),
-        ),
+        floatingActionButton:
+            _showFab
+                ? FloatingActionButton.extended(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  onPressed: () => Get.toNamed(Routes.FORMREGULER),
+                  icon: const Icon(Icons.warning_rounded),
+                  label: const Text('Buat Reguler Repair'),
+                )
+                : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        body: NestedScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          headerSliverBuilder:
-              (_, __) => [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildPlanning(c, isDark),
-                        SizedBox(height: 10),
-                        Text(
-                          'Filter',
-                          style: GoogleFonts.nunito(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.grey[300] : Colors.grey[800],
+        body: NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction == ScrollDirection.reverse && _showFab) {
+              setState(() => _showFab = false);
+            } else if (notification.direction == ScrollDirection.forward &&
+                !_showFab) {
+              setState(() => _showFab = true);
+            }
+            return false;
+          },
+          child: NestedScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            headerSliverBuilder:
+                (_, __) => [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildPlanning(c, isDark),
+                          SizedBox(height: 10),
+                          Text(
+                            'Filter',
+                            style: GoogleFonts.nunito(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  isDark ? Colors.grey[300] : Colors.grey[800],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        _buildFilterSection(isDark),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Riwayat Service',
-                              style: GoogleFonts.lato(
-                                textStyle: Theme.of(
-                                  context,
-                                ).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                          const SizedBox(height: 10),
+                          _buildFilterSection(isDark),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Riwayat Service',
+                                style: GoogleFonts.lato(
+                                  textStyle: Theme.of(
+                                    context,
+                                  ).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
                                 ),
                               ),
-                            ),
 
-                            ElevatedButton.icon(
-                              icon: const Icon(
-                                Icons.info_outline,
-                                size: 18,
-                                color: Colors.white,
-                              ),
-                              label: const Text(
-                                'Info',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
+                              ElevatedButton.icon(
+                                icon: const Icon(
+                                  Icons.info_outline,
+                                  size: 18,
+                                  color: Colors.white,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                label: const Text(
+                                  'Info',
+                                  style: TextStyle(color: Colors.white),
                                 ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed:
+                                    () => Get.to(() => const UsageGuidePage()),
                               ),
-                              onPressed:
-                                  () => Get.to(() => const UsageGuidePage()),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _TabBarDelegate(
-                    backgroundColor: isDark ? Colors.grey[850]! : Colors.white,
-                    child: PreferredSize(
-                      preferredSize: const Size.fromHeight(kTextTabBarHeight),
-                      child: _buildTabBar(isDark),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _TabBarDelegate(
+                      backgroundColor:
+                          isDark ? Colors.grey[850]! : Colors.white,
+                      child: PreferredSize(
+                        preferredSize: const Size.fromHeight(kTextTabBarHeight),
+                        child: _buildTabBar(isDark),
+                      ),
                     ),
                   ),
-                ),
+                ],
+            body: TabBarView(
+              children: [
+                _buildRequestTab(c, isDark),
+                _buildServiceTab(c, isDark),
+                _buildHistoryService(c, isDark),
               ],
-          body: TabBarView(
-            children: [
-              _buildRequestTab(c, isDark),
-              _buildServiceTab(c, isDark),
-              _buildHistoryService(c, isDark),
-            ],
+            ),
           ),
         ),
       ),

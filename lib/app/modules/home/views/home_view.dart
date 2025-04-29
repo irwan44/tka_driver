@@ -32,7 +32,7 @@ class ThemeController extends GetxController {
 class HomeView extends GetView<HomeController> {
   HomeView({Key? key}) : super(key: key);
 
-  final List<Widget> _pages = const [BookingView(), EmergencyView()];
+  final List<Widget> _pages = [BookingView(), EmergencyView()];
 
   @override
   Widget build(BuildContext context) {

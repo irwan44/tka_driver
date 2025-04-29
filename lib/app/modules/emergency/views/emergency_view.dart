@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,9 +12,15 @@ import 'package:tka_customer/app/routes/app_pages.dart';
 
 import '../componen/langkah_penggunaan.dart';
 
-class EmergencyView extends GetView<EmergencyController> {
+class EmergencyView extends StatefulWidget {
   const EmergencyView({Key? key}) : super(key: key);
 
+  @override
+  State<EmergencyView> createState() => _EmergencyViewState();
+}
+
+class _EmergencyViewState extends State<EmergencyView> {
+  bool _showFab = true;
   @override
   Widget build(BuildContext context) {
     final EmergencyController c = Get.put(EmergencyController());
@@ -21,13 +28,16 @@ class EmergencyView extends GetView<EmergencyController> {
 
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[900] : const Color(0xFFF6F7FB),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-        onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
-        icon: const Icon(Icons.warning_rounded),
-        label: const Text('Buat Emergency Service'),
-      ),
+      floatingActionButton:
+          _showFab
+              ? FloatingActionButton.extended(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
+                icon: const Icon(Icons.warning_rounded),
+                label: const Text('Buat Emergency Service'),
+              )
+              : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: RefreshIndicator(
         onRefresh: c.fetchEmergencyList,
@@ -144,81 +154,92 @@ class EmergencyView extends GetView<EmergencyController> {
     EmergencyController c,
     BuildContext context,
   ) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      child: Column(
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Filter',
-              style: GoogleFonts.nunito(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.grey[300] : Colors.grey[800],
+    return NotificationListener<UserScrollNotification>(
+      onNotification: (notification) {
+        if (notification.direction == ScrollDirection.reverse && _showFab) {
+          setState(() => _showFab = false);
+        } else if (notification.direction == ScrollDirection.forward &&
+            !_showFab) {
+          setState(() => _showFab = true);
+        }
+        return false;
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Filter',
+                style: GoogleFonts.nunito(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.grey[300] : Colors.grey[800],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          _buildFilterSection(context, c),
-          const SizedBox(height: 8),
-          const RoundedDivider(
-            thickness: 1,
-            color: Colors.grey,
-            indent: 10,
-            endIndent: 10,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Riwayat Layanan Darurat',
-                style: GoogleFonts.lato(
-                  textStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(
-                  Icons.info_outline,
-                  size: 18,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  'Info',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () => Get.to(() => const EmergencyGuidePage()),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (c.emergencyList.isEmpty)
-            _EmptyState(isDark: isDark, dateFilter: c.dateFilter)
-          else
-            Column(
-              children:
-                  c.emergencyList
-                      .map((Data item) => _EmergencyItemCard(item: item))
-                      .toList(),
+            const SizedBox(height: 8),
+            _buildFilterSection(context, c),
+            const SizedBox(height: 8),
+            const RoundedDivider(
+              thickness: 1,
+              color: Colors.grey,
+              indent: 10,
+              endIndent: 10,
             ),
-          const SizedBox(height: 80),
-        ],
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Riwayat Layanan Darurat',
+                  style: GoogleFonts.lato(
+                    textStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(
+                    Icons.info_outline,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    'Info',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Get.to(() => const EmergencyGuidePage()),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (c.emergencyList.isEmpty)
+              _EmptyState(isDark: isDark, dateFilter: c.dateFilter)
+            else
+              Column(
+                children:
+                    c.emergencyList
+                        .map((Data item) => _EmergencyItemCard(item: item))
+                        .toList(),
+              ),
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
