@@ -328,9 +328,9 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
       'Mekanik Ditugaskan',
       'Mekanik Tiba di Lokasi',
       'Pilihan Dibuat',
-      'storing',
-      'storing',
-      'selesai',
+      'Storing',
+      'Storing',
+      'Selesai',
     ];
 
     final isTrackingDisabled = disableStatuses.contains(data.status);
