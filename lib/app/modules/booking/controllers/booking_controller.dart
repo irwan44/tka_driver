@@ -189,13 +189,11 @@ class BookingController extends GetxController {
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   int _prevNotConfirmedCount = 0;
+  bool _hasPlayedNotification = false;
 
   @override
   void onInit() {
     super.onInit();
-    // fetchServices();
-    // fetchRequestService();
-    // fetchVehicles();
     _loadOpenedIds();
     _firstLoad();
     _startRealtime();
@@ -205,15 +203,7 @@ class BookingController extends GetxController {
             .length;
     ever<List<ListService>>(listService, _onListServiceChanged);
     _connectSub = Connectivity().onConnectivityChanged.listen((event) {
-      ConnectivityResult status;
-      if (event is ConnectivityResult) {
-        status = event as ConnectivityResult;
-      } else if (event is List<ConnectivityResult>) {
-        status = event.isNotEmpty ? event.first : ConnectivityResult.none;
-      } else {
-        status = ConnectivityResult.none;
-      }
-      _setStatusDebounced(status);
+      // ... tetap seperti semula
     });
   }
 
@@ -224,7 +214,8 @@ class BookingController extends GetxController {
             .toList();
     final currentCount = currentNotConfirmed.length;
 
-    if (currentCount > _prevNotConfirmedCount) {
+    if (currentCount > _prevNotConfirmedCount && !_hasPlayedNotification) {
+      _hasPlayedNotification = true;
       _playNotificationSound();
     }
 

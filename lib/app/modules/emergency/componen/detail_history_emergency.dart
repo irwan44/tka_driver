@@ -329,7 +329,7 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
       'Mekanik Tiba di Lokasi',
       'Pilihan Dibuat',
       'Storing',
-      'Storing',
+      'Derek',
       'Selesai',
     ];
 
