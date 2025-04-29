@@ -48,6 +48,19 @@ class _DetailServiceViewState extends State<DetailServiceView> {
     });
   }
 
+  String formatDate(String tgl) {
+    try {
+      final dt = DateTime.parse(tgl);
+      return DateFormat('dd-MM-yyyy').format(dt);
+    } catch (_) {
+      final parts = tgl.split('-');
+      if (parts.length == 3) {
+        return '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+      return tgl;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -139,9 +152,9 @@ class _DetailServiceViewState extends State<DetailServiceView> {
                       ),
                       _twoCol(
                         "Tgl Keluar",
-                        _safe(d.dataSvc?.tglKeluar),
+                        _safe(formatDate(d.dataSvc?.tglKeluar ?? '')),
                         "Tgl Kembali",
-                        _safe(d.dataSvc?.tglKembali),
+                        _safe(formatDate(d.dataSvc?.tglKembali ?? '')),
                       ),
                     ],
                   ),

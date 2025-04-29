@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 import '../../../data/data_respon/listservice.dart';
 import '../controllers/booking_controller.dart';
@@ -127,7 +128,19 @@ class ServiceItemCard extends StatelessWidget {
     );
   }
 
-  // ─────────────────────────  BUILD  ───────────────────────────────────────
+  String formatDate(String tgl) {
+    try {
+      final dt = DateTime.parse(tgl);
+      return DateFormat('dd-MM-yyyy').format(dt);
+    } catch (_) {
+      final parts = tgl.split('-');
+      if (parts.length == 3) {
+        return '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+      return tgl;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -338,7 +351,7 @@ class ServiceItemCard extends StatelessWidget {
                       _detailRow(
                         icon: Icons.calendar_today,
                         label: 'Tgl Estimasi',
-                        value: service.tglEstimasi ?? '-',
+                        value: formatDate(service.tglEstimasi ?? '-'),
                         isDark: isDark,
                       ),
                       _detailRow(
@@ -357,13 +370,13 @@ class ServiceItemCard extends StatelessWidget {
                       _detailRow(
                         icon: Icons.calendar_today,
                         label: 'Tgl PKB',
-                        value: service.tglPkb ?? '-',
+                        value: formatDate(service.tglPkb ?? '-'),
                         isDark: isDark,
                       ),
                       _detailRow(
                         icon: Icons.calendar_view_day,
                         label: 'Tgl Tutup',
-                        value: service.tglTutup ?? '-',
+                        value: formatDate(service.tglTutup ?? '-'),
                         isDark: isDark,
                       ),
                       _detailRow(

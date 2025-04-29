@@ -234,7 +234,7 @@ class BookingController extends GetxController {
   Future<void> _playNotificationSound() async {
     try {
       await _audioPlayer.play(
-        AssetSource('assets/sounds/notifikasi_planning.mp3'),
+        AssetSource('sounds/notifikasi_planning.mp3'),
         volume: 1.0,
       );
     } catch (e) {

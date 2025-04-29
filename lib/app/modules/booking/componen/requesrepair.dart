@@ -144,13 +144,23 @@ class RequestServiceItem extends StatelessWidget {
     return now.year == d.year && now.month == d.month && now.day == d.day;
   }
 
-  // ════════════════════════  BUILD  ══════════════════════════════════════════
+  String formatDate(String tgl) {
+    try {
+      final dt = DateTime.parse(tgl);
+      return DateFormat('dd-MM-yyyy').format(dt);
+    } catch (_) {
+      final parts = tgl.split('-');
+      if (parts.length == 3) {
+        return '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+      return tgl;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
-    // ── ubah warna latar jika unread ──
     final cardBg =
         unread
             ? (isDark
@@ -179,7 +189,6 @@ class RequestServiceItem extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // ─── LABEL “BARU” (opsional) ───────────────────────────────────
             if (isNew)
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -222,7 +231,7 @@ class RequestServiceItem extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      tanggal,
+                      formatDate(tanggal),
                       style: GoogleFonts.nunito(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

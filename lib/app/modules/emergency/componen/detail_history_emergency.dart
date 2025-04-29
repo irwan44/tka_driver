@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
 import 'package:video_player/video_player.dart';
@@ -232,6 +233,19 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
     }
   }
 
+  String formatDate(String tgl) {
+    try {
+      final dt = DateTime.parse(tgl);
+      return DateFormat('dd-MM-yyyy').format(dt);
+    } catch (_) {
+      final parts = tgl.split('-');
+      if (parts.length == 3) {
+        return '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+      return tgl;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -313,6 +327,9 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
       'Diterima',
       'Mekanik Ditugaskan',
       'Mekanik Tiba di Lokasi',
+      'Pilihan Dibuat',
+      'storing',
+      'storing',
       'selesai',
     ];
 
@@ -355,7 +372,7 @@ class _EmergencyDetailViewState extends State<EmergencyDetailView>
               _buildRowInfo(
                 Icons.calendar_today,
                 'Tanggal',
-                data.tgl ?? '-',
+                formatDate(data.tgl ?? ''),
                 isDark,
               ),
               _buildRowInfo(Icons.access_time, 'Jam', data.jam ?? '-', isDark),

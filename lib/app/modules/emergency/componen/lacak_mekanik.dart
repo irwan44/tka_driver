@@ -106,9 +106,7 @@ class _LacakMekanikState extends State<LacakMekanik>
     _mechanicLocationWorker = ever<LatLng>(trackCtrl.mechanicLocation, (
       newLoc,
     ) {
-      if (!mounted) return;
-      if (newLoc.latitude == 0 && newLoc.longitude == 0) return;
-
+      if (!mounted || (newLoc.latitude == 0 && newLoc.longitude == 0)) return;
       _animateMechanicMarker(newLoc);
       _updateRoute(newLoc, _userLocation);
     });

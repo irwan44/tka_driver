@@ -113,6 +113,19 @@ class _BookingViewState extends State<BookingView> {
     return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
+  String formatDate(String tgl) {
+    try {
+      final dt = DateTime.parse(tgl);
+      return DateFormat('dd-MM-yyyy').format(dt);
+    } catch (_) {
+      final parts = tgl.split('-');
+      if (parts.length == 3) {
+        return '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+      return tgl;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -776,7 +789,7 @@ class _BookingViewState extends State<BookingView> {
                             _detailRow(
                               Icons.calendar_today,
                               'Tanggal Service',
-                              data.tanggalService,
+                              formatDate(data.tanggalService ?? ''),
                             ),
                             _detailRow(
                               Icons.schedule,
@@ -786,7 +799,7 @@ class _BookingViewState extends State<BookingView> {
                             _detailRow(
                               Icons.event,
                               'Created At',
-                              data.createdAt,
+                              formatDate(data.createdAt ?? ''),
                             ),
                             const SizedBox(height: 16),
                             _sectionTitle('Kode Lain'),
@@ -995,8 +1008,6 @@ class _BookingViewState extends State<BookingView> {
       final reqUnread = c.unreadRequestCount;
       final svcUnread = c.unreadStatusServiceCount;
       final histUnread = c.unreadHistoryServiceCount;
-      final reqCount = c.filteredRequests.length;
-      final svcCount = c.filteredServices.length;
       Widget badge(int count) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(

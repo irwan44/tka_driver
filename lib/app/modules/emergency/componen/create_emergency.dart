@@ -39,32 +39,33 @@ class EmergencyRepairPage extends StatelessWidget {
         child: Obx(() {
           final isLoading = c.isLoading.value;
           final isDisabled = c.disableBuatEmergencyServiceButton;
+          final disabled = isLoading || isDisabled;
 
           return ElevatedButton.icon(
-            onPressed: () {
-              if (isLoading) return;
-              if (c.selectedVehicle.value.isEmpty) {
-                Get.snackbar(
-                  "Peringatan",
-                  "Silakan pilih kendaraan terlebih dahulu.",
-                  backgroundColor: Colors.amber,
-                  colorText: Colors.black,
-                );
-                return;
-              }
-
-              if (c.hasActiveEmergencyForSelectedVehicle) {
-                Get.snackbar(
-                  "Peringatan",
-                  "Anda sudah melakukan Emergency Service hari ini dengan NoPolisi: ${c.selectedVehicle.value}",
-                  backgroundColor: Colors.amber,
-                  colorText: Colors.black,
-                );
-                return;
-              }
-
-              c.submitEmergencyRepair(context);
-            },
+            onPressed:
+                disabled
+                    ? null
+                    : () {
+                      if (c.selectedVehicle.value.isEmpty) {
+                        Get.snackbar(
+                          "Peringatan",
+                          "Silakan pilih kendaraan terlebih dahulu.",
+                          backgroundColor: Colors.amber,
+                          colorText: Colors.black,
+                        );
+                        return;
+                      }
+                      if (c.hasActiveEmergencyForSelectedVehicle) {
+                        Get.snackbar(
+                          "Peringatan",
+                          "Anda sudah melakukan Emergency Service hari ini dengan NoPolisi: ${c.selectedVehicle.value}",
+                          backgroundColor: Colors.amber,
+                          colorText: Colors.black,
+                        );
+                        return;
+                      }
+                      c.submitEmergencyRepair(context);
+                    },
             icon:
                 isLoading
                     ? const SizedBox(
@@ -83,13 +84,29 @@ class EmergencyRepairPage extends StatelessWidget {
                       "Kirim Permintaan",
                       style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
                     ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDisabled ? Colors.grey.shade300 : Colors.red,
-              foregroundColor: isDisabled ? Colors.black38 : Colors.white,
-              minimumSize: const Size(double.infinity, 48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+            style: ButtonStyle(
+              minimumSize: MaterialStateProperty.all(
+                const Size(double.infinity, 48),
               ),
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              ),
+              backgroundColor: MaterialStateProperty.resolveWith<Color>((
+                states,
+              ) {
+                if (states.contains(MaterialState.disabled)) {
+                  return Colors.grey.shade300;
+                }
+                return Colors.red;
+              }),
+              foregroundColor: MaterialStateProperty.resolveWith<Color>((
+                states,
+              ) {
+                if (states.contains(MaterialState.disabled)) {
+                  return Colors.black38;
+                }
+                return Colors.white;
+              }),
             ),
           );
         }),

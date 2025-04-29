@@ -32,7 +32,7 @@ class EmergencyView extends GetView<EmergencyController> {
       body: RefreshIndicator(
         onRefresh: c.fetchEmergencyList,
         child: Obx(() {
-          if (c.isLoading.value) {
+          if (c.isLoadingEmergency.value) {
             return _buildLoadingState(isDark, c, context);
           }
           final bool offlineInterface =
@@ -763,6 +763,19 @@ class _EmergencyItemCard extends StatelessWidget {
         itemDate.day == now.day;
   }
 
+  String formatDate(String tgl) {
+    try {
+      final dt = DateTime.parse(tgl);
+      return DateFormat('dd-MM-yyyy').format(dt);
+    } catch (_) {
+      final parts = tgl.split('-');
+      if (parts.length == 3) {
+        return '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+      return tgl;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -849,7 +862,7 @@ class _EmergencyItemCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Tgl: $tgl',
+                            'Tgl: ${formatDate(tgl)}',
                             style: GoogleFonts.nunito(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

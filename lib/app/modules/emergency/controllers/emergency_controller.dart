@@ -1,4 +1,3 @@
-// lib/app/modules/emergency/controllers/emergency_controller.dart
 import 'dart:async';
 import 'dart:io';
 
@@ -37,19 +36,16 @@ class EmergencyController extends GetxController {
   final Rx<ConnectivityResult> connectivityStatus =
       ConnectivityResult.mobile.obs;
   late final StreamSubscription _connectSub;
-  final Map<String, String> _lastStatusByNoPol = {};
   late final AndroidNotificationChannel _statusChannel;
   final isLoadingVehicles = false.obs;
   final FlutterLocalNotificationsPlugin _fln =
       FlutterLocalNotificationsPlugin();
-  late final Timer _bgTimer;
 
   @override
   void onInit() {
     super.onInit();
     _initLocalNotifications();
     _connectSub = Connectivity().onConnectivityChanged.listen((dynamic event) {
-      // —— Deteksi status seperti sekarang ——
       ConnectivityResult status;
       if (event is ConnectivityResult) {
         status = event;
@@ -66,7 +62,8 @@ class EmergencyController extends GetxController {
 
       _setStatusDebounced(status);
     });
-
+    fetchEmergencyList();
+    fetchVehicles();
     _firstLoad();
     _startRealtime();
     _initLocalNotifications();
@@ -169,11 +166,9 @@ class EmergencyController extends GetxController {
   }
 
   Future<void> fetchEmergencyList({bool showLoader = true}) async {
-    // 1. Tampilkan loader kalau diminta
     if (showLoader) isLoadingEmergency.value = true;
 
     try {
-      // 2. Cek koneksi internet
       if (!await _hasRealInternet()) {
         errorMessage.value =
             'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda';
@@ -182,20 +177,14 @@ class EmergencyController extends GetxController {
         return;
       }
 
-      // 3. Cek token
       if (LocalStorages.getToken.isEmpty) {
         throw Exception('Token is empty! Mohon login terlebih dahulu.');
       }
-
-      // 4. Panggil API dan assign hasilnya
       final response = await API.fetchListEmergency();
       allEmergencyList.value = response.data ?? [];
       emergencyList.value = allEmergencyList;
-
-      // 5. Clear errorMessage kalau sukses
       errorMessage.value = '';
     } catch (e) {
-      // 6. Error handling: kalau murni jaringan, pakai pesan khusus
       final low = e.toString().toLowerCase();
       if (low.contains('tidak ada jaringan') || low.contains('no internet')) {
         errorMessage.value =
@@ -206,7 +195,6 @@ class EmergencyController extends GetxController {
       allEmergencyList.clear();
       emergencyList.clear();
     } finally {
-      // 7. Hide loader kalau tadi diminta
       if (showLoader) isLoadingEmergency.value = false;
     }
   }
@@ -425,7 +413,6 @@ class EmergencyController extends GetxController {
     return allEmergencyList.any((e) {
       final plate = e.noPolisi?.toUpperCase() ?? '';
       final status = (e.status ?? '').toLowerCase();
-      // anggap 'derek','storing','selesai' adalah status selesai
       final finished =
           status == 'derek' || status == 'storing' || status == 'selesai';
       return plate == nopol.toUpperCase() && !finished;

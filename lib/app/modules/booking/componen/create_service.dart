@@ -34,8 +34,9 @@ class RegularRepairPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Obx(
           () => ElevatedButton.icon(
+            // Tombol disable saat sedang loading atau memang disable lewat flag lain
             onPressed:
-                c.disableSubmitButton.value
+                (c.isLoading.value || c.disableSubmitButton.value)
                     ? null
                     : () => c.submitRequest(context),
             icon:
@@ -186,7 +187,6 @@ class RegularRepairPage extends StatelessWidget {
                               ),
                             ),
 
-                            // Pesan peringatan jika kendaraan sudah punya Request Service
                             if (c.selectedVehicle.value.isNotEmpty &&
                                 c.vehicleAlreadyRequested(
                                   c.selectedVehicle.value,
