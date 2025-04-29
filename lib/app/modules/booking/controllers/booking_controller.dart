@@ -202,9 +202,7 @@ class BookingController extends GetxController {
             .where((s) => (s.status ?? '').toUpperCase() == 'NOT CONFIRMED')
             .length;
     ever<List<ListService>>(listService, _onListServiceChanged);
-    _connectSub = Connectivity().onConnectivityChanged.listen((event) {
-      // ... tetap seperti semula
-    });
+    _connectSub = Connectivity().onConnectivityChanged.listen((event) {});
   }
 
   void _onListServiceChanged(List<ListService> newList) {

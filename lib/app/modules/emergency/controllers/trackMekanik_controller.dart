@@ -11,7 +11,7 @@ class TrackMekanikController extends GetxController {
   final String kode;
   var mechanicLocation = const LatLng(0, 0).obs;
   var lastKnownMechanicLocation = Rx<LatLng?>(null);
-  var mechanicAddress = ''.obs; // Rx untuk alamat
+  var mechanicAddress = ''.obs;
   var isFirstFetchCompleted = false.obs;
 
   Timer? _timer;
@@ -35,7 +35,7 @@ class TrackMekanikController extends GetxController {
   }
 
   Future<void> _fetchMechanicPosition() async {
-    if (_isFetching) return; // proteksi overlapping
+    if (_isFetching) return;
     _isFetching = true;
 
     try {
@@ -50,19 +50,17 @@ class TrackMekanikController extends GetxController {
         lastKnownMechanicLocation.value = newLoc;
         if (!isFirstFetchCompleted.value) isFirstFetchCompleted.value = true;
 
-        // update alamat hanya jika berubah >50m
         final last = lastKnownMechanicLocation.value;
         if (last == null ||
             _distance(lat, lon, last.latitude, last.longitude) > 0.05) {
           _updateAddress(newLoc);
         }
 
-        // throttle rute: minimal tiap 10 detik
         final now = DateTime.now();
         if (_lastRouteUpdate == null ||
             now.difference(_lastRouteUpdate!) > const Duration(seconds: 10)) {
           _lastRouteUpdate = now;
-          update(); // trigger rebuild untuk route via worker di view
+          update();
         }
       }
     } catch (e) {
@@ -93,7 +91,7 @@ class TrackMekanikController extends GetxController {
         0.5 -
         cos((lat2 - lat1) * p) / 2 +
         cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a)); // km
+    return 12742 * asin(sqrt(a));
   }
 
   @override
