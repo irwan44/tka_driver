@@ -14,31 +14,38 @@ import '../../emergency/views/emergency_view.dart';
 import '../controllers/home_controller.dart';
 
 class ThemeController extends GetxController {
-  RxBool isDark = false.obs;
+  final RxBool isDark = false.obs;
 
   @override
   void onInit() {
-    isDark.value =
-        WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
     super.onInit();
+    Get.changeThemeMode(ThemeMode.system);
+    _updateFromPlatform();
+    WidgetsBinding.instance.window.onPlatformBrightnessChanged = () {
+      Get.changeThemeMode(ThemeMode.system);
+      _updateFromPlatform();
+    };
   }
 
   void toggleTheme(bool value) {
     isDark.value = value;
     Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
   }
+
+  void _updateFromPlatform() {
+    final brightness = WidgetsBinding.instance.window.platformBrightness;
+    isDark.value = brightness == Brightness.dark;
+  }
 }
 
 class HomeView extends StatelessWidget {
   HomeView({Key? key}) : super(key: key) {
-    // Ensure HomeController is registered
     Get.put(HomeController());
   }
   final List<Widget> _pages = [BookingView(), EmergencyView()];
 
   @override
   Widget build(BuildContext context) {
-    final ThemeController themeController = Get.put(ThemeController());
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GetBuilder<HomeController>(

@@ -31,7 +31,7 @@ android {
         }
         create("tka") {
             dimension      = "app"
-            applicationId  = "id.co.twka.fms.driver"
+            applicationId  = "id.co.twka.fms.driver.tka"
             resValue("string", "app_name", "OttoGo Driver")
         }
     }
@@ -59,7 +59,7 @@ android {
                 it.name.lowercase().contains(names[0], true) && it.name.lowercase().contains(names[1], true)
             }
             .forEach { output ->
-                val outputFileName = "${variant.flavorName}Dtiver${variant.buildType.name}_${variant.versionName}.apk"
+                val outputFileName = "${variant.flavorName}_Driver_${variant.buildType.name}_${variant.versionName}.apk"
                 output.outputFileName = outputFileName
             }
     }

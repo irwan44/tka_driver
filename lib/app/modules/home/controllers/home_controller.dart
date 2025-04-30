@@ -76,6 +76,7 @@ class HomeController extends GetxController {
     final storedEmail = boxPrefs.read('user_email') ?? "";
     if (storedEmail.isNotEmpty) {
       OneSignal.User.addEmail(storedEmail);
+      print(storedEmail);
     }
   }
 

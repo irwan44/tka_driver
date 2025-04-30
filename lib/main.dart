@@ -7,6 +7,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app/modules/booking/controllers/booking_controller.dart';
+import 'app/modules/home/views/home_view.dart';
 import 'app/routes/app_pages.dart';
 
 class AssetsRes {
@@ -52,7 +53,7 @@ class OneSignalConfig {
         return '1835b652-321b-470f-b08f-e5a010b026f3';
       case 'tka':
       default:
-        return '632556d8-c839-43be-8b93-9973bb7de550';
+        return 'f0dddd10-dfe8-4579-927e-442da28c635c';
     }
   }
 }
@@ -72,6 +73,7 @@ Future<void> main() async {
   await GetStorage.init('preferences-mekanik');
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
+  Get.put(ThemeController());
   Get.put<BookingController>(BookingController(), permanent: true);
   runApp(const MyApp());
 }
@@ -90,7 +92,7 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData.dark().copyWith(
         textTheme: GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme),
       ),
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.system,
       builder: (context, child) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         SystemChrome.setSystemUIOverlayStyle(

@@ -271,17 +271,6 @@ class BookingController extends GetxController {
   final Rx<ConnectivityResult> debouncedStatus = ConnectivityResult.mobile.obs;
   late StreamSubscription _connectSub;
   Timer? _debounceTimer;
-  void _setStatusDebounced(ConnectivityResult newStatus) {
-    if (newStatus == ConnectivityResult.none) {
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 800), () {
-        debouncedStatus.value = newStatus;
-      });
-    } else {
-      _debounceTimer?.cancel();
-      debouncedStatus.value = newStatus;
-    }
-  }
 
   var allEmergencyList = <Data>[].obs;
   var emergencyList = <Data>[].obs;
