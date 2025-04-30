@@ -11,9 +11,18 @@ import '../../../routes/app_pages.dart';
 class HomeController extends GetxController {
   var tabIndex = 0;
   RxInt diterimaCount = 0.obs;
+  bool showBars = true;
+
   void changeTabIndex(int index) {
     tabIndex = index;
     update();
+  }
+
+  void setShowBars(bool v) {
+    if (showBars != v) {
+      showBars = v;
+      update();
+    }
   }
 
   Future<void> fetchDiterimaCount() async {

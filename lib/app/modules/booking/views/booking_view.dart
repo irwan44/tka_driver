@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:chewie/chewie.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
+import 'package:get_thumbnail_video/index.dart';
+import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
@@ -12,6 +16,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../home/controllers/home_controller.dart';
 import '../componen/langkah_penggunaan.dart';
 import '../componen/list_planning_servis.dart';
 import '../componen/listservicecard.dart';
@@ -132,7 +137,7 @@ class _BookingViewState extends State<BookingView> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    final homeC = Get.find<HomeController>();
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -149,12 +154,15 @@ class _BookingViewState extends State<BookingView> {
                 : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         body: NotificationListener<UserScrollNotification>(
-          onNotification: (notification) {
-            if (notification.direction == ScrollDirection.reverse && _showFab) {
-              setState(() => _showFab = false);
-            } else if (notification.direction == ScrollDirection.forward &&
-                !_showFab) {
-              setState(() => _showFab = true);
+          onNotification: (notif) {
+            if (notif.direction == ScrollDirection.reverse) {
+              // scroll down → hide FAB lokal & hide bottomNav
+              if (_showFab) setState(() => _showFab = false);
+              homeC.setShowBars(false);
+            } else if (notif.direction == ScrollDirection.forward) {
+              // scroll up → show FAB lokal & show bottomNav
+              if (!_showFab) setState(() => _showFab = true);
+              homeC.setShowBars(true);
             }
             return false;
           },
@@ -164,7 +172,11 @@ class _BookingViewState extends State<BookingView> {
                 (_, __) => [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.only(
+                        right: 10,
+                        left: 10,
+                        bottom: 10,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -397,27 +409,38 @@ class _BookingViewState extends State<BookingView> {
                   ),
                 ],
               )
-              : ListView.builder(
-                padding: const EdgeInsets.only(top: 4, bottom: 120),
-                itemCount: filtered.length,
-                itemBuilder: (ctx, i) {
-                  final r = filtered[i];
-                  return InkWell(
-                    onTap: () {
-                      c.markRequestOpened(r.kodeRequestService);
-                      _showRequestDetailBottomSheet(ctx, r);
-                    },
-                    child: RequestServiceItem(
-                      unread: !c.requestOpened(r.kodeRequestService),
-                      tanggal: r.createdAt ?? '-',
-                      status: r.status ?? '-',
-                      noPolisi: r.noPolisi ?? '-',
-                      keluhan: r.keluhan ?? '-',
-                      kodereques: r.kodeRequestService ?? '-',
-                      kodekendaraan: r.kodeKendaraan ?? '-',
-                    ),
-                  );
-                },
+              : AnimationLimiter(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(top: 4, bottom: 120),
+                  itemCount: filtered.length,
+                  itemBuilder: (ctx, i) {
+                    final r = filtered[i];
+                    return AnimationConfiguration.staggeredList(
+                      position: i,
+                      duration: const Duration(milliseconds: 475),
+                      child: SlideAnimation(
+                        child: FadeInAnimation(
+                          child: InkWell(
+                            onTap: () {
+                              c.markRequestOpened(r.kodeRequestService);
+                              _showRequestDetailBottomSheet(ctx, r);
+                            },
+                            child: RequestServiceItem(
+                              unread: !c.requestOpened(r.kodeRequestService),
+                              tanggal: r.createdAt ?? '-',
+                              status: r.status ?? '-',
+                              noPolisi: r.noPolisi ?? '-',
+                              keluhan: r.keluhan ?? '-',
+                              kodereques: r.kodeRequestService ?? '-',
+                              kodekendaraan: r.kodeKendaraan ?? '-',
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
     );
   });
@@ -488,20 +511,30 @@ class _BookingViewState extends State<BookingView> {
                   ),
                 ],
               )
-              : ListView.builder(
-                padding: const EdgeInsets.only(bottom: 120),
-                itemCount: filtered.length,
-                itemBuilder: (_, i) {
-                  final s = filtered[i];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: ServiceItemCard(
-                      service: s,
-                      unread:
-                          !c.serviceOpened(s.kodeSvc), // ← highlight if unread
-                    ),
-                  );
-                },
+              : AnimationLimiter(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 120),
+                  itemCount: filtered.length,
+                  itemBuilder: (_, i) {
+                    final s = filtered[i];
+                    return AnimationConfiguration.staggeredList(
+                      position: i,
+                      duration: const Duration(milliseconds: 475),
+                      child: SlideAnimation(
+                        child: FadeInAnimation(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: ServiceItemCard(
+                              service: s,
+                              unread: !c.serviceOpened(s.kodeSvc),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
     );
   });
@@ -572,22 +605,30 @@ class _BookingViewState extends State<BookingView> {
                   ),
                 ],
               )
-              : ListView.builder(
-                padding: const EdgeInsets.only(bottom: 120),
-                itemCount: filtered.length,
-                itemBuilder: (_, i) {
-                  final s = filtered[i];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: ServiceItemCard(
-                      service: s,
-                      unread:
-                          !c.serviceOpened(
-                            s.kodeSvc,
-                          ), // ← highlight jika belum dibuka
-                    ),
-                  );
-                },
+              : AnimationLimiter(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 120),
+                  itemCount: filtered.length,
+                  itemBuilder: (_, i) {
+                    final s = filtered[i];
+                    return AnimationConfiguration.staggeredList(
+                      position: i,
+                      duration: const Duration(milliseconds: 475),
+                      child: SlideAnimation(
+                        child: FadeInAnimation(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: ServiceItemCard(
+                              service: s,
+                              unread: !c.serviceOpened(s.kodeSvc),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
     );
   });
@@ -842,76 +883,180 @@ class _BookingViewState extends State<BookingView> {
                                     final isVideo =
                                         url.toLowerCase().endsWith('.mp4') ||
                                         url.toLowerCase().endsWith('.mov');
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (_) =>
-                                                    MediaViewerPage(url: url),
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        margin: const EdgeInsets.only(right: 8),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          child: Stack(
-                                            children: [
-                                              Image.network(
-                                                url,
+
+                                    if (isVideo) {
+                                      // Video: tampilkan thumbnail dari get_thumbnail_video
+                                      return FutureBuilder<Uint8List?>(
+                                        future: VideoThumbnail.thumbnailData(
+                                          video: url,
+                                          imageFormat: ImageFormat.JPEG,
+                                          maxWidth: 120,
+                                          quality: 75,
+                                        ),
+                                        builder: (ctx, snap) {
+                                          if (snap.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Shimmer.fromColors(
+                                              baseColor:
+                                                  isDark
+                                                      ? Colors.grey[800]!
+                                                      : Colors.grey[300]!,
+                                              highlightColor:
+                                                  isDark
+                                                      ? Colors.grey[700]!
+                                                      : Colors.grey[100]!,
+                                              child: Container(
                                                 width: 120,
                                                 height: 120,
-                                                fit: BoxFit.cover,
-                                                loadingBuilder: (
-                                                  ctx,
-                                                  child,
-                                                  progress,
-                                                ) {
-                                                  if (progress == null)
-                                                    return child;
-                                                  return const Center(
-                                                    child:
-                                                        CircularProgressIndicator(),
-                                                  );
-                                                },
-                                                errorBuilder:
-                                                    (ctx, err, st) => Container(
+                                                margin: const EdgeInsets.only(
+                                                  right: 8,
+                                                ),
+                                                color: Colors.grey[300],
+                                              ),
+                                            );
+                                          }
+                                          final bytes = snap.data;
+                                          return GestureDetector(
+                                            onTap:
+                                                () => Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder:
+                                                        (_) => MediaViewerPage(
+                                                          url: url,
+                                                        ),
+                                                  ),
+                                                ),
+                                            child: Container(
+                                              margin: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              child: Stack(
+                                                children: [
+                                                  if (bytes != null)
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      child: Image.memory(
+                                                        bytes,
+                                                        width: 120,
+                                                        height: 120,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    )
+                                                  else
+                                                    Container(
                                                       width: 120,
                                                       height: 120,
-                                                      color: Colors.grey[300],
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey[300],
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
                                                       child: const Icon(
-                                                        Icons.slow_motion_video,
+                                                        Icons.videocam,
                                                         size: 40,
                                                       ),
                                                     ),
-                                              ),
-                                              if (isVideo)
-                                                Positioned(
-                                                  bottom: 4,
-                                                  right: 4,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(4),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.black54,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: const Icon(
-                                                      Icons.play_arrow,
-                                                      color: Colors.white,
-                                                      size: 20,
+                                                  Positioned(
+                                                    bottom: 4,
+                                                    right: 4,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            4,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black54,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.play_arrow,
+                                                        color: Colors.white,
+                                                        size: 20,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                            ],
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      // Gambar: shimmer loading + fallback error
+                                      return GestureDetector(
+                                        onTap:
+                                            () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (_) => MediaViewerPage(
+                                                      url: url,
+                                                    ),
+                                              ),
+                                            ),
+                                        child: Container(
+                                          margin: const EdgeInsets.only(
+                                            right: 8,
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            child: Image.network(
+                                              url,
+                                              width: 120,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                              loadingBuilder: (
+                                                ctx,
+                                                child,
+                                                progress,
+                                              ) {
+                                                if (progress == null)
+                                                  return child;
+                                                return Shimmer.fromColors(
+                                                  baseColor:
+                                                      isDark
+                                                          ? Colors.grey[800]!
+                                                          : Colors.grey[300]!,
+                                                  highlightColor:
+                                                      isDark
+                                                          ? Colors.grey[700]!
+                                                          : Colors.grey[100]!,
+                                                  child: Container(
+                                                    width: 120,
+                                                    height: 120,
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                );
+                                              },
+                                              errorBuilder:
+                                                  (ctx, err, st) => Container(
+                                                    width: 120,
+                                                    height: 120,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.grey[300],
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.broken_image,
+                                                      size: 40,
+                                                    ),
+                                                  ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
+                                      );
+                                    }
                                   },
                                 ),
                               ),

@@ -49,7 +49,7 @@ class OneSignalConfig {
       case 'dev':
         return 'DEV-ONESIGNAL-APPID-XXXX';
       case 'rusco':
-        return '85861354-0c05-4c3f-a485-f774be84f451';
+        return '1835b652-321b-470f-b08f-e5a010b026f3';
       case 'tka':
       default:
         return '632556d8-c839-43be-8b93-9973bb7de550';

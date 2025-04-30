@@ -29,9 +29,11 @@ class ThemeController extends GetxController {
   }
 }
 
-class HomeView extends GetView<HomeController> {
-  HomeView({Key? key}) : super(key: key);
-
+class HomeView extends StatelessWidget {
+  HomeView({Key? key}) : super(key: key) {
+    // Ensure HomeController is registered
+    Get.put(HomeController());
+  }
   final List<Widget> _pages = [BookingView(), EmergencyView()];
 
   @override
@@ -40,68 +42,71 @@ class HomeView extends GetView<HomeController> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GetBuilder<HomeController>(
-      builder: (controller) {
+      builder: (c) {
         return Scaffold(
           backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
           body: Column(
             children: [
               const _HeaderSection(),
-              Expanded(child: _pages[controller.tabIndex]),
+              Expanded(child: _pages[c.tabIndex]),
             ],
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: controller.tabIndex,
-            onTap: controller.changeTabIndex,
-            selectedItemColor: Colors.blueAccent,
-            unselectedItemColor: Colors.grey,
-            backgroundColor: isDark ? Colors.grey[850] : Colors.white,
-            items: [
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.build_circle_outlined),
-                label: 'Service',
-              ),
-              BottomNavigationBarItem(
-                icon: Obx(() {
-                  final count = controller.diterimaCount.value;
-                  if (count > 0) {
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(Icons.warning_amber_outlined),
-                        Positioned(
-                          right: -6,
-                          top: -6,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 18,
-                              minHeight: 18,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '$count',
-                                style: GoogleFonts.nunito(
-                                  color: Colors.white,
-                                  fontSize: 10,
+          bottomNavigationBar:
+              c.showBars
+                  ? BottomNavigationBar(
+                    currentIndex: c.tabIndex,
+                    onTap: c.changeTabIndex,
+                    selectedItemColor: Colors.blueAccent,
+                    unselectedItemColor: Colors.grey,
+                    backgroundColor: isDark ? Colors.grey[850] : Colors.white,
+                    items: [
+                      const BottomNavigationBarItem(
+                        icon: Icon(Icons.build_circle_outlined),
+                        label: 'Service',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Obx(() {
+                          final count = c.diterimaCount.value;
+                          if (count > 0) {
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                const Icon(Icons.warning_amber_outlined),
+                                Positioned(
+                                  right: -6,
+                                  top: -6,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 18,
+                                      minHeight: 18,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '$count',
+                                        style: GoogleFonts.nunito(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  return const Icon(Icons.warning_amber_outlined);
-                }),
-                label: 'Darurat',
-              ),
-            ],
-          ),
+                              ],
+                            );
+                          }
+                          return const Icon(Icons.warning_amber_outlined);
+                        }),
+                        label: 'Darurat',
+                      ),
+                    ],
+                  )
+                  : null,
         );
       },
     );
@@ -169,7 +174,6 @@ class _HeaderSection extends StatelessWidget {
               );
             }),
           ),
-
           Positioned(
             top: 40,
             left: 20,

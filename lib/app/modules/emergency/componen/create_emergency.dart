@@ -2,563 +2,339 @@ import 'dart:io';
 
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/emergency_controller.dart';
 
 class EmergencyRepairPage extends StatelessWidget {
-  EmergencyRepairPage({Key? key}) : super(key: key) {
-    final EmergencyController c = Get.put(EmergencyController());
-    c.initLocation();
-  }
+  const EmergencyRepairPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final EmergencyController c = Get.find<EmergencyController>();
+    final EmergencyController c = Get.put(EmergencyController());
+    c.initLocation();
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color bgColor = isDark ? Colors.grey[800]! : const Color(0xFFF6F7FB);
-    final Color hintColor = isDark ? Colors.grey[400]! : Colors.grey;
+    final Color bg = isDark ? Colors.black : Colors.white;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color hintColor = isDark ? Colors.white54 : Colors.black38;
+    final Color accentColor = isDark ? Colors.tealAccent : Colors.blueAccent;
+
     return Scaffold(
-      backgroundColor: isDark ? Colors.grey[900] : const Color(0xFFF6F7FB),
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: isDark ? Colors.grey[850] : const Color(0xFFF6F7FB),
+        backgroundColor: bg,
+        elevation: 0,
+        centerTitle: true,
         title: Text(
-          'Buat Emergency Service',
+          'Emergency Service',
           style: GoogleFonts.nunito(
-            color: isDark ? Colors.white : Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: textColor,
           ),
         ),
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
-      ),
-      bottomNavigationBar: Container(
-        color: isDark ? Colors.grey[850] : Colors.white,
-        padding: const EdgeInsets.all(16),
-        child: Obx(() {
-          final isLoading = c.isLoading.value;
-          final isDisabled = c.disableBuatEmergencyServiceButton;
-          final disabled = isLoading || isDisabled;
-
-          return ElevatedButton.icon(
-            onPressed:
-                disabled
-                    ? null
-                    : () {
-                      if (c.selectedVehicle.value.isEmpty) {
-                        Get.snackbar(
-                          "Peringatan",
-                          "Silakan pilih kendaraan terlebih dahulu.",
-                          backgroundColor: Colors.amber,
-                          colorText: Colors.black,
-                        );
-                        return;
-                      }
-                      if (c.hasActiveEmergencyForSelectedVehicle) {
-                        Get.snackbar(
-                          "Peringatan",
-                          "Anda sudah melakukan Emergency Service hari ini dengan NoPolisi: ${c.selectedVehicle.value}",
-                          backgroundColor: Colors.amber,
-                          colorText: Colors.black,
-                        );
-                        return;
-                      }
-                      c.submitEmergencyRepair(context);
-                    },
-            icon:
-                isLoading
-                    ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                    : const Icon(Icons.send),
-            label:
-                isLoading
-                    ? const Text("Loading...")
-                    : Text(
-                      "Kirim Permintaan",
-                      style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
-                    ),
-            style: ButtonStyle(
-              minimumSize: MaterialStateProperty.all(
-                const Size(double.infinity, 48),
-              ),
-              shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              ),
-              backgroundColor: MaterialStateProperty.resolveWith<Color>((
-                states,
-              ) {
-                if (states.contains(MaterialState.disabled)) {
-                  return Colors.grey.shade300;
-                }
-                return Colors.red;
-              }),
-              foregroundColor: MaterialStateProperty.resolveWith<Color>((
-                states,
-              ) {
-                if (states.contains(MaterialState.disabled)) {
-                  return Colors.black38;
-                }
-                return Colors.white;
-              }),
-            ),
-          );
-        }),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Obx(
             () => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Silakan lengkapi data berikut untuk melakukan permintaan Emergency Repair:',
-                  style: GoogleFonts.nunito(fontSize: 16),
+                  'Silakan lengkapi data berikut untuk Emergency Service:',
+                  style: GoogleFonts.nunito(color: textColor, fontSize: 16),
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[850] : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      if (!isDark)
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.directions_bus,
-                            size: 24,
-                            color: Colors.blue,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Kendaraan',
-                            style: GoogleFonts.nunito(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[800],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20),
-                      Obx(() {
-                        final bool isDark =
-                            Theme.of(context).brightness == Brightness.dark;
-                        final Color bgColor =
-                            isDark
-                                ? Colors.grey.shade800
-                                : const Color(0xFFF6F7FB);
-                        final Color borderColor =
-                            isDark ? Colors.grey.shade600 : Colors.grey;
-                        final bookingC = Get.find<EmergencyController>();
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CustomDropdown<String>(
-                              hintText: 'Pilih Kendaraan',
-                              items: bookingC.availableVehicles,
-                              initialItem:
-                                  bookingC.selectedVehicle.value.isEmpty
-                                      ? null
-                                      : bookingC.selectedVehicle.value,
-                              excludeSelected: false,
-                              onChanged: (value) {
-                                if (value != null)
-                                  bookingC.selectedVehicle.value = value;
-                              },
-                              decoration: CustomDropdownDecoration(
-                                closedFillColor: bgColor,
-                                expandedFillColor: bgColor,
-                                closedBorder: Border.all(
-                                  color: Colors.transparent,
-                                ),
-                                closedBorderRadius: BorderRadius.circular(12),
-                                expandedBorder: Border.all(
-                                  color: Colors.transparent,
-                                ),
-                                expandedBorderRadius: BorderRadius.circular(12),
-                                closedSuffixIcon: Icon(
-                                  Icons.arrow_drop_down,
-                                  color: borderColor,
-                                ),
-                                expandedSuffixIcon: Icon(
-                                  Icons.arrow_drop_up,
-                                  color: borderColor,
-                                ),
-                                hintStyle: TextStyle(color: borderColor),
-                                headerStyle: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                                listItemStyle: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                                listItemDecoration: ListItemDecoration(
-                                  splashColor: Colors.transparent,
-                                  highlightColor:
-                                      isDark
-                                          ? Colors.grey.shade700
-                                          : const Color(0xFFEEEEEE),
-                                  selectedColor:
-                                      isDark
-                                          ? Colors.grey.shade800
-                                          : const Color(0xFFF5F5F5),
-                                  selectedIconColor: borderColor,
-                                  selectedIconBorder: BorderSide(
-                                    color: borderColor,
-                                  ),
-                                  selectedIconShape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                            ),
+                // Kendaraan
+                Text(
+                  'Kendaraan',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Pilih kendaraan yang membutuhkan layanan darurat. Teknisi akan segera dikirim ke lokasi Anda.',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: hintColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                CustomDropdown<String>(
+                  hintText: 'Pilih Kendaraan',
+                  items: c.availableVehicles,
+                  initialItem:
+                      c.selectedVehicle.value.isEmpty
+                          ? null
+                          : c.selectedVehicle.value,
+                  excludeSelected: false,
+                  onChanged: (v) => c.selectedVehicle.value = v ?? '',
+                  decoration: CustomDropdownDecoration(
+                    closedFillColor: bg,
+                    expandedFillColor: bg,
+                    closedBorder: Border.all(color: Colors.grey.shade300),
+                    expandedBorder: Border.all(color: Colors.grey.shade300),
+                    closedBorderRadius: BorderRadius.circular(8),
+                    expandedBorderRadius: BorderRadius.circular(8),
+                    hintStyle: TextStyle(color: hintColor),
+                  ),
+                ),
+                if (c.selectedVehicle.value.isNotEmpty &&
+                    c.hasActiveEmergencyForSelectedVehicle)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Kendaraan ini sudah melakukan Emergency Service hari ini.',
+                      style: GoogleFonts.nunito(
+                        fontSize: 12,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 24),
 
-                            // Pesan peringatan jika sudah ada Emergency Service berjalan
-                            if (bookingC.hasActiveEmergencyForSelectedVehicle)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  'Kendaraan ini sudah mempunyai Emergency Service yang masih berjalan',
-                                  style: GoogleFonts.nunito(
-                                    fontSize: 12,
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        );
-                      }),
-                    ],
+                // Lokasi
+                Text(
+                  'Lokasi Anda Sekarang',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[850] : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      if (!isDark)
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                    ],
+                    color: isDark ? Colors.grey[850] : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            size: 24,
-                            color: Colors.red,
+                  padding: const EdgeInsets.all(12),
+                  child:
+                      c.fullAddress.value.isEmpty
+                          ? Text(
+                            'Mencari alamat lengkap...',
+                            style: GoogleFonts.nunito(color: hintColor),
+                          )
+                          : Text(
+                            c.fullAddress.value,
+                            style: GoogleFonts.nunito(color: textColor),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Lokasi',
-                            style: GoogleFonts.nunito(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red[800],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20),
-                      if (c.currentLocation.value.isEmpty)
-                        Text(
-                          'Sedang mengambil lokasi...\nMohon tunggu.',
-                          style: GoogleFonts.nunito(
-                            color: isDark ? Colors.grey[400] : Colors.grey[700],
-                          ),
-                        )
-                      else ...[
-                        Text(
-                          'Koordinat Anda:',
-                          style: GoogleFonts.nunito(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.grey[300] : Colors.grey[800],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          c.currentLocation.value,
-                          style: GoogleFonts.nunito(fontSize: 14),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Alamat Lengkap:',
-                          style: GoogleFonts.nunito(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.grey[300] : Colors.grey[800],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          c.fullAddress.value.isEmpty
-                              ? 'Sedang mencari alamat...'
-                              : c.fullAddress.value,
-                          style: GoogleFonts.nunito(fontSize: 14),
-                        ),
-                      ],
-                    ],
+                ),
+                const SizedBox(height: 24),
+
+                // Keluhan
+                Text(
+                  'Keluhan',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[850] : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      if (!isDark)
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          FaIcon(
-                            FontAwesomeIcons.exclamationCircle,
-                            color: Colors.orange[700],
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Keluhan',
-                            style: GoogleFonts.nunito(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange[800],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20),
-                      TextField(
-                        controller: c.complaintController,
-                        onChanged: (val) {
-                          c.complaintText.value = val;
-                        },
-                        maxLines: 3,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: bgColor,
-                          hintText: 'Jelaskan kerusakan/keluhan...',
-                          hintStyle: TextStyle(color: hintColor),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Container Foto / Video
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[850] : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color:
-                            isDark
-                                ? Colors.black.withOpacity(0.5)
-                                : Colors.black.withOpacity(0.1),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.camera_alt,
-                            size: 24,
-                            color: Colors.green,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Bukti Kerusakan',
-                            style: GoogleFonts.nunito(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    isDark ? Colors.grey[800] : Colors.white,
-                              ),
-                              onPressed: () => c.pickImage(),
-                              icon: Icon(
-                                Icons.photo_camera,
-                                color: isDark ? Colors.white : Colors.black,
-                              ),
-                              label: Text(
-                                'Foto',
-                                style: GoogleFonts.nunito(
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    isDark ? Colors.grey[800] : Colors.white,
-                              ),
-                              onPressed: () => c.pickVideo(),
-                              icon: Icon(
-                                Icons.videocam,
-                                color: isDark ? Colors.white : Colors.black,
-                              ),
-                              label: Text(
-                                'Video',
-                                style: GoogleFonts.nunito(
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (c.mediaList.isNotEmpty)
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children:
-                              c.mediaList.map((file) {
-                                final bool isVideo =
-                                    file.path.toLowerCase().endsWith('.mp4') ||
-                                    file.path.toLowerCase().endsWith('.mov') ||
-                                    file.path.toLowerCase().endsWith('.avi');
-                                return Stack(
-                                  children: [
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            isDark
-                                                ? Colors.grey[800]
-                                                : Colors.grey[200],
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child:
-                                          isVideo
-                                              ? const Center(
-                                                child: Icon(
-                                                  Icons.videocam,
-                                                  size: 32,
-                                                ),
-                                              )
-                                              : ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                child: Image.file(
-                                                  File(file.path),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                    ),
-                                    Positioned(
-                                      top: 2,
-                                      right: 2,
-                                      child: GestureDetector(
-                                        onTap: () => c.removeMedia(file),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.black54,
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.all(4),
-                                          child: const Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
-                        )
-                      else
-                        Text(
-                          'Belum ada foto atau video.',
-                          style: GoogleFonts.nunito(
-                            color: isDark ? Colors.grey[400] : Colors.grey[700],
-                          ),
-                        ),
-                    ],
+                const SizedBox(height: 8),
+                TextField(
+                  controller: c.complaintController,
+                  onChanged: (v) => c.complaintText.value = v,
+                  maxLines: 3,
+                  style: TextStyle(color: textColor),
+                  decoration: InputDecoration(
+                    hintText: 'Jelaskan keluhan...',
+                    hintStyle: TextStyle(color: hintColor),
+                    filled: true,
+                    fillColor: isDark ? Colors.grey[850] : Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
+
+                // Bukti Kerusakan
+                Text(
+                  'Bukti Kerusakan',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => c.pickImage(),
+                        icon: Icon(Icons.photo_camera, color: Colors.green),
+                        label: Text(
+                          'Foto',
+                          style: GoogleFonts.nunito(color: textColor),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor:
+                              isDark ? Colors.grey[850] : Colors.grey[100],
+                          side: BorderSide.none,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => c.pickVideo(),
+                        icon: Icon(Icons.videocam, color: Colors.orange),
+                        label: Text(
+                          'Video',
+                          style: GoogleFonts.nunito(color: textColor),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor:
+                              isDark ? Colors.grey[850] : Colors.grey[100],
+                          side: BorderSide.none,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Obx(
+                  () =>
+                      c.mediaList.isEmpty
+                          ? Text(
+                            'Belum ada media. Tambahkan foto atau video.',
+                            style: GoogleFonts.nunito(color: hintColor),
+                          )
+                          : Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children:
+                                c.mediaList.map((file) {
+                                  final bool isVideo = file.path
+                                      .toLowerCase()
+                                      .endsWith('.mp4');
+                                  return Stack(
+                                    children: [
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                          color:
+                                              isDark
+                                                  ? Colors.grey[850]
+                                                  : Colors.grey[100],
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child:
+                                            isVideo
+                                                ? Icon(
+                                                  Icons.videocam,
+                                                  color: Colors.orange,
+                                                )
+                                                : ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  child: Image.file(
+                                                    File(file.path),
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                      ),
+                                      Positioned(
+                                        top: 4,
+                                        right: 4,
+                                        child: GestureDetector(
+                                          onTap: () => c.removeMedia(file),
+                                          child: Icon(
+                                            Icons.close,
+                                            size: 20,
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                          ),
+                ),
+                const SizedBox(height: 80),
               ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Obx(
+            () => ElevatedButton.icon(
+              onPressed:
+                  (c.isLoading.value || c.disableBuatEmergencyServiceButton)
+                      ? null
+                      : () {
+                        if (c.selectedVehicle.value.isEmpty) {
+                          Get.snackbar(
+                            'Peringatan',
+                            'Pilih kendaraan terlebih dahulu.',
+                            backgroundColor: Colors.amber,
+                            colorText: Colors.black,
+                          );
+                          return;
+                        }
+                        if (c.hasActiveEmergencyForSelectedVehicle) {
+                          Get.snackbar(
+                            'Peringatan',
+                            'Kendaraan ini sudah melakukan Emergency Service hari ini.',
+                            backgroundColor: Colors.amber,
+                            colorText: Colors.black,
+                          );
+                          return;
+                        }
+                        c.submitEmergencyRepair(context);
+                      },
+              icon:
+                  c.isLoading.value
+                      ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : Icon(Icons.send, color: bg),
+              label: Text(
+                c.isLoading.value ? 'Loading...' : 'Kirim Permintaan',
+                style: GoogleFonts.nunito(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: bg,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                minimumSize: const Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
             ),
           ),
         ),

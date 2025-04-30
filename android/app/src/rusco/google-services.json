@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "738814107317",
-    "project_id": "rusco-b8c30",
-    "storage_bucket": "rusco-b8c30.firebasestorage.app"
+    "project_number": "142150469505",
+    "project_id": "rusco-1ab52",
+    "storage_bucket": "rusco-1ab52.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:738814107317:android:3316799f0cf9a5de0828fc",
+        "mobilesdk_app_id": "1:142150469505:android:ead57930ef4ab50fc14a80",
         "android_client_info": {
           "package_name": "id.co.twka.fms.driver.rusco"
         }
@@ -15,7 +15,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAAkvkmEmvxXFkvL85JE5INICv7VAsQIx4"
+          "current_key": "AIzaSyATiG_eg6Dbcw4zmt4mMNeB8-zqo0lY2tY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142150469505:android:b8db4853f2c9359cc14a80",
+        "android_client_info": {
+          "package_name": "id.co.twka.fms.workshop.rusco"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATiG_eg6Dbcw4zmt4mMNeB8-zqo0lY2tY"
         }
       ],
       "services": {

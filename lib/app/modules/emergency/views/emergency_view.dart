@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +11,7 @@ import 'package:tka_customer/app/data/data_respon/list_emergency.dart';
 import 'package:tka_customer/app/modules/emergency/controllers/emergency_controller.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
 
+import '../../home/controllers/home_controller.dart';
 import '../componen/langkah_penggunaan.dart';
 
 class EmergencyView extends StatefulWidget {
@@ -92,13 +94,6 @@ class _EmergencyViewState extends State<EmergencyView> {
           const SizedBox(height: 8),
           _buildFilterSection(context, c),
           const SizedBox(height: 8),
-          const RoundedDivider(
-            thickness: 1,
-            color: Colors.grey,
-            indent: 10,
-            endIndent: 10,
-          ),
-          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -154,13 +149,17 @@ class _EmergencyViewState extends State<EmergencyView> {
     EmergencyController c,
     BuildContext context,
   ) {
+    final homeC = Get.find<HomeController>();
     return NotificationListener<UserScrollNotification>(
-      onNotification: (notification) {
-        if (notification.direction == ScrollDirection.reverse && _showFab) {
-          setState(() => _showFab = false);
-        } else if (notification.direction == ScrollDirection.forward &&
-            !_showFab) {
-          setState(() => _showFab = true);
+      onNotification: (notif) {
+        if (notif.direction == ScrollDirection.reverse) {
+          // scroll down → hide FAB lokal & hide bottomNav
+          if (_showFab) setState(() => _showFab = false);
+          homeC.setShowBars(false);
+        } else if (notif.direction == ScrollDirection.forward) {
+          // scroll up → show FAB lokal & show bottomNav
+          if (!_showFab) setState(() => _showFab = true);
+          homeC.setShowBars(true);
         }
         return false;
       },
@@ -182,13 +181,6 @@ class _EmergencyViewState extends State<EmergencyView> {
             ),
             const SizedBox(height: 8),
             _buildFilterSection(context, c),
-            const SizedBox(height: 8),
-            const RoundedDivider(
-              thickness: 1,
-              color: Colors.grey,
-              indent: 10,
-              endIndent: 10,
-            ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -231,13 +223,28 @@ class _EmergencyViewState extends State<EmergencyView> {
             if (c.emergencyList.isEmpty)
               _EmptyState(isDark: isDark, dateFilter: c.dateFilter)
             else
-              Column(
-                children:
-                    c.emergencyList
-                        .map((Data item) => _EmergencyItemCard(item: item))
-                        .toList(),
+              AnimationLimiter(
+                child: Column(
+                  children: [
+                    ...AnimationConfiguration.toStaggeredList(
+                      duration: const Duration(milliseconds: 475),
+                      childAnimationBuilder:
+                          (widget) => SlideAnimation(
+                            child: FadeInAnimation(child: widget),
+                          ),
+                      children:
+                          c.emergencyList
+                              .map(
+                                (Data item) => _EmergencyItemCard(item: item),
+                              )
+                              .toList(),
+                    ),
+
+                    // lalu spacing di bawah
+                    const SizedBox(height: 80),
+                  ],
+                ),
               ),
-            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -400,13 +407,6 @@ class _NoConnectionWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _buildFilterSection(context, c),
-              const SizedBox(height: 8),
-              const RoundedDivider(
-                thickness: 1,
-                color: Colors.grey,
-                indent: 10,
-                endIndent: 10,
-              ),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -588,7 +588,6 @@ class _ServerDownWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _buildFilterSection(context, c),
-              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
