@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
+
 import '../../../data/data_respon/token.dart';
 import '../../../data/endpoint.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-
 import '../../booking/controllers/booking_controller.dart';
 
 class LoginController extends GetxController {
@@ -35,11 +35,11 @@ class LoginController extends GetxController {
       isLoading.value = false;
       GetStorage boxPreferences = GetStorage('preferences-mekanik');
       await boxPreferences.write('user_email', emailController.text);
+      OneSignal.login(emailController.text);
       OneSignal.User.addEmail(emailController.text);
       print("OneSignal email updated to: ${emailController.text}");
       Get.delete<BookingController>(force: true);
       Get.offAllNamed(Routes.HOME);
-
     } catch (e) {
       isLoading.value = false;
       Get.snackbar("Login Gagal", e.toString());

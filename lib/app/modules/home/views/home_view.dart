@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/data/localstorage.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
@@ -415,6 +416,7 @@ class _LogoutButton extends StatelessWidget {
                   ),
                   onPressed: () async {
                     await LocalStorages.logout();
+                    await OneSignal.logout();
                     Get.offAllNamed(Routes.LOGIN);
                   },
                   child: Text(
