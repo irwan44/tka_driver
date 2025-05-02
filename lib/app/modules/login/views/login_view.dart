@@ -22,12 +22,11 @@ class LoginView extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // ─── PARAMETER RESPONSIF ────────────────────────────────────────────
             final double w = constraints.maxWidth;
-            final bool isTablet = w >= 600; // >600 px dianggap tablet
-            final bool stackButtons = w < 350; // hp kecil, tombol ditumpuk
+            final bool isTablet = w >= 600;
+            final bool stackButtons = w < 350;
 
-            final double hPad = isTablet ? w * 0.20 : 28; // padding horiz.
+            final double hPad = isTablet ? w * 0.20 : 28;
             final double logoH = isTablet ? 120 : 70;
             final double headingSize = isTablet ? 28 : 20;
             final double subHeadingSize = isTablet ? 18 : 14;
@@ -35,7 +34,6 @@ class LoginView extends StatelessWidget {
             final double fieldVPad = isTablet ? 20 : 16;
             final double btnVPad = isTablet ? 18 : 16;
 
-            // ─── UI ────────────────────────────────────────────────────────────
             return Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 700),
@@ -44,7 +42,6 @@ class LoginView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // ─── LOGO ───────────────────────────────────────────────
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -55,7 +52,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // ─── HEADING ────────────────────────────────────────────
                       Text(
                         "Selamat Datang!",
                         style: GoogleFonts.nunito(
@@ -74,7 +70,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 32),
 
-                      // ─── FIELD EMAIL ────────────────────────────────────────
                       TextField(
                         controller: controller.emailController,
                         decoration: _fieldDecoration(
@@ -91,8 +86,6 @@ class LoginView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // ─── FIELD PASSWORD ─────────────────────────────────────
                       Obx(
                         () => TextField(
                           controller: controller.passwordController,
@@ -122,7 +115,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // ─── TOMBOL MASUK ───────────────────────────────────────
                       Obx(
                         () => SizedBox(
                           width: double.infinity,
@@ -160,7 +152,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 30),
 
-                      // ─── PANDUAN APLIKASI ──────────────────────────────────
                       Text(
                         "Panduan Aplikasi",
                         style: GoogleFonts.nunito(
@@ -219,7 +210,6 @@ class LoginView extends StatelessWidget {
 
                       const SizedBox(height: 50),
 
-                      // ─── VERSI APLIKASI ───────────────────────────────────
                       FutureBuilder<PackageInfo>(
                         future: PackageInfo.fromPlatform(),
                         builder: (context, snap) {
@@ -244,7 +234,6 @@ class LoginView extends StatelessWidget {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
   InputDecoration _fieldDecoration(
     BuildContext context,
     bool isDark, {
