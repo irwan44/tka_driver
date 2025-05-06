@@ -13,9 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:tka_customer/app/routes/app_pages.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../routes/app_pages.dart';
 import '../../home/controllers/home_controller.dart';
 import '../componen/langkah_penggunaan.dart';
 import '../componen/list_planning_servis.dart';
@@ -142,17 +142,17 @@ class _BookingViewState extends State<BookingView> {
       length: 3,
       child: Scaffold(
         backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-        floatingActionButton:
-            _showFab
-                ? FloatingActionButton.extended(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  onPressed: () => Get.toNamed(Routes.FORMREGULER),
-                  icon: const Icon(Icons.warning_rounded),
-                  label: const Text('Buat Reguler Repair'),
-                )
-                : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        // floatingActionButton:
+        //     _showFab
+        //         ? FloatingActionButton.extended(
+        //           backgroundColor: Colors.blue,
+        //           foregroundColor: Colors.white,
+        //           onPressed: () => Get.toNamed(Routes.FORMREGULER),
+        //           icon: const Icon(Icons.warning_rounded),
+        //           label: const Text('Buat Reguler Repair'),
+        //         )
+        //         : null,
+        // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         body: NotificationListener<UserScrollNotification>(
           onNotification: (notif) {
             if (notif.direction == ScrollDirection.reverse) {
@@ -194,6 +194,65 @@ class _BookingViewState extends State<BookingView> {
                           const SizedBox(height: 10),
                           _buildFilterSection(isDark),
                           const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity, // tombol selebar parent
+                            child: ElevatedButton.icon(
+                              icon: const Icon(
+                                Icons.car_repair_rounded,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                              label: const Text(
+                                'Buat Reguler Repair',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              style: ButtonStyle(
+                                // warna dasar tombol
+                                backgroundColor: MaterialStateProperty.all(
+                                  Colors.blueAccent,
+                                ),
+
+                                // shadow / glow berwarna sama (90% opacity)
+                                shadowColor: MaterialStateProperty.all(
+                                  Colors.blueAccent.withOpacity(0.9),
+                                ),
+
+                                // elevation: 5 normal, 10 saat ditekan/hover
+                                elevation: MaterialStateProperty.resolveWith<
+                                  double
+                                >((states) {
+                                  if (states.contains(MaterialState.pressed) ||
+                                      states.contains(MaterialState.hovered) ||
+                                      states.contains(MaterialState.focused)) {
+                                    return 10;
+                                  }
+                                  return 5;
+                                }),
+
+                                // ripple/overlay sedikit lebih gelap
+                                overlayColor: MaterialStateProperty.all(
+                                  Colors.blueAccent.shade700.withOpacity(0.2),
+                                ),
+
+                                padding: MaterialStateProperty.all(
+                                  const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                              onPressed: () => Get.toNamed(Routes.FORMREGULER),
+                            ),
+                          ),
+                          SizedBox(height: 15),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [

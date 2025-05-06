@@ -30,17 +30,22 @@ class _EmergencyViewState extends State<EmergencyView> {
 
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[900] : const Color(0xFFF6F7FB),
-      floatingActionButton:
-          _showFab
-              ? FloatingActionButton.extended(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
-                icon: const Icon(Icons.warning_rounded),
-                label: const Text('Buat Emergency Service'),
-              )
-              : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+
+      // floatingActionButton:
+      //     _showFab
+      //         ? Padding(
+      //           // Geser 16 px ke kanan & 56 px ke atas (sesuai selera)
+      //           padding: const EdgeInsets.only(right: 16, bottom: 96),
+      //           child: FloatingActionButton.extended(
+      //             backgroundColor: Colors.red,
+      //             foregroundColor: Colors.white,
+      //             onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
+      //             icon: const Icon(Icons.warning_rounded),
+      //             label: const Text('Buat Emergency Service'),
+      //           ),
+      //         )
+      //         : null,
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: RefreshIndicator(
         onRefresh: c.fetchEmergencyList,
         child: Obx(() {
@@ -94,6 +99,57 @@ class _EmergencyViewState extends State<EmergencyView> {
           const SizedBox(height: 8),
           _buildFilterSection(context, c),
           const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity, // tombol selebar parent
+            child: ElevatedButton.icon(
+              icon: const Icon(
+                Icons.car_repair_rounded,
+                size: 18,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Buat Emergency Service',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.redAccent),
+
+                // bayangan merah agar tombol tampak glow
+                shadowColor: MaterialStateProperty.all(
+                  Colors.redAccent.withOpacity(0.9),
+                ),
+
+                // naik lebih tinggi saat ditekan/hover
+                elevation: MaterialStateProperty.resolveWith<double>((states) {
+                  if (states.contains(MaterialState.pressed) ||
+                      states.contains(MaterialState.hovered) ||
+                      states.contains(MaterialState.focused)) {
+                    return 10; // elevation saat aktif
+                  }
+                  return 5; // elevation normal
+                }),
+
+                // efek ripple merah transparan
+                overlayColor: MaterialStateProperty.all(
+                  Colors.redAccent.shade700.withOpacity(0.2),
+                ),
+
+                padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+                minimumSize: MaterialStateProperty.all(
+                  const Size.fromHeight(48),
+                ),
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
+            ),
+          ),
+          const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -182,6 +238,59 @@ class _EmergencyViewState extends State<EmergencyView> {
             const SizedBox(height: 8),
             _buildFilterSection(context, c),
             const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity, // tombol selebar parent
+              child: ElevatedButton.icon(
+                icon: const Icon(
+                  Icons.car_repair_rounded,
+                  size: 18,
+                  color: Colors.white,
+                ),
+                label: const Text(
+                  'Buat Emergency Service',
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.redAccent),
+
+                  // bayangan merah agar tombol tampak glow
+                  shadowColor: MaterialStateProperty.all(
+                    Colors.redAccent.withOpacity(0.9),
+                  ),
+
+                  // naik lebih tinggi saat ditekan/hover
+                  elevation: MaterialStateProperty.resolveWith<double>((
+                    states,
+                  ) {
+                    if (states.contains(MaterialState.pressed) ||
+                        states.contains(MaterialState.hovered) ||
+                        states.contains(MaterialState.focused)) {
+                      return 10; // elevation saat aktif
+                    }
+                    return 5; // elevation normal
+                  }),
+
+                  // efek ripple merah transparan
+                  overlayColor: MaterialStateProperty.all(
+                    Colors.redAccent.shade700.withOpacity(0.2),
+                  ),
+
+                  padding: MaterialStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  minimumSize: MaterialStateProperty.all(
+                    const Size.fromHeight(48),
+                  ),
+                  shape: MaterialStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
+              ),
+            ),
+            SizedBox(height: 15),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -408,6 +517,61 @@ class _NoConnectionWidget extends StatelessWidget {
               const SizedBox(height: 8),
               _buildFilterSection(context, c),
               const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity, // tombol selebar parent
+                child: ElevatedButton.icon(
+                  icon: const Icon(
+                    Icons.car_repair_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    'Buat Emergency Service',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                      Colors.redAccent,
+                    ),
+
+                    // bayangan merah agar tombol tampak glow
+                    shadowColor: MaterialStateProperty.all(
+                      Colors.redAccent.withOpacity(0.9),
+                    ),
+
+                    // naik lebih tinggi saat ditekan/hover
+                    elevation: MaterialStateProperty.resolveWith<double>((
+                      states,
+                    ) {
+                      if (states.contains(MaterialState.pressed) ||
+                          states.contains(MaterialState.hovered) ||
+                          states.contains(MaterialState.focused)) {
+                        return 10; // elevation saat aktif
+                      }
+                      return 5; // elevation normal
+                    }),
+
+                    // efek ripple merah transparan
+                    overlayColor: MaterialStateProperty.all(
+                      Colors.redAccent.shade700.withOpacity(0.2),
+                    ),
+
+                    padding: MaterialStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    minimumSize: MaterialStateProperty.all(
+                      const Size.fromHeight(48),
+                    ),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
+                ),
+              ),
+              const SizedBox(height: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -588,6 +752,61 @@ class _ServerDownWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _buildFilterSection(context, c),
+              SizedBox(
+                width: double.infinity, // tombol selebar parent
+                child: ElevatedButton.icon(
+                  icon: const Icon(
+                    Icons.car_repair_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    'Buat Emergency Service',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                      Colors.redAccent,
+                    ),
+
+                    // bayangan merah agar tombol tampak glow
+                    shadowColor: MaterialStateProperty.all(
+                      Colors.redAccent.withOpacity(0.9),
+                    ),
+
+                    // naik lebih tinggi saat ditekan/hover
+                    elevation: MaterialStateProperty.resolveWith<double>((
+                      states,
+                    ) {
+                      if (states.contains(MaterialState.pressed) ||
+                          states.contains(MaterialState.hovered) ||
+                          states.contains(MaterialState.focused)) {
+                        return 10; // elevation saat aktif
+                      }
+                      return 5; // elevation normal
+                    }),
+
+                    // efek ripple merah transparan
+                    overlayColor: MaterialStateProperty.all(
+                      Colors.redAccent.shade700.withOpacity(0.2),
+                    ),
+
+                    padding: MaterialStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    minimumSize: MaterialStateProperty.all(
+                      const Size.fromHeight(48),
+                    ),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  onPressed: () => Get.toNamed(Routes.FORMEMERGENCY),
+                ),
+              ),
+              SizedBox(height: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

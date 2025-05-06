@@ -3,12 +3,13 @@ import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:tka_customer/app/routes/app_pages.dart';
 
 import '../../main.dart';
+import '../routes/app_pages.dart';
 import 'data_respon/detailservice.dart';
 import 'data_respon/list_emergency.dart';
 import 'data_respon/listkendaraan.dart';
+import 'data_respon/listrequestPIC.dart';
 import 'data_respon/listservice.dart';
 import 'data_respon/meknaikposisi.dart';
 import 'data_respon/profile2.dart';
@@ -32,9 +33,15 @@ class API {
   static String get _postrequest => '$_url/driver/request_service';
   static String get _getKendaraan => '$_url/driver/vehicles';
   static String get _getProfile => '$_url/user';
+  static String get _GetPIClistrequestservice =>
+      '$_url/pic/list_request_service';
   static String get _getListService => '$_url/driver/services';
   static String get _getDetailService => '$_url/driver/services/';
   static String get _getMekanikPosisi => '$_url/driver/mechanic_position/';
+  static String get _PostApproveRequesService =>
+      '$_url/pic/approve_request_service/';
+  static String get _PostRejectRequesService =>
+      '$_url/pic/reject_request_service/';
   static String get _PutKonfirmasiPlanning =>
       '$_url/driver/service/konfirmasi/';
 
@@ -44,8 +51,40 @@ class API {
   ) async {
     if (statusCode == 401) {
       await LocalStorages.deleteToken();
-      Get.offAllNamed(Routes.LOGIN);
+      Get.toNamed(Routes.LOGIN);
       throw Exception("Session expired. Please login again.");
+    }
+  }
+
+  static Future<List<ListRequesServicePIC>> fetchPICRequestService() async {
+    try {
+      final token = LocalStorages.getToken;
+      if (token.isEmpty) {
+        throw Exception("Token kosong. Harap login terlebih dahulu.");
+      }
+      final response = await http.get(
+        Uri.parse(_GetPIClistrequestservice),
+
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("Status Code: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data as List)
+            .map((json) => ListRequesServicePIC.fromJson(json))
+            .toList();
+      } else {
+        await _handleTokenExpiration(response.statusCode, response.body);
+        throw Exception(
+          'Failed to fetch list service (code: ${response.statusCode}) -> ${response.body}',
+        );
+      }
+    } on SocketException catch (e) {
+      print("SocketException di API.fetchListService: $e");
+      throw e;
     }
   }
 
@@ -428,6 +467,91 @@ class API {
     } on SocketException catch (e) {
       print("No internet connection: $e");
       throw SilentException("Tidak ada koneksi internet");
+    }
+  }
+
+  static Future<List<ListService>> fetchListPIC() async {
+    try {
+      final token = LocalStorages.getToken;
+      if (token.isEmpty) {
+        throw Exception("Token kosong. Harap login terlebih dahulu.");
+      }
+      final response = await http.get(
+        Uri.parse(_getListService),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("Status Code: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data as List)
+            .map((json) => ListService.fromJson(json))
+            .toList();
+      } else {
+        await _handleTokenExpiration(response.statusCode, response.body);
+        throw Exception(
+          'Failed to fetch list service (code: ${response.statusCode}) -> ${response.body}',
+        );
+      }
+    } on SocketException catch (e) {
+      print("SocketException di API.fetchListService: $e");
+      throw e;
+    }
+  }
+
+  /// Kirim request approve tanpa body
+  static Future<void> postApproveRequesService(String kodeRequest) async {
+    final token = LocalStorages.getToken;
+    if (token.isEmpty)
+      throw Exception("Token kosong. Harap login terlebih dahulu.");
+
+    final uri = Uri.parse(_PostApproveRequesService + kodeRequest);
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    // Tangani token expired
+    await _handleTokenExpiration(response.statusCode, response.body);
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      throw Exception(
+        'Gagal approve request (code: ${response.statusCode}) → ${response.body}',
+      );
+    }
+  }
+
+  /// Kirim request reject tanpa body
+  static Future<void> postRejectRequesService(String kodeRequest) async {
+    final token = LocalStorages.getToken;
+    if (token.isEmpty)
+      throw Exception("Token kosong. Harap login terlebih dahulu.");
+
+    final uri = Uri.parse(_PostRejectRequesService + kodeRequest);
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    // Tangani token expired
+    await _handleTokenExpiration(response.statusCode, response.body);
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      throw Exception(
+        'Gagal reject request (code: ${response.statusCode}) → ${response.body}',
+      );
     }
   }
 }

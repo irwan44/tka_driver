@@ -11,6 +11,8 @@ import '../modules/emergency/componen/detail_history_emergency.dart';
 import '../modules/emergency/views/emergency_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
+import '../modules/homePIC/bindings/home_p_i_c_binding.dart';
+import '../modules/homePIC/views/home_p_i_c_view.dart';
 import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
 import '../modules/profile/bindings/profile_binding.dart';
@@ -52,7 +54,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.PROFILE,
-      page: () => const ProfileView(),
+      page: () => ProfileView(),
       binding: ProfileBinding(),
     ),
     GetPage(
@@ -75,6 +77,11 @@ class AppPages {
       name: _Paths.DETAILEMERGENCY,
       page: () => const EmergencyDetailView(),
       binding: ProfileBinding(),
+    ),
+    GetPage(
+      name: _Paths.HOME_P_I_C,
+      page: () => HomePICView(),
+      binding: HomePICBinding(),
     ),
   ];
 }

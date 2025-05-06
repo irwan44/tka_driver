@@ -38,6 +38,8 @@ class EmergencyController extends GetxController {
   late final StreamSubscription _connectSub;
   late final AndroidNotificationChannel _statusChannel;
   final isLoadingVehicles = false.obs;
+  RxInt activeRequests = 0.obs;
+
   final FlutterLocalNotificationsPlugin _fln =
       FlutterLocalNotificationsPlugin();
 
@@ -363,12 +365,12 @@ class EmergencyController extends GetxController {
         desiredAccuracy: LocationAccuracy.high,
       );
       currentLocation.value = '${position.latitude}, ${position.longitude}';
-      Get.snackbar(
-        'Sukses',
-        'Berhasil mendapatkan lokasi Anda',
-        backgroundColor: Colors.blue,
-        colorText: Colors.white,
-      );
+      // Get.snackbar(
+      //   'Sukses',
+      //   'Berhasil mendapatkan lokasi Anda',
+      //   backgroundColor: Colors.blue,
+      //   colorText: Colors.white,
+      // );
     } catch (e) {
       Get.snackbar(
         'Warning',

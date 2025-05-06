@@ -13,6 +13,7 @@ abstract class Routes {
   static const FORMEMERGENCY = _Paths.FORMEMERGENCY;
   static const FORMREGULER = _Paths.FORMREGULER;
   static const DETAILEMERGENCY = _Paths.DETAILEMERGENCY;
+  static const HOME_P_I_C = _Paths.HOME_P_I_C;
 }
 
 abstract class _Paths {
@@ -27,4 +28,5 @@ abstract class _Paths {
   static const FORMEMERGENCY = '/formemergency';
   static const FORMREGULER = '/formreguler';
   static const DETAILEMERGENCY = '/detailemergency';
+  static const HOME_P_I_C = '/home-p-i-c';
 }
