@@ -1,8 +1,8 @@
 import 'dart:ui';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -282,19 +282,23 @@ class _LogoutButton extends StatelessWidget {
   void _openSettings(BuildContext context) {
     final box = GetStorage('preferences-mekanik');
     bool notifEnabled = box.read('notifications_enabled') ?? true;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       builder:
           (_) => ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.5,
-                color: Colors.white,
+                height: MediaQuery.of(context).size.height * 0.6,
+                color:
+                    isDark
+                        ? Colors.grey[900]!.withOpacity(0.8)
+                        : Colors.white.withOpacity(0.8),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
@@ -302,14 +306,14 @@ class _LogoutButton extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Handle
+                    // Handle bar
                     Center(
                       child: Container(
                         width: 40,
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).dividerColor,
+                          color: isDark ? Colors.grey[700] : Colors.grey[300],
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -321,7 +325,11 @@ class _LogoutButton extends StatelessWidget {
                       children: [
                         Text(
                           'Pengaturan',
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
                         ),
                         IconButton(
                           icon: Icon(
@@ -332,30 +340,55 @@ class _LogoutButton extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
 
-                    const SizedBox(height: 8),
-
-                    // Toggle Notifikasi
-                    SwitchListTile.adaptive(
-                      activeColor: Colors.blueAccent,
-                      value: notifEnabled,
-                      onChanged: (v) {
-                        box.write('notifications_enabled', v);
-                        notifEnabled = v;
-                        (context as Element).markNeedsBuild();
+                    // Menu: Notifikasi
+                    ListTile(
+                      leading: Icon(
+                        Icons.notifications_active_rounded,
+                        color: Colors.redAccent,
+                        size: 28,
+                      ),
+                      title: Text(
+                        'Pengaturan Notifikasi',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Kelola izin notifikasi aplikasi',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      trailing: Icon(
+                        Icons.chevron_right,
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      ),
+                      onTap: () {
+                        AppSettings.openAppSettings(
+                          type: AppSettingsType.notification,
+                        );
                       },
-                      title: const Text('Notifikasi Aplikasi'),
-                      subtitle: const Text('Kelola push notification'),
-                      secondary: const Icon(Icons.notifications),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      tileColor: isDark ? Colors.grey[800] : Colors.grey[100],
                     ),
 
                     const Spacer(),
 
-                    // Logout Button with red background
+                    // Logout Button
                     ElevatedButton.icon(
                       onPressed: () async {
                         await LocalStorages.logout();
-                        OneSignal.logout();
+                        await OneSignal.logout();
                         Get.offAllNamed(Routes.LOGIN);
                       },
                       icon: const Icon(
@@ -368,7 +401,7 @@ class _LogoutButton extends StatelessWidget {
                       ),
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: Colors.redAccent,
+                        backgroundColor: Theme.of(context).colorScheme.error,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
