@@ -230,7 +230,12 @@ class ListrequestService extends StatelessWidget {
 
                     return InkWell(
                       onTap: () {
-                        Get.to(() => RequestDetailPage(item: r));
+                        Get.to(
+                          () => RequestDetailPage(
+                            item: r,
+                            mediaFiles: r.mediaFiles!,
+                          ),
+                        );
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 8),

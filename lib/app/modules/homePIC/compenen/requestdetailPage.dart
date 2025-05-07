@@ -1,8 +1,11 @@
 // lib/app/modules/home_p_i_c/views/request_detail_page.dart
 
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../data/data_respon/listrequestPIC.dart';
 import '../../../data/endpoint.dart';
@@ -10,7 +13,12 @@ import '../../../routes/app_pages.dart';
 
 class RequestDetailPage extends StatelessWidget {
   final ListRequesServicePIC item;
-  const RequestDetailPage({Key? key, required this.item}) : super(key: key);
+  final List<String> mediaFiles;
+  const RequestDetailPage({
+    Key? key,
+    required this.item,
+    required this.mediaFiles,
+  }) : super(key: key);
 
   Color _statusColor(String? s) {
     switch (s?.toLowerCase()) {
@@ -40,6 +48,18 @@ class RequestDetailPage extends StatelessWidget {
       default:
         return Icons.info;
     }
+  }
+
+  bool _isVideo(String url) {
+    final lower = url.toLowerCase();
+    return lower.endsWith('.mp4') || lower.endsWith('.mov');
+  }
+
+  void _openViewer(BuildContext context, String url) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => MediaViewerPage(url: url)),
+    );
   }
 
   @override
@@ -171,24 +191,73 @@ class RequestDetailPage extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      height: 100,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: item.mediaFiles!.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder:
-                            (ctx, i) => ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.network(
-                                item.mediaFiles![i],
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
+                    mediaFiles.isEmpty
+                        ? Center(
+                          child: Text(
+                            'Tidak ada media',
+                            style: TextStyle(
+                              color: isDark ? Colors.white70 : Colors.black54,
                             ),
-                      ),
-                    ),
+                          ),
+                        )
+                        : SizedBox(
+                          height: 100,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: mediaFiles.length,
+                            separatorBuilder:
+                                (_, __) => const SizedBox(width: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemBuilder: (ctx, i) {
+                              final url = mediaFiles[i];
+                              final isVideo = _isVideo(url);
+                              return GestureDetector(
+                                onTap: () => _openViewer(context, url),
+                                child: Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Image.network(
+                                        url,
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (_, __, ___) => Container(
+                                              width: 100,
+                                              height: 100,
+                                              color: Colors.grey,
+                                              child: const Icon(
+                                                Icons.broken_image,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                    if (isVideo)
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black45,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.play_circle_fill,
+                                              color: Colors.white,
+                                              size: 32,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                   ],
                 ],
               ),
@@ -319,6 +388,110 @@ class RequestDetailPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class MediaViewerPage extends StatefulWidget {
+  final String url;
+  const MediaViewerPage({Key? key, required this.url}) : super(key: key);
+
+  @override
+  State<MediaViewerPage> createState() => _MediaViewerPageState();
+}
+
+class _MediaViewerPageState extends State<MediaViewerPage> {
+  late final bool _isVideo;
+  late double _realAspect;
+  VideoPlayerController? _vCtrl;
+  ChewieController? _cCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _isVideo =
+        widget.url.toLowerCase().endsWith('.mp4') ||
+        widget.url.toLowerCase().endsWith('.mov');
+    if (_isVideo) _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    _vCtrl = VideoPlayerController.network(widget.url);
+    await _vCtrl!.initialize();
+
+    final size = _vCtrl!.value.size;
+    int rot = 0;
+    try {
+      rot = (_vCtrl!.value.rotationCorrection) ?? 0;
+    } catch (_) {}
+
+    double w = size.width;
+    double h = size.height;
+    if (rot == 90 || rot == 270) {
+      final tmp = w;
+      w = h;
+      h = tmp;
+    }
+    _realAspect = (w == 0 || h == 0) ? 9 / 16 : w / h;
+
+    _cCtrl = ChewieController(
+      videoPlayerController: _vCtrl!,
+      autoPlay: true,
+      looping: false,
+      aspectRatio: _realAspect,
+      additionalOptions: (context) => [],
+    );
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _cCtrl?.dispose();
+    _vCtrl?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Center(child: _isVideo ? _videoView() : _imageView()),
+    );
+  }
+
+  Widget _videoView() {
+    if (_cCtrl == null || !_vCtrl!.value.isInitialized) {
+      return const CircularProgressIndicator(color: Colors.white);
+    }
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        double h = c.maxHeight;
+        double w = h * _realAspect;
+        if (w > c.maxWidth) {
+          w = c.maxWidth;
+          h = w / _realAspect;
+        }
+        return SizedBox(
+          width: w,
+          height: h,
+          child: Chewie(controller: _cCtrl!),
+        );
+      },
+    );
+  }
+
+  Widget _imageView() {
+    return PhotoView(
+      imageProvider: NetworkImage(widget.url),
+      backgroundDecoration: const BoxDecoration(color: Colors.black),
     );
   }
 }

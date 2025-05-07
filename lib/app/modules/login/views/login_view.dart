@@ -99,8 +99,7 @@ class LoginView extends StatelessWidget {
                               12,
                             ), // padding di dalam kotak
                             decoration: BoxDecoration(
-                              color:
-                                  isDark ? Colors.grey.shade50 : Colors.white,
+                              color: isDark ? Colors.black : Colors.white,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 if (!isDark)
