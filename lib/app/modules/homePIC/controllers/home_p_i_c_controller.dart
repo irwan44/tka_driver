@@ -1,5 +1,7 @@
 // lib/app/modules/home_p_i_c/controllers/home_p_i_c_controller.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -21,9 +23,10 @@ class HomePICController extends GetxController {
   DateTime? dateFilter;
   final searchController = TextEditingController();
 
+  Timer? _pollTimer; // <-- Timer untuk polling
+
   void setShowBars(bool v) {
     if (showBars.value != v) showBars.value = v;
-    // tidak perlu update() di sini untuk AppBar, karena AppBar masih pakai Obx
   }
 
   Future<void> initOneSignal() async {
@@ -48,8 +51,20 @@ class HomePICController extends GetxController {
   void onInit() {
     super.onInit();
     initOneSignal();
-
+    // fetch pertama kali dengan loading
     fetchRequests();
+
+    // setup polling tiap 30 detik, silent (tanpa loading indicator)
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _pollFetchRequests();
+    });
+  }
+
+  @override
+  void onClose() {
+    _pollTimer?.cancel();
+    searchController.dispose();
+    super.onClose();
   }
 
   Future<void> fetchRequests() async {
@@ -60,7 +75,6 @@ class HomePICController extends GetxController {
     try {
       final data = await API.fetchPICRequestService();
       list.assignAll(data);
-      // awalnya tampilkan semua
       filteredList.assignAll(data);
     } catch (e) {
       error.value = e.toString();
@@ -68,6 +82,40 @@ class HomePICController extends GetxController {
       isLoading.value = false;
       update();
     }
+  }
+
+  /// Versi polling: fetch data tanpa men-toggle isLoading
+  Future<void> _pollFetchRequests() async {
+    try {
+      final data = await API.fetchPICRequestService();
+      list.assignAll(data);
+      // tetap pertahankan filter saat ini
+      _applyFiltersSilent();
+      final now = DateTime.now();
+      print('[Realtime] fetchRequests success at $now');
+    } catch (_) {
+      // ignore errors untuk polling
+    }
+  }
+
+  /// Terapkan filter tanpa menyalakan loading/refresh
+  void _applyFiltersSilent() {
+    final text = searchController.text.toLowerCase();
+    final filtered =
+        list.where((r) {
+          final matchSearch =
+              text.isEmpty ||
+              (r.kodeSvc?.toLowerCase().contains(text) ?? false) ||
+              (r.noPolisi?.toLowerCase().contains(text) ?? false);
+          final matchDate =
+              dateFilter == null ||
+              (r.createdAt != null &&
+                  DateTime.parse(r.createdAt!).difference(dateFilter!).inDays ==
+                      0);
+          return matchSearch && matchDate;
+        }).toList();
+    filteredList.assignAll(filtered);
+    update();
   }
 
   Future<void> pickFilterDate(BuildContext context) async {
@@ -79,7 +127,7 @@ class HomePICController extends GetxController {
     );
     if (picked != null) {
       dateFilter = picked;
-      update();
+      applyFilters();
     }
   }
 
@@ -89,6 +137,7 @@ class HomePICController extends GetxController {
     update();
   }
 
+  /// Filter manual via UI
   void applyFilters() {
     final text = searchController.text.toLowerCase();
     final filtered =

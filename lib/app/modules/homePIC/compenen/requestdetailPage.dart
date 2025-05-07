@@ -1,6 +1,7 @@
 // lib/app/modules/home_p_i_c/views/request_detail_page.dart
 
 import 'package:chewie/chewie.dart';
+import 'package:dotted_line/dotted_line.dart'; // <-- tambahkan di pubspec.yaml: dotted_line: ^3.0.0
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -64,14 +65,10 @@ class RequestDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final statusColor = _statusColor(item.status);
-    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
-    final iconColor = Theme.of(context).iconTheme.color;
-
     final tanggal =
         item.tanggalService?.isNotEmpty == true
-            ? item.tanggalService
+            ? item.tanggalService!
             : (item.createdAt != null
                 ? DateFormat(
                   'dd MMM yyyy',
@@ -79,7 +76,7 @@ class RequestDetailPage extends StatelessWidget {
                 : '-');
     final jam =
         item.jamService?.isNotEmpty == true
-            ? item.jamService
+            ? item.jamService!
             : (item.createdAt != null
                 ? DateFormat('HH:mm').format(DateTime.parse(item.createdAt!))
                 : '-');
@@ -95,299 +92,293 @@ class RequestDetailPage extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Status Banner
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(_statusIcon(item.status), color: statusColor),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Status: ${item.status ?? '-'}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          // Ticket Header
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: statusColor,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
             ),
-            const SizedBox(height: 16),
-
-            // Request Info (minimal container)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Text(
-                      item.kodeRequestService ?? '-',
-                      style: TextStyle(
-                        fontSize: 20,
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            child: Row(
+              children: [
+                Icon(_statusIcon(item.status), color: Colors.white, size: 28),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.status?.toUpperCase() ?? '-',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.kodeRequestService ?? '-',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Body as a "ticket"
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Ticket stub shape using Row of circles & line
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      CircleAvatar(radius: 6, backgroundColor: Colors.grey),
+                      Expanded(
+                        child: DottedLine(
+                          dashLength: 4,
+                          dashColor: Colors.grey,
+                          lineThickness: 1,
+                        ),
+                      ),
+                      CircleAvatar(radius: 6, backgroundColor: Colors.grey),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Detail Table
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Table(
+                        columnWidths: const {
+                          0: FlexColumnWidth(2),
+                          1: FlexColumnWidth(3),
+                        },
+                        children: [
+                          _buildRow('No. Polisi', item.noPolisi),
+                          _buildDividerRow(),
+                          _buildRow('Pelanggan', item.kodePelanggan),
+                          _buildDividerRow(),
+                          _buildRow('Keluhan', item.keluhan),
+                          _buildDividerRow(),
+                          _buildRow('Tanggal', tanggal),
+                          _buildDividerRow(),
+                          _buildRow('Jam', jam),
+                        ],
                       ),
                     ),
                   ),
-                  const Divider(height: 24, thickness: 1),
-                  _buildDetailRow(
-                    context,
-                    Icons.place,
-                    'No Polisi',
-                    item.noPolisi,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    context,
-                    Icons.person,
-                    'Pelanggan',
-                    item.kodePelanggan,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    context,
-                    Icons.directions_car,
-                    'Keluhan',
-                    item.keluhan,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    context,
-                    Icons.calendar_today,
-                    'Tanggal Service',
-                    tanggal,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    context,
-                    Icons.access_time,
-                    'Jam Service',
-                    jam,
-                  ),
 
-                  // Media Section
-                  if (item.mediaFiles != null &&
-                      item.mediaFiles!.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Media:',
-                      style: Theme.of(context).textTheme.titleMedium,
+                  // Media Preview
+                  if (mediaFiles.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Bukti Media',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    mediaFiles.isEmpty
-                        ? Center(
-                          child: Text(
-                            'Tidak ada media',
-                            style: TextStyle(
-                              color: isDark ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                        )
-                        : SizedBox(
-                          height: 100,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: mediaFiles.length,
-                            separatorBuilder:
-                                (_, __) => const SizedBox(width: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemBuilder: (ctx, i) {
-                              final url = mediaFiles[i];
-                              final isVideo = _isVideo(url);
-                              return GestureDetector(
-                                onTap: () => _openViewer(context, url),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: Image.network(
-                                        url,
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (_, __, ___) => Container(
-                                              width: 100,
-                                              height: 100,
-                                              color: Colors.grey,
-                                              child: const Icon(
-                                                Icons.broken_image,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                      ),
-                                    ),
-                                    if (isVideo)
-                                      Positioned.fill(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.black45,
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 120,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: mediaFiles.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (_, i) {
+                          final url = mediaFiles[i];
+                          return GestureDetector(
+                            onTap: () => _openViewer(context, url),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Stack(
+                                children: [
+                                  Image.network(
+                                    url,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => Container(
+                                          width: 120,
+                                          height: 120,
+                                          color: Colors.grey.shade200,
+                                          child: const Icon(
+                                            Icons.broken_image,
+                                            size: 36,
                                           ),
-                                          child: const Center(
-                                            child: Icon(
-                                              Icons.play_circle_fill,
-                                              color: Colors.white,
-                                              size: 32,
-                                            ),
+                                        ),
+                                  ),
+                                  if (_isVideo(url))
+                                    Positioned.fill(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black38,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.play_circle_fill,
+                                            size: 36,
+                                            color: Colors.white,
                                           ),
                                         ),
                                       ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+          ),
 
-            // Action Buttons
-            Row(
+          // Actions
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.check),
-                    label: const Text('Approve'),
-                    onPressed: () {
-                      Get.defaultDialog(
-                        title: 'Konfirmasi Approve',
-                        middleText:
-                            'Apakah Anda yakin ingin menyetujui permintaan ini?',
-                        textConfirm: 'Ya',
-                        textCancel: 'Tidak',
-                        confirmTextColor: Colors.white,
-                        onConfirm: () async {
-                          Get.back();
-                          try {
-                            await API.postApproveRequesService(
-                              item.kodeRequestService!,
-                            );
-                            // Kalau berhasil, kembali ke halaman home:
-                            Get.snackbar(
-                              'Approved',
-                              'Permintaan disetujui',
-                              backgroundColor: Colors.green,
-                              colorText: Colors.white,
-                            );
-
-                            Get.offAllNamed(Routes.HOME_P_I_C);
-                          } catch (e) {
-                            Get.snackbar('Warning', e.toString());
-                          }
-                        },
-                      );
-                    },
+                  child: OutlinedButton(
+                    onPressed: () => _confirmApprove(context),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.green),
-                      foregroundColor: Colors.green,
+                      side: BorderSide(color: statusColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Text(
+                      'Approve',
+                      style: TextStyle(color: statusColor),
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.close),
-                    label: const Text('Reject'),
-                    onPressed: () {
-                      Get.defaultDialog(
-                        title: 'Konfirmasi Reject',
-                        middleText:
-                            'Apakah Anda yakin ingin menolak permintaan ini?',
-                        textConfirm: 'Ya',
-                        textCancel: 'Tidak',
-                        confirmTextColor: Colors.white,
-                        onConfirm: () async {
-                          Get.back();
-                          try {
-                            await API.postRejectRequesService(
-                              item.kodeRequestService!,
-                            );
-                            // Kalau berhasil, kembali ke halaman home:
-                            Get.snackbar(
-                              'Rejected',
-                              'Permintaan ditolak',
-                              backgroundColor: Colors.redAccent,
-                              colorText: Colors.white,
-                            );
-                          } catch (e) {
-                            Get.snackbar('Warning', e.toString());
-                          }
-                        },
-                      );
-                    },
+                  child: ElevatedButton(
+                    onPressed: () => _confirmReject(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String? value,
-  ) {
-    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
-    final iconColor = Theme.of(context).iconTheme.color;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: iconColor),
-        const SizedBox(width: 12),
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              text: '$label: ',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: textColor,
-                fontSize: 14,
-              ),
-              children: [
-                TextSpan(
-                  text: value ?? '-',
-                  style: TextStyle(
-                    fontWeight: FontWeight.normal,
-                    color: textColor,
+                    child: const Text('Reject'),
                   ),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  TableRow _buildRow(String label, String? value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(value ?? '-'),
         ),
       ],
+    );
+  }
+
+  TableRow _buildDividerRow() {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 0),
+          child: SizedBox(height: 1, child: Container(color: Colors.grey[300])),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 0),
+          child: SizedBox(height: 1, child: Container(color: Colors.grey[300])),
+        ),
+      ],
+    );
+  }
+
+  void _confirmApprove(BuildContext context) {
+    Get.defaultDialog(
+      title: 'Konfirmasi Approve',
+      middleText: 'Yakin ingin menyetujui?',
+      textConfirm: 'Ya',
+      textCancel: 'Tidak',
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        Get.back();
+        await API.postApproveRequesService(item.kodeRequestService!);
+        Get.snackbar(
+          'Approved',
+          'Permintaan disetujui',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        Get.offAllNamed(Routes.HOME_P_I_C);
+      },
+    );
+  }
+
+  void _confirmReject(BuildContext context) {
+    Get.defaultDialog(
+      title: 'Konfirmasi Reject',
+      middleText: 'Yakin ingin menolak?',
+      textConfirm: 'Ya',
+      textCancel: 'Tidak',
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        Get.back();
+        await API.postRejectRequesService(item.kodeRequestService!);
+        Get.snackbar(
+          'Rejected',
+          'Permintaan ditolak',
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      },
     );
   }
 }

@@ -1,9 +1,14 @@
+// pubspec.yaml
+// Tambahkan di dependencies:
+//   marquee: ^2.3.0
+
 // lib/app/modules/home_p_i_c/views/listrequest_service.dart
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:marquee/marquee.dart'; // <-- untuk teks berjalan
 import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/modules/homePIC/compenen/requestdetailPage.dart';
 
@@ -67,9 +72,7 @@ class ListrequestService extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(width: 12),
-
           // search field
           Expanded(
             child: TextField(
@@ -163,18 +166,72 @@ class ListrequestService extends StatelessWidget {
       builder: (c) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
-        return RefreshIndicator(
-          onRefresh: () => c.fetchRequests(),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            child: Column(
+        // hitung total & pending
+        final totalCount = c.filteredList.length;
+        final pendingCount =
+            c.filteredList
+                .where((r) => r.status?.toLowerCase() == 'waiting')
+                .length;
+
+        return Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => c.fetchRequests(),
+            child: ListView(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
               children: [
-                // selalu tampilkan filter
+                // filter
                 _buildFilterSection(context, c),
                 const SizedBox(height: 16),
 
-                // konten berdasarkan state
+                // info bar
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[800] : Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Total Request: $totalCount',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : Colors.blueGrey[800],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // marquee for pending
+                SizedBox(
+                  height: 24,
+                  child: Marquee(
+                    text:
+                        'Anda memiliki $pendingCount request service yang belum di-approve ▶   ',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.orangeAccent : Colors.orange,
+                    ),
+                    scrollAxis: Axis.horizontal,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    blankSpace: 60.0,
+                    velocity: 30.0,
+                    pauseAfterRound: const Duration(seconds: 1),
+                    startPadding: 10.0,
+                    accelerationDuration: const Duration(seconds: 1),
+                    accelerationCurve: Curves.linear,
+                    decelerationDuration: const Duration(milliseconds: 500),
+                    decelerationCurve: Curves.easeOut,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // state handling
                 if (c.isLoading.value) ...[
                   _buildShimmer(context),
                 ] else if (c.error.value.isNotEmpty) ...[
@@ -186,7 +243,7 @@ class ListrequestService extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Mohon Maaf 🙏🏻\nAplikasi sendang terkendala Server,\nKami akan segera memperbaikinya',
+                    'Mohon Maaf 🙏🏻\nAplikasi sedang terkendala Server,\nKami akan segera memperbaikinya',
                     style: GoogleFonts.nunito(color: Colors.black),
                     textAlign: TextAlign.center,
                   ),
@@ -211,7 +268,7 @@ class ListrequestService extends StatelessWidget {
                     ),
                   ),
                 ] else ...[
-                  // tampilkan daftar
+                  // list of requests
                   ...c.filteredList.map((r) {
                     final date =
                         r.createdAt != null
@@ -229,14 +286,13 @@ class ListrequestService extends StatelessWidget {
                                 : '-');
 
                     return InkWell(
-                      onTap: () {
-                        Get.to(
-                          () => RequestDetailPage(
-                            item: r,
-                            mediaFiles: r.mediaFiles!,
+                      onTap:
+                          () => Get.to(
+                            () => RequestDetailPage(
+                              item: r,
+                              mediaFiles: r.mediaFiles!,
+                            ),
                           ),
-                        );
-                      },
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         padding: const EdgeInsets.all(12),

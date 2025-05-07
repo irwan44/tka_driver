@@ -1,8 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/data/localstorage.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
@@ -272,76 +274,105 @@ class _LogoutButton extends StatelessWidget {
   final bool showLabel;
   final bool isDark;
 
-  void _showSheet(BuildContext context) {
+  void showSettingsMenu(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final box = GetStorage('preferences-mekanik');
+    // load current state notifikasi, default true
+    bool notifEnabled = box.read('notifications_enabled') ?? true;
+    final theme = Theme.of(context);
     Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.grey[850] : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Logout',
-              style: GoogleFonts.nunito(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
+      StatefulBuilder(
+        builder: (ctx, setState) {
+          return Container(
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Apakah Anda yakin ingin logout? Anda akan keluar dan data session akan dihapus.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                color: isDark ? Colors.white70 : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? Colors.grey[700] : Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                  ),
-                  onPressed: Get.back,
-                  child: Text(
-                    'Batal',
-                    style: GoogleFonts.nunito(
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                  ),
-                  onPressed: () async {
-                    await LocalStorages.logout();
-                    await OneSignal.logout();
-                    Get.offAllNamed(Routes.LOGIN);
-                  },
-                  child: Text(
-                    'Logout',
-                    style: GoogleFonts.nunito(color: Colors.white),
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, -4),
                 ),
               ],
             ),
-          ],
-        ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Pengaturan', style: theme.textTheme.titleLarge),
+                const SizedBox(height: 20),
+
+                // Notifications
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    Icons.notifications,
+                    color: theme.iconTheme.color,
+                  ),
+                  title: const Text('Notifikasi Aplikasi'),
+                  subtitle: const Text('Kelola notifikasi push'),
+                ),
+                const Divider(),
+                // Logout
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.logout, color: Colors.redAccent),
+                  title: const Text(
+                    'Logout',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                  subtitle: const Text('Keluar dari akun saat ini'),
+                  onTap: () async {
+                    await LocalStorages.logout();
+                    OneSignal.logout();
+                    Get.offAllNamed(Routes.LOGIN);
+                  },
+                ),
+                const Divider(),
+                // App version
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    final version =
+                        snapshot.hasData
+                            ? '${snapshot.data!.appName} v${snapshot.data!.version}+${snapshot.data!.buildNumber}'
+                            : 'Memuat...';
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        Icons.info_outline,
+                        color: theme.iconTheme.color,
+                      ),
+                      title: const Text('Versi Aplikasi'),
+                      subtitle: Text(version),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // Close button
+                TextButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Tutup'),
+                ),
+              ],
+            ),
+          );
+        },
       ),
+      backgroundColor: Colors.transparent,
       isDismissible: true,
     );
   }
@@ -351,7 +382,7 @@ class _LogoutButton extends StatelessWidget {
     return SizedBox(
       height: 40,
       child: ElevatedButton.icon(
-        onPressed: () => _showSheet(context),
+        onPressed: () => showSettingsMenu(context),
         icon: const Icon(Icons.logout_rounded, size: 18, color: Colors.white),
         label:
             showLabel
