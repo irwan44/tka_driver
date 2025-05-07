@@ -401,7 +401,7 @@ class _LogoutButton extends StatelessWidget {
                       ),
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: Theme.of(context).colorScheme.error,
+                        backgroundColor: Colors.red,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
