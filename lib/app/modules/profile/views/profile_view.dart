@@ -374,68 +374,109 @@ class _MenuSection extends StatelessWidget {
         color: Colors.blueAccent,
         onTap: () {
           Get.bottomSheet(
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[850] : Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Panduan Penggunaan',
-                    style: GoogleFonts.nunito(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black,
+            DraggableScrollableSheet(
+              initialChildSize: 0.70,
+              minChildSize: 0.25,
+              maxChildSize: 0.7,
+              expand: false,
+              builder:
+                  (_, scrollCtrl) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[900] : Colors.white,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    child: SingleChildScrollView(
+                      controller: scrollCtrl,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Grabber bar
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color:
+                                    isDark
+                                        ? Colors.grey[700]
+                                        : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Header
+                          Center(
+                            child: Text(
+                              'Panduan Penggunaan',
+                              style: GoogleFonts.nunito(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Text(
+                              'Pilih layanan yang kamu butuhkan di bawah ini',
+                              style: GoogleFonts.nunito(
+                                fontSize: 14,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Grid tombol
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: [
+                              GuideTile(
+                                icon: Icons.build_circle,
+                                title: 'Request Service',
+                                subtitle: 'Ajukan permintaan maintenance',
+                                color: Colors.blue,
+                                onTap: () => Get.to(UsageGuidePage()),
+                              ),
+                              GuideTile(
+                                icon: Icons.warning_amber_rounded,
+                                title: 'Emergency Service',
+                                subtitle: 'Layanan darurat 24/7',
+                                color: Colors.red,
+                                onTap: () => Get.to(EmergencyGuidePage()),
+                              ),
+                              // Tambahkan tile lain jika perlu
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Info footer
+                          Text(
+                            'Butuh bantuan lebih lanjut? Hubungi tim support kami melalui chat di pojok kanan bawah.',
+                            style: GoogleFonts.nunito(
+                              fontSize: 12,
+                              color: isDark ? Colors.white60 : Colors.black54,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isDark ? Colors.grey[700] : Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                        ),
-                        onPressed: () => Get.to(UsageGuidePage()),
-                        child: Text(
-                          'Request Service',
-                          style: GoogleFonts.nunito(
-                            color: isDark ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                        ),
-                        onPressed: () {
-                          Get.to(EmergencyGuidePage());
-                        },
-                        child: Text(
-                          'Emergency Service',
-                          style: GoogleFonts.nunito(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
             isDismissible: true,
+            backgroundColor: Colors.transparent,
           );
         },
       ),
@@ -445,78 +486,130 @@ class _MenuSection extends StatelessWidget {
         color: Colors.redAccent,
         onTap: () {
           Get.bottomSheet(
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[850] : Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Logout',
-                    style: GoogleFonts.nunito(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black,
+            DraggableScrollableSheet(
+              builder:
+                  (_, scrollCtrl) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[900] : Colors.white,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    child: SingleChildScrollView(
+                      controller: scrollCtrl,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Grabber bar
+                          Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color:
+                                  isDark ? Colors.grey[700] : Colors.grey[300],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Title
+                          Text(
+                            'Logout',
+                            style: GoogleFonts.nunito(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Message
+                          Text(
+                            'Apakah Anda yakin ingin logout? Semua data session Anda akan dihapus.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.nunito(
+                              fontSize: 14,
+                              color: isDark ? Colors.white70 : Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                      color:
+                                          isDark
+                                              ? Colors.grey[700]!
+                                              : Colors.grey[300]!,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    backgroundColor:
+                                        isDark
+                                            ? Colors.grey[850]
+                                            : Colors.white,
+                                  ),
+                                  onPressed: Get.back,
+                                  child: Text(
+                                    'Batal',
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 16,
+                                      color:
+                                          isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    await LocalStorages.logout();
+                                    await OneSignal.logout();
+                                    Get.offAllNamed(Routes.LOGIN);
+                                  },
+                                  child: Text(
+                                    'Logout',
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Apakah Anda yakin ingin logout? Anda akan keluar dan data session akan dihapus.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.nunito(
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isDark ? Colors.grey[700] : Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                        ),
-                        onPressed: Get.back,
-                        child: Text(
-                          'Batal',
-                          style: GoogleFonts.nunito(
-                            color: isDark ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                        ),
-                        onPressed: () async {
-                          await LocalStorages.logout();
-                          await OneSignal.logout();
-                          Get.toNamed(Routes.LOGIN);
-                        },
-                        child: Text(
-                          'Logout',
-                          style: GoogleFonts.nunito(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
             isDismissible: true,
+            backgroundColor: Colors.transparent,
           );
         },
       ),
@@ -603,4 +696,72 @@ class _MenuItemData {
     this.onTap,
     this.trailing,
   });
+}
+
+class GuideTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  const GuideTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.color = Colors.blue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: (Get.width - 64) / 2, // dua kotak per baris
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[800] : Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundColor: color.withOpacity(0.1),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: GoogleFonts.nunito(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: GoogleFonts.nunito(
+                fontSize: 13,
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
