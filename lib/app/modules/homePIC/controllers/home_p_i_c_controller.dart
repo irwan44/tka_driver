@@ -63,7 +63,6 @@ class HomePICController extends GetxController {
   @override
   void onClose() {
     _pollTimer?.cancel();
-    searchController.dispose();
     super.onClose();
   }
 
