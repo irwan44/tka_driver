@@ -84,11 +84,14 @@ class RequestDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Detail Request'),
+        title: const Text(
+          'Detail Request',
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: statusColor,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
       ),
@@ -273,16 +276,15 @@ class RequestDetailPage extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => _confirmApprove(context),
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: statusColor),
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      side: BorderSide(color: Colors.green),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: Text(
-                      'Approve',
-                      style: TextStyle(color: statusColor),
-                    ),
+                    child: Text('Approve'),
                   ),
                 ),
                 const SizedBox(width: 12),
