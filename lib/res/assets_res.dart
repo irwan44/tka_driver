@@ -7,7 +7,7 @@ class AssetsRes {
   AssetsRes._();
 
   static const String PROJECT_NAME = 'tka_customer';
-  static const String PROJECT_VERSION = '1.0.0+1';
+  static const String PROJECT_VERSION = '2.0.0+1';
   static const String CAR = 'assets/icon/car.png';
   static const String DRIVER = 'assets/icon/driver.png';
   static const String MARK_MEKANIK = 'assets/icon/mark_mekanik.png';

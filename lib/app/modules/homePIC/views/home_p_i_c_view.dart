@@ -1,10 +1,11 @@
+import 'dart:ui';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tka_customer/app/data/localstorage.dart';
 import 'package:tka_customer/app/routes/app_pages.dart';
@@ -270,135 +271,132 @@ class _InfoColumn extends StatelessWidget {
 }
 
 class _LogoutButton extends StatelessWidget {
-  const _LogoutButton({required this.showLabel, required this.isDark});
+  const _LogoutButton({
+    required this.showLabel,
+    super.key,
+    required bool isDark,
+  });
   final bool showLabel;
-  final bool isDark;
 
-  void showSettingsMenu(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  void _openSettings(BuildContext context) {
     final box = GetStorage('preferences-mekanik');
-    // load current state notifikasi, default true
     bool notifEnabled = box.read('notifications_enabled') ?? true;
-    final theme = Theme.of(context);
-    Get.bottomSheet(
-      StatefulBuilder(
-        builder: (ctx, setState) {
-          return Container(
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 10,
-                  offset: Offset(0, -4),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.dividerColor,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text('Pengaturan', style: theme.textTheme.titleLarge),
-                const SizedBox(height: 20),
 
-                // Notifications
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    Icons.notifications,
-                    color: theme.iconTheme.color,
-                  ),
-                  title: const Text('Notifikasi Aplikasi'),
-                  subtitle: const Text('Kelola notifikasi push'),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder:
+          (_) => ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.5,
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-                const Divider(),
-                // Logout
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(Icons.logout, color: Colors.redAccent),
-                  title: const Text(
-                    'Logout',
-                    style: TextStyle(color: Colors.redAccent),
-                  ),
-                  subtitle: const Text('Keluar dari akun saat ini'),
-                  onTap: () async {
-                    await LocalStorages.logout();
-                    OneSignal.logout();
-                    Get.offAllNamed(Routes.LOGIN);
-                  },
-                ),
-                const Divider(),
-                // App version
-                FutureBuilder<PackageInfo>(
-                  future: PackageInfo.fromPlatform(),
-                  builder: (context, snapshot) {
-                    final version =
-                        snapshot.hasData
-                            ? '${snapshot.data!.appName} v${snapshot.data!.version}+${snapshot.data!.buildNumber}'
-                            : 'Memuat...';
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.info_outline,
-                        color: theme.iconTheme.color,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).dividerColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                      title: const Text('Versi Aplikasi'),
-                      subtitle: Text(version),
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
+                    ),
 
-                // Close button
-                TextButton(
-                  onPressed: () => Get.back(),
-                  child: const Text('Tutup'),
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Pengaturan',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.close,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Toggle Notifikasi
+                    SwitchListTile.adaptive(
+                      activeColor: Colors.blueAccent,
+                      value: notifEnabled,
+                      onChanged: (v) {
+                        box.write('notifications_enabled', v);
+                        notifEnabled = v;
+                        (context as Element).markNeedsBuild();
+                      },
+                      title: const Text('Notifikasi Aplikasi'),
+                      subtitle: const Text('Kelola push notification'),
+                      secondary: const Icon(Icons.notifications),
+                    ),
+
+                    const Spacer(),
+
+                    // Logout Button with red background
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        await LocalStorages.logout();
+                        OneSignal.logout();
+                        Get.offAllNamed(Routes.LOGIN);
+                      },
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Logout',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: Colors.redAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          );
-        },
-      ),
-      backgroundColor: Colors.transparent,
-      isDismissible: true,
+          ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: ElevatedButton.icon(
-        onPressed: () => showSettingsMenu(context),
-        icon: const Icon(Icons.logout_rounded, size: 18, color: Colors.white),
-        label:
-            showLabel
-                ? const Text(
-                  'Logout',
-                  style: TextStyle(fontSize: 12, color: Colors.white),
-                )
-                : const SizedBox.shrink(),
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: Colors.red,
-          padding: EdgeInsets.symmetric(horizontal: showLabel ? 16 : 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+    return OutlinedButton.icon(
+      onPressed: () => _openSettings(context),
+      icon: const Icon(Icons.settings),
+      label: showLabel ? const Text('Menu') : const SizedBox.shrink(),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.blueAccent,
+        side: BorderSide(color: Colors.blueAccent.withOpacity(0.7)),
+        shape: const StadiumBorder(),
+        padding: EdgeInsets.symmetric(
+          horizontal: showLabel ? 10 : 6,
+          vertical: 6,
         ),
+        backgroundColor: Colors.transparent,
       ),
     );
   }
