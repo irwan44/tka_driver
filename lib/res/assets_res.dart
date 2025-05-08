@@ -21,6 +21,7 @@ class AssetsRes {
   static const String LOGO_OTTOGO = 'assets/logo/logo-ottogo.png';
   static const String LOGO_RUSCO = 'assets/logo/logo-rusco.png';
   static const String LOGO_DEV = 'assets/logo/logo_dev.png';
+  static const String LOGO_UNIQUIP = 'assets/logo/logo_uniquip.png';
   static const String EMERGENCY1 = 'assets/penggunaan/emergency1.png';
   static const String EMERGENCY2 = 'assets/penggunaan/emergency2.png';
   static const String EMERGENCY3 = 'assets/penggunaan/emergency3.png';

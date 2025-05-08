@@ -20,6 +20,8 @@ class AssetsRes {
         return 'assets/logo/logo_dev.png';
       case 'rusco':
         return 'assets/logo/logo-rusco.png';
+      case 'uniquip':
+        return 'assets/logo/logo_uniquip.png';
       case 'tka':
       default:
         return 'assets/logo/logo-ottogo.png';
@@ -35,6 +37,8 @@ class AppConfig {
         return 'https://api-cartune.abeng.id';
       case 'rusco':
         return 'https://api.rusco.id';
+      case 'uniquip':
+        return 'https://api.uniquip.abeng.id';
       case 'tka':
       default:
         return 'https://api-cartune.abeng.id';
@@ -51,6 +55,8 @@ class OneSignalConfig {
         return 'DEV-ONESIGNAL-APPID-XXXX';
       case 'rusco':
         return '1835b652-321b-470f-b08f-e5a010b026f3';
+      case 'uniquip':
+        return 'f93db1e6-1219-47f7-b7bc-51e6ae2029cb';
       case 'tka':
       default:
         return 'f0dddd10-dfe8-4579-927e-442da28c635c';

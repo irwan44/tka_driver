@@ -27,12 +27,17 @@ android {
         create("rusco") {
             dimension      = "app"
             applicationId  = "id.co.twka.fms.driver.rusco"
-            resValue("string", "app_name", "Rusco Driver")
+            resValue("string", "app_name", "Rusco")
+        }
+        create("uniquip") {
+            dimension      = "app"
+            applicationId  = "id.co.twka.fms.driver.uniquip"
+            resValue("string", "app_name", "Uniquip")
         }
         create("tka") {
             dimension      = "app"
             applicationId  = "id.co.twka.fms.driver.tka"
-            resValue("string", "app_name", "OttoGo Driver")
+            resValue("string", "app_name", "OttoGo")
         }
     }
 

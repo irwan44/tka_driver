@@ -75,9 +75,11 @@ flutter:
     - assets/icon/ottogo_icons.png
     - assets/icon/ruscon_icons.png
     - assets/icon/server-down.png
+    - assets/images/background.png
     - assets/logo/logo-ottogo.png
     - assets/logo/logo-rusco.png
     - assets/logo/logo_dev.png
+    - assets/logo/logo_uniquip.png
     - assets/penggunaan/emergency1.png
     - assets/penggunaan/emergency2.png
     - assets/penggunaan/emergency3.png
@@ -88,4 +90,3 @@ flutter:
     - assets/penggunaan/request4.png
     - assets/penggunaan/service.png
     - assets/sounds/notifikasi_planning.mp3
-    - assets/images/background.png
