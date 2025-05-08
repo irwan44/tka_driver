@@ -128,3 +128,7 @@ class MyApp extends StatelessWidget {
 // flutter run --flavor rusco -t lib/main.dart --dart-define=FLAVOR=rusco
 // flutter build apk --flavor rusco -t lib/main.dart --dart-define=FLAVOR=rusco
 // flutter build appbundle --flavor rusco -t lib/main.dart --dart-define=FLAVOR=rusco
+//
+// flutter run --flavor uniquip -t lib/main.dart --dart-define=FLAVOR=uniquip
+// flutter build apk --flavor uniquip -t lib/main.dart --dart-define=FLAVOR=uniquip
+// flutter build appbundle --flavor uniquip -t lib/main.dart --dart-define=FLAVOR=uniquip
