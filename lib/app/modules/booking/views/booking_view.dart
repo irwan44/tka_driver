@@ -340,7 +340,7 @@ class _BookingViewState extends State<BookingView> {
           const SizedBox(height: 10),
           Text(
             msg,
-            style: GoogleFonts.nunito(color: Colors.black),
+            style: GoogleFonts.nunito(),
             textAlign: TextAlign.center,
           ),
         ],

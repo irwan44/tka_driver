@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -19,6 +20,7 @@ class HomePICController extends GetxController {
   final RxString error = ''.obs;
   final list = <ListRequesServicePIC>[].obs;
   final filteredList = <ListRequesServicePIC>[].obs;
+  RxBool isOffline = false.obs;
 
   DateTime? dateFilter;
   final searchController = TextEditingController();
@@ -69,7 +71,18 @@ class HomePICController extends GetxController {
   Future<void> fetchRequests() async {
     isLoading.value = true;
     error.value = '';
+    isOffline.value = false;
     update();
+
+    // Cek koneksi internet (via connectivity)
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      isOffline.value = true;
+      error.value = 'Tidak ada koneksi internet';
+      isLoading.value = false;
+      update();
+      return;
+    }
 
     try {
       final data = await API.fetchPICRequestService();
@@ -77,11 +90,18 @@ class HomePICController extends GetxController {
       filteredList.assignAll(data);
     } catch (e) {
       error.value = e.toString();
+
+      // Deteksi jika error karena tidak ada koneksi internet
+      if (e.toString().contains('SocketException')) {
+        isOffline.value = true;
+      }
     } finally {
       isLoading.value = false;
       update();
     }
   }
+
+
 
   /// Versi polling: fetch data tanpa men-toggle isLoading
   Future<void> _pollFetchRequests() async {

@@ -31,7 +31,15 @@ class HomePICView extends StatelessWidget {
       builder: (c) {
         return Scaffold(
           backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-          body: Column(children: [_HeaderSection(), ListrequestService()]),
+          body: Column(
+            children: [
+            _HeaderSection(),
+        Expanded(
+        child: ListrequestService(),
+        ),
+        ],
+        ),
+
         );
       },
     );

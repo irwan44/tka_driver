@@ -173,11 +173,9 @@ class ListrequestService extends StatelessWidget {
                 .where((r) => r.status?.toLowerCase() == 'waiting')
                 .length;
 
-        return Expanded(
-            child: RefreshIndicator(
+        return RefreshIndicator(
             onRefresh: () => c.fetchRequests(),
             child: ListView(
-              shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               children: [
@@ -234,7 +232,29 @@ class ListrequestService extends StatelessWidget {
                 // state handling
                 if (c.isLoading.value) ...[
                   _buildShimmer(context),
-                ] else if (c.error.value.isNotEmpty) ...[
+                ] else if (c.isOffline.value) ...[
+                  Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        Image.asset(
+                          'assets/icon/no_conexion.png',
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda',
+                          style: GoogleFonts.nunito(),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (!c.isOffline.value && c.error.value.isNotEmpty) ...[
                   Image.asset(
                     'assets/icon/server-down.png',
                     width: 100,
@@ -374,7 +394,6 @@ class ListrequestService extends StatelessWidget {
                   }).toList(),
                 ],
               ],
-            ),
             ),
         );
       },
