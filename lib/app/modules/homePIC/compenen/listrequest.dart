@@ -244,7 +244,7 @@ class ListrequestService extends StatelessWidget {
                   const SizedBox(height: 10),
                   Text(
                     'Mohon Maaf 🙏🏻\nAplikasi sedang terkendala Server,\nKami akan segera memperbaikinya',
-                    style: GoogleFonts.nunito(color: Colors.black),
+                    style: GoogleFonts.nunito(),
                     textAlign: TextAlign.center,
                   ),
                 ] else if (c.filteredList.isEmpty) ...[

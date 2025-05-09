@@ -367,7 +367,7 @@ class _BookingViewState extends State<BookingView> {
             msg.isNotEmpty
                 ? 'Mohon Maaf 🙏🏻\nAplikasi sedang terkendala Server,\nKami akan segera memperbaikinya'
                 : 'Mohon Maaf 🙏🏻\nAplikasi sedang terkendala Server,\nKami akan segera memperbaikinya',
-            style: GoogleFonts.nunito(color: Colors.black),
+            style: GoogleFonts.nunito(),
             textAlign: TextAlign.center,
           ),
         ],

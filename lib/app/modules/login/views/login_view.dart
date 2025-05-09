@@ -50,14 +50,12 @@ class LoginView extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.white,
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Image.asset(AssetsRes.LOGO, height: logoH),
                           ),
                         ),
                         const SizedBox(height: 32),
-
                         // ───────── HEADER (menggunakan Obx agar ikut berubah)
                         Obx(() {
                           final idx = c.selectedTab.value;

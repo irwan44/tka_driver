@@ -853,7 +853,7 @@ class _ServerDownWidget extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 'Mohon Maaf 🙏🏻\nAplikasi sendang terkendala Server,\nKami akan segera memperbaikinya',
-                style: GoogleFonts.nunito(color: Colors.black),
+                style: GoogleFonts.nunito(),
                 textAlign: TextAlign.center,
               ),
             ],

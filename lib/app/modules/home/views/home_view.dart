@@ -307,7 +307,6 @@ class _HeaderSection extends StatelessWidget {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(8),
