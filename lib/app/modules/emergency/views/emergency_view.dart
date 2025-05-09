@@ -618,7 +618,7 @@ class _NoConnectionWidget extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 'Tidak ada jaringan\nMohon periksa kembali jaringan internet anda',
-                style: GoogleFonts.nunito(color: Colors.black),
+                style: GoogleFonts.nunito(),
                 textAlign: TextAlign.center,
               ),
             ],
