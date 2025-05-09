@@ -14,6 +14,7 @@ class ProfileController extends GetxController {
   final listEmergency = <Data>[].obs; // << simpan item-nya saja
 
   final isLoading = false.obs;
+  final listHistoryService = <ListService>[].obs;
 
   /* ---------- COUNTER ---------- */
   int get requestCount => listRequestService.length;
@@ -31,15 +32,31 @@ class ProfileController extends GetxController {
       isLoading.value = true;
 
       final results = await Future.wait([
-        API.fetchListRequestService(), // Future<List<RequestService>>
-        API.fetchListService(), // Future<List<ListService>>
-        API.fetchListEmergency(), // Future<Listemergency>
+        API.fetchListRequestService(),
+        API.fetchListService(),
+        API.fetchListEmergency(),
       ]);
 
       listRequestService.assignAll(results[0] as List<RequestService>);
-      listStatusService.assignAll(results[1] as List<ListService>);
 
-      // ── emergency ──
+      final fullListService = results[1] as List<ListService>;
+
+      // Simpan data non-history
+      listStatusService.assignAll(
+        fullListService.where((e) {
+          final s = (e.status ?? '').toUpperCase();
+          return s != 'INVOICE' && s != 'PKB TUTUP';
+        }).toList(),
+      );
+
+      // Simpan data history (INVOICE dan PKB TUTUP)
+      listHistoryService.assignAll(
+        fullListService.where((e) {
+          final s = (e.status ?? '').toUpperCase();
+          return s == 'INVOICE' || s == 'PKB TUTUP';
+        }).toList(),
+      );
+
       final Listemergency emgWrapper = results[2] as Listemergency;
       listEmergency.assignAll(emgWrapper.data ?? []);
     } on SocketException {

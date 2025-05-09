@@ -336,7 +336,12 @@ class _StatisticsCard extends GetView<ProfileController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      stat('History Service', controller.historyCount),
+                      Obx(
+                        () => stat(
+                          'History Service',
+                          controller.listHistoryService.length,
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       stat('Emergency Service', controller.emergencyCount),
                     ],
