@@ -174,7 +174,7 @@ class ListrequestService extends StatelessWidget {
                 .length;
 
         return Expanded(
-          child: RefreshIndicator(
+            child: RefreshIndicator(
             onRefresh: () => c.fetchRequests(),
             child: ListView(
               shrinkWrap: true,
@@ -375,7 +375,7 @@ class ListrequestService extends StatelessWidget {
                 ],
               ],
             ),
-          ),
+            ),
         );
       },
     );

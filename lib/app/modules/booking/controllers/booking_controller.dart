@@ -162,6 +162,7 @@ class BookingController extends GetxController {
         final st = (s.status ?? '').trim().toUpperCase();
         return st != 'PKB TUTUP' &&
             st != 'INVOICE' &&
+            st != 'NOT CONFIRMED' &&
             !serviceOpened(s.kodeSvc);
       }).length;
   int get unreadHistoryServiceCount =>

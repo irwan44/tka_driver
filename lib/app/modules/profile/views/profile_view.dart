@@ -43,7 +43,7 @@ class ProfileView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // ── HEADER ──────────────────────────────────────────────
-                _ProfileHeader(
+                ProfileCard(
                   isDark: isDark,
                   avatar: avatar,
                   pad: pad,
@@ -72,8 +72,8 @@ class ProfileView extends StatelessWidget {
 /*────────────────────────────  STATISTICS  ────────────────────────────*/
 /*──────────────── HEADER DENGAN DATA API ────────────────*/
 
-class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({
+class ProfileCard extends GetView<ProfileController> {
+  const ProfileCard({
     required this.isDark,
     required this.avatar,
     required this.pad,
@@ -87,148 +87,110 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Profile2>(
-      future: API.getProfile(),
-      builder: (ctx, snap) {
-        if (snap.connectionState == ConnectionState.waiting) {
-          return Shimmer.fromColors(
-            baseColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-            highlightColor:
-                isDark ? Colors.grey.shade700 : Colors.grey.shade100,
-            child: Container(
-              padding: EdgeInsets.all(pad),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: avatar,
-                    height: avatar,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey, // lingkaran avatar abu-abu
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(height: 16, color: Colors.grey),
-                        const SizedBox(height: 6),
-                        Container(height: 12, width: 120, color: Colors.grey),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
+    return Obx(() {
+      final profile = controller.profile.value;
 
-        if (snap.hasError || !snap.hasData) {
-          return Container(
-            padding: EdgeInsets.all(pad),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              'Gagal memuat profil',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          );
-        }
-
-        final profile = snap.data!;
+      if (profile == null) {
         return Container(
           padding: EdgeInsets.all(pad),
           decoration: BoxDecoration(
             color: cardColor,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              if (!isDark)
-                const BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-            ],
           ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: avatar / 2,
-                backgroundImage: AssetImage('assets/icon/driver.png'),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AutoSizeText(
-                      profile.name ?? '-',
-                      style: GoogleFonts.nunito(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.car_rental_rounded,
-                          size: 14,
-                          color: Colors.orange[400],
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            profile.posisi ?? '-', // <- sesuaikan field
-                            style: GoogleFonts.nunito(
-                              fontSize: 13,
-                              color: isDark ? Colors.white70 : Colors.grey[600],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.email_rounded,
-                          size: 14,
-                          color: Colors.orange[400],
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            profile.email ?? '-', // <- sesuaikan field
-                            style: GoogleFonts.nunito(
-                              fontSize: 13,
-                              color: isDark ? Colors.white70 : Colors.grey[600],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          child: Text(
+            'Gagal memuat profil',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         );
-      },
-    );
+      }
+
+      return Container(
+        padding: EdgeInsets.all(pad),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            if (!isDark)
+              const BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: avatar / 2,
+              backgroundImage: AssetImage('assets/icon/driver.png'),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AutoSizeText(
+                    profile.name ?? '-',
+                    style: GoogleFonts.nunito(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.car_rental_rounded,
+                        size: 14,
+                        color: Colors.orange[400],
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          profile.posisi ?? '-',
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            color:
+                            isDark ? Colors.white70 : Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.email_rounded,
+                        size: 14,
+                        color: Colors.orange[400],
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          profile.email ?? '-',
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            color:
+                            isDark ? Colors.white70 : Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -267,92 +229,84 @@ class _StatisticsCard extends GetView<ProfileController> {
       ],
     );
 
-    return Obx(() {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            if (!isDark)
-              const BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                offset: Offset(0, 2),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          if (!isDark)
+            const BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.query_stats_rounded,
+                  size: 16,
+                  color: Colors.orange,
+                ),
               ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ─ Header ─
-            Row(
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Colors.orange[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.query_stats_rounded,
-                    size: 16,
-                    color: Colors.orange,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Statistics',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Statistics',
-                    style: GoogleFonts.nunito(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // ─ Content ─
-            Row(
-              children: [
-                // kolom kiri
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      stat('Request Service', controller.requestCount),
-                      const SizedBox(height: 8),
-                      stat('Status Service', controller.statusCount),
-                    ],
-                  ),
+          // Content
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Obx(() => stat('Request Service', controller.requestCount)),
+                    const SizedBox(height: 8),
+                    Obx(() => stat('Status Service', controller.statusCount)),
+                  ],
                 ),
-                // kolom kanan
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Obx(
-                        () => stat(
-                          'History Service',
-                          controller.listHistoryService.length,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      stat('Emergency Service', controller.emergencyCount),
-                    ],
-                  ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Obx(() => stat('History Service', controller.listHistoryService.length)),
+                    const SizedBox(height: 8),
+                    Obx(() => stat('Emergency Service', controller.emergencyCount)),
+                  ],
                 ),
-              ],
-            ),
-          ],
-        ),
-      );
-    });
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
   }
 }
 
