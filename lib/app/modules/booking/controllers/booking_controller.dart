@@ -173,7 +173,9 @@ class BookingController extends GetxController {
 
   Set<String> get _busyPlates {
     return listRequestService
-        .where((r) => (r.status ?? '').toLowerCase() != 'selesai')
+        .where((r) => (r.status ?? '').toLowerCase() != 'selesai' )
+        .where((r) => (r.status ?? '').toLowerCase() != 'rejected by pic' )
+        .where((r) => (r.status ?? '').toLowerCase() != 'approved by pic' )
         .map((r) => (r.noPolisi ?? '').toUpperCase())
         .toSet();
   }

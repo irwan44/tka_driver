@@ -74,18 +74,12 @@ class RequestServiceItem extends StatelessWidget {
 
   Color _statusColor() {
     switch (status.toLowerCase()) {
-      case 'menunggu':
-        return Colors.orange;
-      case 'diterima':
-        return Colors.green;
-      case 'estimasi':
-        return Colors.purple;
-      case 'pkb':
-        return Colors.indigo;
-      case 'pkb tutup':
-        return Colors.green;
-      case 'invoice':
+      case 'rejected by pic':
         return Colors.red;
+      case 'approved by pic':
+        return Colors.green;
+      case 'waiting':
+        return Colors.orange;
       default:
         return Colors.blue;
     }

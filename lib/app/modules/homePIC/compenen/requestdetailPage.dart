@@ -372,8 +372,8 @@ class RequestDetailPage extends StatelessWidget {
       textCancel: 'Tidak',
       confirmTextColor: Colors.white,
       onConfirm: () async {
-        Get.back();
         await API.postRejectRequesService(item.kodeRequestService!);
+        Get.back();
         Get.snackbar(
           'Rejected',
           'Permintaan ditolak',
