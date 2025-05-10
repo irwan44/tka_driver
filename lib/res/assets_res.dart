@@ -31,6 +31,5 @@ class AssetsRes {
   static const String REQUEST3 = 'assets/penggunaan/request3.png';
   static const String REQUEST4 = 'assets/penggunaan/request4.png';
   static const String SERVICE = 'assets/penggunaan/service.png';
-  static const String NOTIFIKASI_PLANNING =
-      'assets/sounds/notifikasi_planning.mp3';
+  static const String NOTIFIKASI_PLANNING = 'assets/sounds/notifikasi_planning.mp3';
 }

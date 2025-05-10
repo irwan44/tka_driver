@@ -1,4 +1,3 @@
-// lib/app/modules/track_mekanik/controllers/track_mekanik_controller.dart
 import 'dart:async';
 import 'dart:math';
 
@@ -11,26 +10,25 @@ import 'package:tka_customer/app/data/endpoint.dart';
 class TrackMekanikController extends GetxController {
   TrackMekanikController(this.kode);
 
-  // ─────–– PUBLIC STATE ––––––
   final String kode;
-  final mechanicLocation = const LatLng(0, 0).obs;
-  final lastKnownMechanicLocation = Rx<LatLng?>(null);
-  final mechanicAddress = ''.obs;
+  final mechanicLocation = Rxn<LatLng>();
+  final mechanicAddress  = RxnString();
   final isFirstFetchCompleted = false.obs;
+  final isOnline = false.obs;
 
-  // ─────–– PRIVATE ––––––
-  static const _fetchInterval = Duration(seconds: 3);
-  static const _routeRefreshGap = Duration(seconds: 10);
-  Timer? _timer;
-  bool _isFetching = false;
+  static const _pollInterval   = Duration(seconds: 3);
+  static const _routeRefreshGap= Duration(seconds: 10);
+  static const _addrThresholdKm= 0.05;
+
+  Timer?   _timer;
+  bool     _pollRunning = false;
+  LatLng?  _lastAddrLoc;
   DateTime? _lastRouteUpdate;
 
-  // ────────────────────────
   @override
   void onInit() {
     super.onInit();
-    _fetchMechanicPosition();
-    _timer = Timer.periodic(_fetchInterval, (_) => _fetchMechanicPosition());
+    _startPolling();
   }
 
   @override
@@ -39,67 +37,45 @@ class TrackMekanikController extends GetxController {
     super.onClose();
   }
 
-  // ───────── FETCH POSISI ─────────
-  Future<void> _fetchMechanicPosition() async {
-    if (_isFetching) return;
-    _isFetching = true;
-
-    try {
-      final pos = await API.fetchMekanikPosisi(kode);
-      final lat = double.tryParse(pos.latitude ?? '');
-      final lon = double.tryParse(pos.longitude ?? '');
-      if (lat == null || lon == null) return;
-
-      final newLoc = LatLng(lat, lon);
-      mechanicLocation.value = newLoc;
-
-      if (lat != 0 || lon != 0) {
-        lastKnownMechanicLocation.value ??= newLoc;
-        if (!isFirstFetchCompleted.value) isFirstFetchCompleted.value = true;
-
-        if (_haversineKm(lastKnownMechanicLocation.value!, newLoc) > 0.05) {
-          _updateAddress(newLoc);
-        }
-        lastKnownMechanicLocation.value = newLoc;
-
-        final now = DateTime.now();
-        if (_lastRouteUpdate == null ||
-            now.difference(_lastRouteUpdate!) > _routeRefreshGap) {
-          _lastRouteUpdate = now;
-          update(); // beri sinyal ke view
-        }
-      }
-    } catch (e) {
-      debugPrint('[$kode] Gagal update posisi: $e');
-    } finally {
-      _isFetching = false;
-    }
+  void _startPolling(){
+    _safeFetch();
+    _timer=Timer.periodic(_pollInterval,(_)=>_safeFetch());
   }
-
-  Future<void> _updateAddress(LatLng loc) async {
-    try {
-      final placemarks = await placemarkFromCoordinates(
-        loc.latitude,
-        loc.longitude,
-      );
-      if (placemarks.isNotEmpty) {
-        final p = placemarks.first;
-        mechanicAddress.value = '${p.street}, ${p.locality}, ${p.country}';
-      }
-    } catch (_) {
-      mechanicAddress.value = 'Alamat tidak tersedia';
-    }
+  Future<void> _safeFetch()async{
+    if(_pollRunning)return;
+    _pollRunning=true;
+    try{await _fetchMechanicPos();}finally{_pollRunning=false;}
   }
-
-  double _haversineKm(LatLng a, LatLng b) {
-    const p = 0.017453292519943295; // π/180
-    final c =
-        0.5 -
-        cos((b.latitude - a.latitude) * p) / 2 +
-        cos(a.latitude * p) *
-            cos(b.latitude * p) *
-            (1 - cos((b.longitude - a.longitude) * p)) /
-            2;
-    return 12742 * asin(sqrt(c)); // diameter bumi km
+  Future<void> _fetchMechanicPos()async{
+    try{
+      final pos=await API.fetchMekanikPosisi(kode);
+      final lat=double.tryParse(pos.latitude??'');
+      final lon=double.tryParse(pos.longitude??'');
+      if(lat==null||lon==null||(lat==0&&lon==0))return;
+      final newLoc=LatLng(lat,lon);
+      mechanicLocation.value=newLoc;
+      isFirstFetchCompleted.value=true;
+      isOnline.value=true;
+      if(_lastAddrLoc==null||_haversineKm(_lastAddrLoc!,newLoc)>_addrThresholdKm){
+        _lastAddrLoc=newLoc;
+        _updateAddress(newLoc);
+      }
+      final now=DateTime.now();
+      if(_lastRouteUpdate==null||now.difference(_lastRouteUpdate!)>_routeRefreshGap){
+        _lastRouteUpdate=now;update();}
+    }catch(e){debugPrint('[TrackMekanik][$kode] fetch error: $e');}
+  }
+  Future<void> _updateAddress(LatLng loc)async{
+    try{
+      final list=await placemarkFromCoordinates(loc.latitude,loc.longitude);
+      if(list.isNotEmpty){final p=list.first;mechanicAddress.value='${p.street??''}, ${p.subLocality??''}, ${p.locality??''}';}
+    }catch(_){mechanicAddress.value=null;}
+  }
+  double _haversineKm(LatLng a,LatLng b){
+    const rad=pi/180;
+    final dLat=(b.latitude-a.latitude)*rad;
+    final dLon=(b.longitude-a.longitude)*rad;
+    final h=sin(dLat/2)*sin(dLat/2)+cos(a.latitude*rad)*cos(b.latitude*rad)*sin(dLon/2)*sin(dLon/2);
+    return 2*6371*asin(sqrt(h));
   }
 }
